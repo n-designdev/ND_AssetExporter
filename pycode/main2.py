@@ -186,11 +186,16 @@ class GUI (QMainWindow):
                 else:
                     if z == "sg_export_type":
                         if item[z] == 'abc':
-                            # y.append(exporttype_list[count]["sg_abc_export_list"])
-                            y.append("ABCset")
+                            y.append(
+                                exporttype_list[count]["sg_abc_export_list"])
+                            # y.append("ABCset")
                         elif item[z] == 'anim':
                             y.append(
                                 exporttype_list[count]["sg_anim_export_list"])
+                        else:
+                            print "export type must \"abc\" or \"anim\" "
+                    elif z == "sg_abc_export_list" or z == "sg_anim_export_list":
+                        pass
                     else:
                         y.append(item[z])
             count = count + 1
@@ -369,41 +374,6 @@ class GUI (QMainWindow):
         a = subprocess.Popen(args)
 
         # back_starter.back_starter('a', charaName, inputpath, namespace,exporttype, topnode, assetpath, test, yeti, stepValue)
-
-        # opc.createOutputDir(charaName)
-
-        # abcOutput = opc.publishfullabcpath + '/' + charaName + '.abc'
-        # charaOutput = opc.publishfullpath + '/' + charaName + '.abc'
-
-        # abcSet = ['ABCset']
-        # nsChara = namespace
-        # batch.abcExport(nsChara, abcSet,
-        #                 abcOutput, inputpath, self.yeti, self.stepValue)
-
-        # abcFiles = os.listdir(opc.publishfullabcpath)
-        # if len(abcFiles) == 0:
-        #     opc.removeDir()
-        #     return
-        # print abcFiles
-        # allOutput = []
-        # for abc in abcFiles:
-        #     ns = abc.replace(charaName+'_', '').replace('.abc', '')
-        #     if '___' in ns:
-        #         ns = ns.replace('___', ':')
-
-        #     abcOutput = opc.publishfullabcpath + '/' + abc
-        #     charaOutput = opc.publishfullpath + '/' + abc.replace('abc', 'ma')
-        #     batch.abcAttach(assetpath, ns, ns+':' +
-        #                     topnode, abcOutput, charaOutput)
-        #     allOutput.append([abc.replace('abc', 'ma'), abc])
-        # opc.makeCurrentDir()
-
-        # for output in allOutput:
-        #     print '#' * 20
-        #     print output
-        #     charaOutput = opc.publishcurrentpath + '/' + output[0]
-        #     abcOutput = opc.publishcurrentpath + '/abc/' + output[1]
-        #     batch.repABC(charaOutput, abcOutput)
 
     def execExportAnim(self, charaName, inputpath, namespace, exporttype, topnode):
         opc = util.outputPathConf(inputpath, True, test=testRun)

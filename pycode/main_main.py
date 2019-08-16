@@ -14,8 +14,11 @@ import util
 import batch
 from importlib import import_module
 import subprocess
-import back_starter
+import back_starter_anim
+import back_starter_abc
 
+from multiprocessing import Pool
+from multiprocessing import Process
 # import ninaSetup
 # import hikalSetup
 # import ikkaSetup
@@ -41,7 +44,7 @@ import ND_lib.shotgun.sg_scriptkey as sg_scriptkey
 
 import ND_lib.shotgun.shotgun_api3.shotgun as shotgun
 reload(shotgun)
-sg_scriptkey.scriptKey()
+sg = sg_scriptkey.scriptKey()
 
 pythonBatch = 'C:\\Program Files\\Shotgun\\Python\\python.exe'
 
@@ -63,11 +66,9 @@ except:
 qtSignal = Signal
 qtSlot = Slot
 
-
 ### debug mode
+
 testRun = True
-
-
 
 class GUI (QMainWindow):
     WINDOW = 'mem chara export'
@@ -75,21 +76,23 @@ class GUI (QMainWindow):
         super(self.__class__, self).__init__(parent)
 
         self.ui_path = '.\\gui.ui'
-
         self.check_row = []#エクスポート対象
         self.executed_row = []
         self.quantity = 0 #行数
         self.tableData0 = [] #リスト
         self.inputpath = ''
         self.stepValue = 1.0
+        self.export_type_list = []
 
         self.yeti = False
 
-        self.headers = [" ", "Asset name", "Name space", "Export List", "Top Node","Asset list", "Asset Path"]
-        self.asset_fields = ["code", "sg_namespace", "sg_export_type",
-                             "sg_top_node", "sg_abc_export_list", "sg_anim_export_list", "sg_asset_path"]
+        self.process_list = [] ##プロセスを格納
 
-        self.shot_fields = ["sg_assets"]
+        self.headers = [" ", "Asset name", "Name space", "Export List", "Top Node", "Asset Path"]
+        self.table_row = len(self.headers)
+        self.asset_fields = ["code", "sg_namespace", "sg_export_type","sg_top_node", "sg_abc_export_list", "sg_anim_export_list", "sg_asset_path"]
+
+        self.shot_fields = ["code","sg_assets"]
 
         self.ui = QUiLoader().load(self.ui_path)
         self.setCentralWidget(self.ui)
@@ -115,9 +118,8 @@ class GUI (QMainWindow):
         self.ui.allcheck_button.clicked.connect(self.allcheck_button_clicked)
         self.ui.alluncheck_button.clicked.connect(self.alluncheck_button_clicked)
 
-
-
         self.ui.start_button.clicked.connect(self.start_button_clicked)
+        self.ui.pro_num_CheckBox.stateChanged.connect(self.pro_num_clicked)
 
     def eventFilter (self, object, event):
         if event.type() == QEvent.DragEnter:
@@ -144,9 +146,18 @@ class GUI (QMainWindow):
         currentState = self.ui.stepValue_CheckBox.isChecked()
         self.ui.stepValue_LineEdit.setEnabled(currentState)
 
+    def pro_num_clicked(self):
+        currentState = self.ui.pro_num_CheckBox.isChecked()
+        self.ui.pro_num.setEnabled(currentState)
+
     def drop_act(self,event):#D&D時に実行される
+        self.check_row = []
+        self.executed_row = []
         self.quantity = 0
         self.tableData0 = []
+        self.inputpath = ''
+        self.stepValue = 1.0
+
         mimedata = event.mimeData()
         a = mimedata.urls()
         self.inputpath = a[0].toString().replace("file:///", "")
@@ -155,8 +166,17 @@ class GUI (QMainWindow):
         self.ui.Change_Area.setCurrentIndex(1)
 
         pro_name = self.inputpath.split('/')[2]
-        print pro_name
-        # pro_name = 'ND_RnD'
+        self.ui.proj_line.setText(pro_name)
+        self.ui.proj_comboBox.setCurrentText(pro_name)
+
+
+        shot_name = self.inputpath.split('/')[5]+self.inputpath.split('/')[6]
+
+
+        shot = self.inputpath.split('/')[5]
+        self.ui.shot_line.setText(shot)
+        cut = self.inputpath.split('/')[6]
+        self.ui.cut_line.setText(cut)
 
         sg = sg_scriptkey.scriptKey()
         project = sg_util.get_project(pro_name)
@@ -165,58 +185,133 @@ class GUI (QMainWindow):
         asset_fields = self.asset_fields
         shot_fields = self.shot_fields
 
-        asset_list = dict()
-        asset_list = sg.find('Asset', filters, asset_fields)
+        proj_list = self.set_proj_comboBox()
+        if pro_name in proj_list:
+            print 'success'
 
-        shot_list = dict()
-        shot_list = sg.find('Shot', filters, shot_fields)
+            self.ui.proj_comboBox.setText(pro_name)
 
-        exporttype_list = sg.find('Asset', filters, ["sg_abc_export_list"])
-        print exporttype_list
+            asset_list = dict()
+            asset_list = sg.find('Asset', filters, asset_fields)
 
-        count = 0
-        for item in asset_list:
-            y =  []
-            y.append('')
-            for z in asset_fields:
-                if item[z] is None:
-                    print z + " is none"
+            shot_list = dict()
+            shot_list = sg.find('Shot', filters, shot_fields)
+
+            count = 0
+
+            target_asset = []
+            for x in shot_list:
+                if x['code']==shot_name:
+                    q = x
                 else:
-                    if z == "sg_export_type":
-                        if item[z]=='abc':
-                            # y.append(exporttype_list[count]["sg_abc_export_list"])
-                            y.append("ABCset")
-                        elif item[z]=='anim':
-                            y.append(exporttype_list[count]["sg_anim_export_list"])
+                    pass
+            for x in q["sg_assets"]:
+                target_asset.append(x['name'])
+            print target_asset
+            if len(target_asset)>1:###ショットの中にアセットリストがない場合
+                pass
+            else:
+                target_asset_prot_list = sg.find('Sequence',[["project","is", project]],["assets","code"])#ショットフィールド
+                target_asset_prot = []#アセットリスト
+                for a in target_asset_prot_list:
+                    if a['code']==shot_name:
+                        for b in a['assets']:
+                            target_asset_prot.append('name')
+                print target_asset_prot
+                z = []
+                for x in target_asset_prot:
+                    if x["code"]==shot_name:
+                        for y in x['assets']:
+                            z.append(y['name'])
                     else:
-                        y.append(item[z])
-            count = count + 1
+                        pass
+                print z
+                target_asset = z
+                print '____________________________________________________'
 
-        for item in shot_list:
-            x = []
-            for z in shot_fields:
-                if type(item[z]) is list:
-                    x.append(item[z][0]["name"])
+            type_count=0
+
+            exporttype_abclist = sg.find('Asset', filters, ["sg_abc_export_list"])
+            exporttype_animlist = sg.find('Asset', filters, ["sg_anim_export_list"])
+
+
+            ####asset#####
+            for item in asset_list:
+                print target_asset
+                print item['code']
+                if item['code'] in target_asset:
+                    y = []
+                    y.append('')
+                    for z in asset_fields:
+                        if item[z] is None:
+                            if z == "sg_abc_export_list" or z == "sg_anim_export_list":
+                                print '__'
+                            elif z == "sg_export_type":
+                                y.append('None')
+                                self.export_type_list.append('None')
+                            else:
+                                y.append('None')
+                        else:
+                            if z == "sg_export_type":
+                                try:###########
+                                    if item[z]=='abc':
+                                        y.append(exporttype_abclist[type_count]["sg_abc_export_list"])
+                                        self.export_type_list.append('abc')
+                                        # y.append("ABCset")
+                                    elif item[z]=='anim':
+                                        y.append(exporttype_animlist[type_count]["sg_anim_export_list"])
+                                        self.export_type_list.append('anim')
+
+                                except:
+                                    y.append('None')
+                                    self.export_type_list.append('None')
+                                    print "export type must \"abc\" or \"anim\" "
+                            elif z == "sg_abc_export_list" or z == "sg_anim_export_list":
+                                pass
+                            else:
+                                y.append(item[z])
+
+                    x = []
+                    ###AssetList。用途が不明
+                    # for z in shot_fields:
+                    #     if type(shot_list[0][z]) is list:
+                    #         y.insert(-1,shot_list[0][z][0]["name"])
+                    #     else:
+                    #         pass
+                    ################################
+                    self.tableData0.append(y)
+                    self.quantity = self.quantity + 1
+                    count = count + 1
+                    type_count = type_count + 1
                 else:
-                    x.append(item[z])
-            for z in x:
-                y.insert(-1,z)
+                    type_count = type_count + 1
+            ##############
 
-            # print y
+            ###camera######
+            y = []
+            y.append("")
+            y.append("Camera")
+            y.append("")
+            y.append("")
+            y.append("")
+            y.append("")
 
-            self.tableData0.append(y)
             self.quantity = self.quantity + 1
+            count = count + 1
+            self.tableData0.append(y)
+            ###############
 
-        self.tableData0[0][0] = ""
-        self.ui.all_num.setText(str(self.quantity))
+            self.tableData0[0][0] = ""
+            self.ui.all_num.setText(str(self.quantity))
 
-        model = TableModelMaker(self.tableData0, self.headers, self.check_row, self.executed_row)
+            model = TableModelMaker(self.tableData0, self.headers, self.check_row, self.executed_row)
 
-        self.ui.main_table.setModel(model)
-        self.ui.main_table.setColumnWidth(0,25)
-        self.ui.start_button.setEnabled(True)
+            self.ui.main_table.setModel(model)
+            self.ui.main_table.setColumnWidth(0,25)
+            self.ui.start_button.setEnabled(True)
 
-        return True
+        else: #プロジェクトリストにない場合
+            print '!?!?!?!?!?!?!?!?!?!?!?!?!?!??!!??!?!?!'
 
     def check_button_clicked(self):
         y = self.ui.main_table.selectedIndexes()
@@ -290,6 +385,11 @@ class GUI (QMainWindow):
 
     def start_button_clicked(self):
 
+        if self.ui.pro_num_CheckBox.isChecked:
+             pro_num = self.ui.pro_num.value()
+        else:
+            pro_num = 1
+
         count = 0
 
         for x in self.tableData0:
@@ -304,148 +404,89 @@ class GUI (QMainWindow):
                     namespace_origin = x[2] #namespace
                     exporttype = x[3] #exporttype
                     topnode = x[4] #top_node
-                    assetpath = x[6] #Asset Path
+                    assetpath = x[5] #Asset Path
 
                     namespace = namespace_origin
-                    print x
 
-                    print '_______________________'
+                    try:
+                        y = assetpath.split("assets")[1]
+                        z = y.split("/")[1]
 
-                    y = assetpath.split("assets")[1]
-                    z = y.split("/")[1]
+                    except:
+                        pass
+                    self.camScale = -1
 
-                    chara = z
-                    print chara
-
-                    camScale = -1
+                    chara = assetname
 
                     if self.ui.cameraScaleOverride_CheckBox.isChecked():
-                        camScale = float(self.ui.overrideValue_LineEdit.text())
+                        self.camScale = float(self.ui.overrideValue_LineEdit.text())
                     else:
-                        camScale = -1
-
-                    if chara == 'char':
-                        self.execExportAnim(chara, self.inputpath, namespace, exporttype, topnode)
-
-                    elif chara == 'BG':
-                        self.execExportAnim(bg, self.inputpath, namespace, exporttype,topnode)
-
-                    elif chara == 'Cam':
-                        self.execExportCam(self.inputpath, camScale)
-
-                    elif chara in ['LgtSetAddCoreA', 'LgtSetCORin']:
-                        self.execExportAnim(chara, self.inputpath)
-
-                    else:
-                        self.execExport(chara, self.inputpath, namespace, exporttype, topnode, assetpath, testRun, self.yeti,self.stepValue)
-
+                        self.camScale = -1
+                    if assetname == 'Camera':
+                        self.execExportCamera(self.inputpath,self.camScale,test=testRun)
+                    elif self.export_type_list[count] == 'abc':
+                        self.execExport(chara, self.inputpath, namespace, exporttype,
+                                        topnode, assetpath, testRun, self.yeti, self.stepValue)
+                    elif self.export_type_list[count] == 'anim':
+                        self.execExportAnim(chara, self.inputpath, namespace, exporttype,topnode, assetpath, testRun, self.yeti, self.stepValue)
                     util.addTimeLog(chara, self.inputpath, test=testRun)
 
                 else:
                     pass
             count = count + 1
 
+        p = Pool(pro_num)####同時に実行するプロセス
+        p.map(process_do,self.process_list)
+
         self.executed_row = list(set(self.executed_row))
         model = TableModelMaker(self.tableData0, self.headers, self.check_row, self.executed_row)
 
+        print "===============Export End=================="
 
     def execExport(self, charaName, inputpath, namespace, exporttype, topnode, assetpath, test, yeti, stepValue):
-        args = 'C:\\Program Files\\Shotgun\\Python\\python.exe back_starter.py '
+        # namespace_2 = self.nest_checker(namespace)
+        # exporttype_2 = self.nest_checker(exporttype)
+        args = 'C:\\Program Files\\Shotgun\\Python\\python.exe back_starter_abc.py '
         args = args + str(charaName)+' '+str(inputpath)+' '+str(namespace)+' '+str(exporttype)+' ' +str(topnode)+' '+str(assetpath)+' '+str(test)+' '+str(yeti)+' '+str(stepValue)
 
-        print args
-
-        a = subprocess.Popen(args)
-
-        # back_starter.back_starter('a', charaName, inputpath, namespace,exporttype, topnode, assetpath, test, yeti, stepValue)
+        self.process_list.append(args)
+        # a = subprocess.Popen(args)
+        # a = subprocess.call(args)
 
 
-        # opc.createOutputDir(charaName)
+    def execExportAnim(self, charaName, inputpath, namespace, exporttype, topnode, assetpath, test, yeti, stepValue):
+        # namespace_2 = self.nest_checker(namespace)
+        # exporttype_2 = self.nest_checker(exporttype)
 
-        # abcOutput = opc.publishfullabcpath + '/' + charaName + '.abc'
-        # charaOutput = opc.publishfullpath + '/' + charaName + '.abc'
+        args = 'C:\\Program Files\\Shotgun\\Python\\python.exe back_starter_anim.py '
+        args = args + str(charaName)+' '+str(inputpath)+' '+str(namespace)+' '+str(exporttype)+' ' +str(topnode)+' '+str(assetpath)+' '+str(test)+' '+str(yeti)+' '+str(stepValue)
 
-        # abcSet = ['ABCset']
-        # nsChara = namespace
-        # batch.abcExport(nsChara, abcSet,
-        #                 abcOutput, inputpath, self.yeti, self.stepValue)
+        self.process_list.append(args)
+        # a = subprocess.Popen(args)
+        # a = subprocess.call(args)
 
-        # abcFiles = os.listdir(opc.publishfullabcpath)
-        # if len(abcFiles) == 0:
-        #     opc.removeDir()
-        #     return
-        # print abcFiles
-        # allOutput = []
-        # for abc in abcFiles:
-        #     ns = abc.replace(charaName+'_', '').replace('.abc', '')
-        #     if '___' in ns:
-        #         ns = ns.replace('___', ':')
+    def execExportCamera(self, inputpath, camScale, test):
 
-        #     abcOutput = opc.publishfullabcpath + '/' + abc
-        #     charaOutput = opc.publishfullpath + '/' + abc.replace('abc', 'ma')
-        #     batch.abcAttach(assetpath, ns, ns+':' +
-        #                     topnode, abcOutput, charaOutput)
-        #     allOutput.append([abc.replace('abc', 'ma'), abc])
-        # opc.makeCurrentDir()
+        args = 'C:\\Program Files\\Shotgun\\Python\\python.exe back_starter_cam.py '
+        args = args + str(inputpath) +' '+ str(camScale) +' '+ str(test)
 
-        # for output in allOutput:
-        #     print '#' * 20
-        #     print output
-        #     charaOutput = opc.publishcurrentpath + '/' + output[0]
-        #     abcOutput = opc.publishcurrentpath + '/abc/' + output[1]
-        #     batch.repABC(charaOutput, abcOutput)
+        self.process_list.append(args)
 
-    def execExportAnim(self, charaName, inputpath, namespace, exporttype, topnode):
-        opc = util.outputPathConf(inputpath, True, test=testRun)
-        opc.createOutputDir(charaName)
-
-        abcOutput = opc.publishfullabcpath + '/' + charaName + '.abc'
-        charaOutput = opc.publishfullpath + '/' + charaName + '.abc'
-
-        # charaSetup = import_module('setting.'+charaName+'Setup')
-
-        abcSet = ['ABCset']
-        nsChara = namespace
-        regex = []
-
-        output = opc.publishfullanimpath
-        regex = ','.join(regex)
-        batch.animExport(output, 'anim', nsChara, regex, inputpath)
-
-        animFiles = os.listdir(opc.publishfullanimpath)
-        if len(animFiles) == 0:
-            opc.removeDir()
-            return
-        for animFile in animFiles:
-            ns = animFile.replace('anim_', '').replace('.ma', '')
-            animOutput = opc.publishfullanimpath + '/' + animFile
-            charaOutput = opc.publishfullpath + '/' + ns + '.ma'
-            batch.animAttach(assetChara, ns,animOutput, charaOutput)
-        opc.makeCurrentDir()
-
-        for animFile in animFiles:
-            if animFile[:5] != 'anim_':
+    def set_proj_comboBox(self):
+        #project 情報を取得してプルダウンメニューに登録
+        filters = [['is_template', 'is', False],['sg_status','is','Active']]
+        fields = ['name']
+        projDict = sg.find('Project', filters, fields)
+        projList = []
+        self.projInfoDict = {}
+        for proj in projDict:
+            if proj['name'] == 'Shotgun_test3':
                 continue
-            if animFile[-3:] != '.ma':
-                continue
-            ns = animFile.replace('anim_', '').replace('.ma', '')
-            batch.animReplace(ns, opc.publishcurrentpath + '/anim/' + animFile, opc.publishcurrentpath + '/'+ns+'.ma')
-
-    def execExportCam(self, inputpath, camScale):
-        opc = util.outputPathConf(inputpath, test=testRun)
-        opc.createCamOutputDir()
-
-        batch.camExport(opc.publishfullpath, opc.sequence +
-                        opc.shot+'_cam', camScale, inputpath)
-        camFiles = os.listdir(opc.publishfullpath)
-        for camFile in camFiles:
-            srcFile = os.path.join(opc.publishfullpath, camFile)
-            dstDir = os.path.join(opc.publishfullpath, '..')
-            try:
-                shutil.copy(srcFile, dstDir)
-            except:
-                pass
-
+            projList.append(proj['name'])
+            self.projInfoDict[proj['name']] = proj
+        projList.sort()
+        self.ui.proj_comboBox.addItems(projList)
+        return projList
 
 class TableModelMaker(QAbstractTableModel):
 
@@ -546,5 +587,9 @@ def run (*argv):
 
     app.exec_()
 
+
+def process_do(order):
+    print order
+    a = subprocess.call(order)
 if __name__ == '__main__':
     run(sys.argv[1:])
