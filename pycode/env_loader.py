@@ -32,9 +32,9 @@ reload(env_param)
 #-----------------------------------
 def run(args, **kwargs):
     fork = kwargs.get('fork', True)
-    values_ana = ['mem2/maya/2018/amd64/win']
+    # values_ana = ['mem2/maya/2018/amd64/win']
     # values_ana = ['MSTB4/maya/2018/amd64/win']
-    # values_ana = ['MST_NS/maya/2018/amd64/win']
+    values_ana = ['MST_NS/maya/2018/amd64/win']
 
 
     # name = args.pop(0)
@@ -52,11 +52,9 @@ def run(args, **kwargs):
 
     #-----------------------------------
     envDict = util_env.loadConf(filePath, **options)
-    print envDict
 
     #-----------------------------------
     env = util_env.getEnvDict(envDict, env=os.environ, expand=True)
-    print env
 
     # #-----------------------------------
     # import subprocess

@@ -44,7 +44,7 @@ import ND_lib.shotgun.sg_scriptkey as sg_scriptkey
 
 import ND_lib.shotgun.shotgun_api3.shotgun as shotgun
 reload(shotgun)
-sg_scriptkey.scriptKey()
+sg = sg_scriptkey.scriptKey()
 
 pythonBatch = 'C:\\Program Files\\Shotgun\\Python\\python.exe'
 
@@ -121,6 +121,8 @@ class GUI (QMainWindow):
         self.ui.start_button.clicked.connect(self.start_button_clicked)
         self.ui.pro_num_CheckBox.stateChanged.connect(self.pro_num_clicked)
 
+        self.ui.proj_comboBox.currentIndexChanged.connect(self.proj_comboBox_changed)
+
     def eventFilter (self, object, event):
         if event.type() == QEvent.DragEnter:
             event.acceptProposedAction()
@@ -159,6 +161,8 @@ class GUI (QMainWindow):
         self.inputpath = ''
         self.stepValue = 1.0
 
+        mst = True###MST用
+
         mimedata = event.mimeData()
         a = mimedata.urls()
         self.inputpath = a[0].toString().replace("file:///", "")
@@ -167,13 +171,25 @@ class GUI (QMainWindow):
         self.ui.Change_Area.setCurrentIndex(1)
 
         pro_name = self.inputpath.split('/')[2]
-        self.ui.proj_line.setText(pro_name)
-        shot_name = self.inputpath.split('/')[5]+self.inputpath.split('/')[6]
+        if mst:
+            pro_name = self.inputpath.split('/')[1]
 
         shot = self.inputpath.split('/')[5]
-        self.ui.shot_line.setText(shot)
         cut = self.inputpath.split('/')[6]
+
+        print pro_name
+        print shot
+        print cut
+
+        shot_name = self.inputpath.split('/')[5]+self.inputpath.split('/')[6]
+        if mst:
+            shot_name = self.inputpath.split('/')[4]+'_'+self.inputpath.split('/')[5]+'_'+self.inputpath.split('/')[6]
+
+
+        self.ui.shot_line.setText(shot)
         self.ui.cut_line.setText(cut)
+
+        self.ui.proj_line.setText(pro_name)
 
         sg = sg_scriptkey.scriptKey()
         project = sg_util.get_project(pro_name)
@@ -182,128 +198,135 @@ class GUI (QMainWindow):
         asset_fields = self.asset_fields
         shot_fields = self.shot_fields
 
-        asset_list = dict()
-        asset_list = sg.find('Asset', filters, asset_fields)
+        proj_list = self.set_proj_comboBox()
+        if pro_name in proj_list:
+            self.ui.proj_comboBox.setCurrentIndex(proj_list.index(pro_name))
+            print 'success'
+            asset_list = dict()
+            asset_list = sg.find('Asset', filters, asset_fields)
 
-        shot_list = dict()
-        shot_list = sg.find('Shot', filters, shot_fields)
-        print shot_list
+            shot_list = dict()
+            shot_list = sg.find('Shot', filters, shot_fields)
 
-        print '######################'
+            count = 0
 
-        count = 0
+            print asset_list
+            print shot_list
 
-        target_asset = []
-        for x in shot_list:
-            if x['code']==shot_name:
-                q = x
-            else:
-                pass
-        for x in q["sg_assets"]:
-            target_asset.append(x['name'])
-        print target_asset
-        if len(target_asset)>1:###ショットの中にアセットリストがない場合
-            pass
-        else:
-            target_asset_prot_list = sg.find('Sequence',[["project","is", project]],["assets","code"])#ショットフィールド
-            target_asset_prot = []#アセットリスト
-            for a in target_asset_prot_list:
-                if a['code']==shot_name:
-                    for b in a['assets']:
-                        target_asset_prot.append('name')
-            print target_asset_prot
-            z = []
-            for x in target_asset_prot:
-                if x["code"]==shot_name:
-                    for y in x['assets']:
-                        z.append(y['name'])
+            target_asset = []
+            for x in shot_list:
+                if x['code']==shot_name:
+                    q = x
                 else:
                     pass
-            print z
-            target_asset = z
-            print '____________________________________________________'
-
-        type_count=0
-
-        exporttype_abclist = sg.find('Asset', filters, ["sg_abc_export_list"])
-        exporttype_animlist = sg.find('Asset', filters, ["sg_anim_export_list"])
-
-        ####asset#####
-        for item in asset_list:
+            for x in q["sg_assets"]:
+                target_asset.append(x['name'])
             print target_asset
-            print item['code']
-            if item['code'] in target_asset:
-                y = []
-                y.append('')
-                for z in asset_fields:
-                    if item[z] is None:
-                        if z == "sg_abc_export_list" or z == "sg_anim_export_list":
-                            print '__'
-                        elif z == "sg_export_type":
-                            y.append('None')
-                            self.export_type_list.append('None')
-                        else:
-                            y.append('None')
+            if len(target_asset)>1:###ショットの中にアセットリストがない場合
+                pass
+            else:
+                target_asset_prot_list = sg.find('Sequence',[["project","is", project]],["assets","code"])#ショットフィールド
+                target_asset_prot = []#アセットリスト
+                for a in target_asset_prot_list:
+                    if a['code']==shot_name:
+                        for b in a['assets']:
+                            target_asset_prot.append('name')
+                print target_asset_prot
+                z = []
+                for x in target_asset_prot:
+                    if x["code"]==shot_name:
+                        for y in x['assets']:
+                            z.append(y['name'])
                     else:
-                        if z == "sg_export_type":
-                            try:
-                                if item[z]=='abc':
-                                    y.append(exporttype_abclist[type_count]["sg_abc_export_list"])
-                                    self.export_type_list.append('abc')
-                                    # y.append("ABCset")
-                                elif item[z]=='anim':
-                                    y.append(exporttype_animlist[type_count]["sg_anim_export_list"])
-                                    self.export_type_list.append('anim')
+                        pass
+                print z
+                target_asset = z
+                print '____________________________________________________'
 
-                            except:
+            type_count=0
+
+            exporttype_abclist = sg.find('Asset', filters, ["sg_abc_export_list"])
+            exporttype_animlist = sg.find('Asset', filters, ["sg_anim_export_list"])
+
+            ####asset#####
+            for item in asset_list:
+                print target_asset
+                print item['code']
+                if item['code'] in target_asset:
+                    y = []
+                    y.append('')
+                    for z in asset_fields:
+                        if item[z] is None:
+                            if z == "sg_abc_export_list" or z == "sg_anim_export_list":
+                                print '__'
+                            elif z == "sg_export_type":
                                 y.append('None')
                                 self.export_type_list.append('None')
-                                print "export type must \"abc\" or \"anim\" "
-                        elif z == "sg_abc_export_list" or z == "sg_anim_export_list":
-                            pass
+                            else:
+                                y.append('None')
                         else:
-                            y.append(item[z])
+                            if z == "sg_export_type":
+                                try:
+                                    if item[z]=='abc':
+                                        y.append(exporttype_abclist[type_count]["sg_abc_export_list"])
+                                        self.export_type_list.append('abc')
+                                        # y.append("ABCset")
+                                    elif item[z]=='anim':
+                                        y.append(exporttype_animlist[type_count]["sg_anim_export_list"])
+                                        self.export_type_list.append('anim')
 
-                x = []
-                ###AssetList。用途が不明
-                # for z in shot_fields:
-                #     if type(shot_list[0][z]) is list:
-                #         y.insert(-1,shot_list[0][z][0]["name"])
-                #     else:
-                #         pass
-                ################################
-                self.tableData0.append(y)
-                self.quantity = self.quantity + 1
-                count = count + 1
-                type_count = type_count + 1
-            else:
-                type_count = type_count + 1
+                                except:
+                                    y.append('None')
+                                    self.export_type_list.append('None')
+                                    print "export type must \"abc\" or \"anim\" "
+                            elif z == "sg_abc_export_list" or z == "sg_anim_export_list":
+                                pass
+                            else:
+                                y.append(item[z])
+
+                    x = []
+                    ###AssetList。用途が不明
+                    # for z in shot_fields:
+                    #     if type(shot_list[0][z]) is list:
+                    #         y.insert(-1,shot_list[0][z][0]["name"])
+                    #     else:
+                    #         pass
+                    ################################
+                    self.tableData0.append(y)
+                    self.quantity = self.quantity + 1
+                    count = count + 1
+                    type_count = type_count + 1
+                else:
+                    type_count = type_count + 1
 
 
-        ###asset####
+            ###asset####
 
 
-        ###camera###
-        y = []
-        y.append("")
-        y.append("Camera")
-        y.append("")
-        y.append("")
-        y.append("")
-        y.append("")
+            ###camera###
+            y = []
+            y.append("")
+            y.append("Camera")
+            y.append("")
+            y.append("")
+            y.append("")
+            y.append("")
 
-        self.quantity = self.quantity + 1
-        count = count + 1
-        self.tableData0.append(y)
+            self.quantity = self.quantity + 1
+            count = count + 1
+            self.tableData0.append(y)
 
-        self.tableData0[0][0] = ""
-        self.ui.all_num.setText(str(self.quantity))
+            self.tableData0[0][0] = ""
+            self.ui.all_num.setText(str(self.quantity))
 
-        model = TableModelMaker(self.tableData0, self.headers, self.check_row, self.executed_row)
+            model = TableModelMaker(self.tableData0, self.headers, self.check_row, self.executed_row)
 
-        self.ui.main_table.setModel(model)
-        self.ui.main_table.setColumnWidth(0,25)
-        self.ui.start_button.setEnabled(True)
+            self.ui.main_table.setModel(model)
+            self.ui.main_table.setColumnWidth(0,25)
+            self.ui.start_button.setEnabled(True)
+
+        else:
+            print 'Not Much Project_=List'
 
         return True
 
@@ -367,6 +390,9 @@ class GUI (QMainWindow):
 
         self.ui.plan_num.setText(str(0))
 
+    def proj_comboBox_changed(self):
+        self.ui.proj_line.setText(self.ui.proj_comboBox.currentText())
+
     def tableClicked(self, indexClicked):#Tableクリック時
         self.selectRow = indexClicked.row()
 
@@ -394,19 +420,19 @@ class GUI (QMainWindow):
                 if count in self.check_row:
                     self.executed_row.append(count)
 
-                    # assetname = x[1] #assetname
-                    # namespace_origin = x[2] #namespace
-                    # exporttype = x[3] #exporttype
-                    # topnode = x[4] #top_node
-                    # assetpath = x[5] #Asset Path
+                    assetname = x[1] #assetname
+                    namespace = x[2] #namespace
+                    exporttype = x[4] #exporttype
+                    topnode = x[3] #top_node
+                    assetpath = x[5] #Asset Path
 
                     ##後で消す
-                    self.inputpath = 'X:/MSTB4/Data/60_SHOT/ep0906/s005/c066/work/k_ueda/layout/maya/scenes/ep0906_s005_c066_layout_v002_001.ma'
-                    assetname = 'ketel'
-                    namespace = 'ketel_evo' #namespace
-                    exporttype = 'basic' #exporttype
-                    topnode = 'root' #top_node
-                    assetpath = 'X:/MSTB4/Data/20_ASSETS/chara/ketel/maya/scenes/ketel_evo_rig_complete_v005.mb' #Asset Path
+                    # self.inputpath = 'X:/MSTB4/Data/60_SHOT/ep0906/s005/c066/work/k_ueda/layout/maya/scenes/ep0906_s005_c066_layout_v002_001.ma'
+                    # assetname = 'ketel'
+                    # namespace = 'ketel_evo' #namespace
+                    # exporttype = 'basic' #exporttype
+                    # topnode = 'root' #top_node
+                    # assetpath = 'X:/MSTB4/Data/20_ASSETS/chara/ketel/maya/scenes/ketel_evo_rig_complete_v005.mb' #Asset Path
 
                     try:
                         y = assetpath.split("assets")[1]
@@ -478,64 +504,21 @@ class GUI (QMainWindow):
 
         self.process_list.append(args)
 
-        # a = subprocess.Popen(args)
-        # a = subprocess.call(args)
-
-
-
-
-    # def nest_checker(self, text):#必要なくなったのでコメントアウト
-    #     #入れられた''を取り除く
-    #     #,を@に置き換える
-    #     #一応[]に入れる
-    #     self.text = text
-    #     lcount = 0
-    #     count = 0
-    #     first_checker = 0
-    #     text_length = len(text)
-
-    #     changed_text = ''
-
-    #     for x in self.text:
-    #         if x == '[':
-    #             if count == 0:
-    #                 first_checker = 1
-    #             elif first_checker == 1:
-    #                 lcount += 2
-    #                 first_checker = -1
-    #                 changed_text = changed_text + x
-    #             else:
-    #                 lcount += 1
-    #                 changed_text += x
-    #         elif x == ']':
-    #             if lcount == 0:
-    #                 if first_checker == 1:
-    #                     changed_text = '[' + changed_text + ']'
-    #                     first_checker = 0
-    #                 else:
-    #                     print text + ' is error..?'
-    #             elif count+1 == text_length:
-    #                 if first_checker == 0:
-    #                     print text + ' is error...?'
-    #                 else:
-    #                     pass
-
-    #             else:
-    #                 lcount -= 1
-    #                 changed_text += x
-    #         elif x == ',':
-    #             changed_text += (x.replace(',','@'))
-    #         elif x == '\'':
-    #             pass
-    #         elif x == ' ':
-    #             pass
-    #         else:
-    #             changed_text += x
-    #         count += 1
-
-    #     # changed_text = '[' + changed_text + ']'
-
-    #     return changed_text
+    def set_proj_comboBox(self):
+        #project 情報を取得してプルダウンメニューに登録
+        filters = [['is_template', 'is', False],['sg_status','is','Active']]
+        fields = ['name']
+        projDict = sg.find('Project', filters, fields)
+        projList = []
+        self.projInfoDict = {}
+        for proj in projDict:
+            if proj['name'] == 'Shotgun_test3':
+                continue
+            projList.append(proj['name'])
+            self.projInfoDict[proj['name']] = proj
+        projList.sort()
+        self.ui.proj_comboBox.addItems(projList)
+        return projList
 
 class TableModelMaker(QAbstractTableModel):
 

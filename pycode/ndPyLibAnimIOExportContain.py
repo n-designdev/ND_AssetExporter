@@ -63,7 +63,9 @@ def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName,
     # print retNodes
     for i in range(len(retNodes)/2):
         print retNodes[i*2+1], inPfxInfo, NS[pfxSw], retNodes[i*2]
-        cmd = 'connectAttr \"' + retNodes[i*2+1] + '.output\" \":' + inPfxInfo[1] + NS[pfxSw] + retNodes[i*2] + '\";\n'
+        node = retNodes[i*2].split('|')[-1]
+        # cmd = 'connectAttr \"' + retNodes[i*2+1] + '.output\" \":' + inPfxInfo[1] + NS[pfxSw] + retNodes[i*2] + '\";\n'
+        cmd = 'connectAttr \"' + retNodes[i*2+1] + '.output\" \":' + inPfxInfo[1] + NS[pfxSw] + node + '\";\n'
         addCmd.append(cmd)
 
     try:

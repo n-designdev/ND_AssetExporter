@@ -85,4 +85,3 @@ def back_starter (a, charaName, inputpath, namespace, exporttype, topnode, asset
 if __name__ == '__main__':
     print sys.argv[:]
     back_starter(*sys.argv[:])
-

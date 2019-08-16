@@ -9,6 +9,8 @@ import maya.mel as mel
 from ndPyLibAnimIOExportContain import *
 
 def _getNamespace ():
+    print '_getNamespace'
+    print mc.namespaceInfo(lon=True)
     namespaces = mc.namespaceInfo(lon=True)
     _nestedNS = []
     for ns in namespaces:
@@ -19,6 +21,7 @@ def _getNamespace ():
     namespaces += _nestedNS
     namespaces.remove('UI')
     namespaces.remove('shared')
+    print namespaces
     return namespaces
 
 def _getAllNodes (namespace, regexArgs):
@@ -26,18 +29,22 @@ def _getAllNodes (namespace, regexArgs):
         regexArgs = ['*']
 
     nodes = []
-    print regexArgs
-    print namespace
     for regex in regexArgs:
         regexN = ''
         if namespace != '':
             regexN += namespace + ':'
         regexN = regexN + regex
-        print regexN
+        print 'regexN:   ' + regexN
         objs = mc.ls(regexN, type='transform')
         objs += mc.ls(regexN, type='locator')
+        print 'objs:'
+        print objs
+
         try:
             objSets = mc.sets(regexN, q=True)
+            print 'objSets:   '
+            print  objSets
+
             if len(objs) != 0:
                 nodes += objs
             if len(objSets) != 0:
@@ -47,7 +54,6 @@ def _getAllNodes (namespace, regexArgs):
         #############################################
         print '@@@@@@@@@@@@@@@@@@@@@@@@'
         print mc.ls('*',type='transform')
-        print mc.ls('ketel_evo:root',type='transform')
         print mc.ls('*:root',type='transform')
         print objs
         ###########################################
@@ -98,7 +104,6 @@ def _exportAnim (publishpath, oFilename, namespaceList, regexArgs, isFilter):
     outputfiles = []
     sframe = mc.playbackOptions(q=True, min=True)
     eframe = mc.playbackOptions(q=True, max=True)
-
     ###
     sframe -= 10
     eframe += 10
@@ -106,6 +111,11 @@ def _exportAnim (publishpath, oFilename, namespaceList, regexArgs, isFilter):
     namespaces = _getNamespace()
 
     allNodes = []
+
+    print '***********'
+    print namespaces
+    print namespaceList
+    print '***********'
 
     for ns in namespaces:
         for _nsList in namespaceList:##ketel
@@ -118,7 +128,7 @@ def _exportAnim (publishpath, oFilename, namespaceList, regexArgs, isFilter):
                 allNodes += _getAllNodes(ns, regexArgs)
 
     print allNodes
-
+    print '==========================='
 
     characterSet = mc.ls(type='character')
     if len(characterSet) == 0:
@@ -155,7 +165,7 @@ def _exportAnim (publishpath, oFilename, namespaceList, regexArgs, isFilter):
 
             outputfiles.append(publishpath+oFilename+'_'+ns+'.ma')
             # ndPyLibAnimIOExportContain(isFilter, ['3', ''], publishpath, x+'_'+ns, pickNodes, 0, 0)
-            ndPyLibAnimIOExportContain(True, ['3', ''], publishpath, oFilename+'_'+ns, pickNodes, 0, 0)
+            ndPyLibAnimIOExportContain(isFilter, ['3', ''], publishpath, oFilename+'_'+ns, pickNodes, 0, 0)
 
     return outputfiles
 

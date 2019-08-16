@@ -11,10 +11,11 @@ pythonBatch = 'C:\\Program Files\\Shotgun\\Python\\python.exe'
 onpath = os.path.dirname(os.path.abspath(__file__)).replace('\\','/')
 
 def abcExport (namespace, exportSet, outputPath, scene, yeti, step_value):
-    if yeti=='True':
+    if yeti==True:
         print '@@@@@@@@@@@@@@@@@@'
         print "load yeti"
-        env_load()
+
+    env_load()
 
     print '@@@@@@@@@@@@@@'
     print yeti
@@ -56,10 +57,12 @@ def animExport (outputPath, oFilename, namespace, regex, scene, yeti):
     print scene
     print yeti
     print '$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$'
-    if yeti=='True':
+    if yeti==True:
         env_load()
+        print 'CVCCCCCCCCCCCCCCC'
     else:
         env_load()
+
     cmd = []
     cmd.append(mayaBatch)
     cmd.append('-command')
@@ -119,9 +122,9 @@ def repABC (scenePath, repAbcPath):
     subprocess.call(cmd)
 
 def env_load():
-    os.environ["_TMP_VRAY_VER"]='36004'
+    # os.environ["_TMP_VRAY_VER"]='36004'
 
-    os.environ[" _TMP_ARNOLD_VER"]='2101'
+    os.environ["_TMP_ARNOLD_VER"] = "2101"
 
     ND_TOOL_PATH_default = "Y:/tool/ND_Tools/python"
 
