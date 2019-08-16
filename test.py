@@ -14,3 +14,6 @@ output = opc.publishfullpath
 regex = ["*_Cntrl","*_Cntrl_01","*_Cntrl_02","*_Cntrl_03","*_Cntrl_04","*Attr_CntrlShape","*Wire","*All_Grp","*_ctrl"]
 regex = ','.join(regex)
 batch.animExport(output, 'anim', regex, scenePath)
+
+
+print 'test'
