@@ -9,6 +9,7 @@ __credits__ = ["Masato Hirabayashi"]
 
 import sys
 import os
+import yaml
 import time
 
 #------------------------------
@@ -34,7 +35,62 @@ def run(args, **kwargs):
     fork = kwargs.get('fork', True)
     # values_ana = ['mem2/maya/2018/amd64/win']
     # values_ana = ['MSTB4/maya/2018/amd64/win']
-    values_ana = ['MST_NS/maya/2018/amd64/win']
+    # values_ana = ['MST_NS/maya/2018/amd64/win']
+
+    #------------------------------------
+    env_key = 'ND_TOOL_PATH_PYTHON'
+    ND_TOOL_PATH = os.environ.get(env_key,'Y:/tool/ND_Tools/python')
+    for path in ND_TOOL_PATH.split(';'):
+        path = path.replace('\\','/')
+        if path in sys.path: continue
+        sys.path.append(path)
+    #------------------------------------
+
+    import ND_lib.util.files as util_file
+    import ND_lib.util.path as util_path
+
+    toolkit_path = "Y:\\tool\\ND_Tools\\shotgun"
+    app_launcher_path = "config\\env\\includes\\app_launchers.yml"
+    dcc_tools = ["maya", "nuke", "nukex"]
+
+
+    #プロジェクト名からShotgunの設定を取得する
+    project_app_launcher = "%s\\ND_sgtoolkit_%s\\%s" % (toolkit_path, args.lower(), app_launcher_path)
+
+
+    f = open(project_app_launcher, "r+")
+    data = yaml.load(f)
+
+    f.close()
+
+    for dcc in dcc_tools:
+        for version in data["launch_%s" % dcc]["versions"]:
+            #print version, type(version)
+            args = data["launch_%s" % dcc]["windows_args"]
+
+            if dcc == 'maya':
+
+               renderinfo =  version.replace('(','').split(')')
+
+    renderer = renderinfo[1].replace('_','').upper()
+    ryear = renderinfo[2]
+    rendver = renderinfo[0]
+    oe = "_TMP_"+renderer+"_VER"
+    os.environ[oe] = ryear
+
+    print '###render: env_loader#############'
+    print args
+    x = args.split(' ')
+    print x[0]
+
+    args = x[0].lower()
+    print args
+    print oe
+    print os.environ[oe]
+    print '###################'
+
+
+    values_ana = [args+'/maya/2018/amd64/win']
 
 
     # name = args.pop(0)

@@ -29,6 +29,8 @@ def _getAllNodes (outputPath, namespace, regexArgs):
         regexArgs = ['*']
 
     nodes = []
+    regexArgs = regexArgs[0].split(',')
+
     for regex in regexArgs:
         regexN = ''
         if namespace != '':

@@ -10,15 +10,9 @@ mayaBatch = 'C:\\Program Files\\Autodesk\\Maya2018\\bin\\mayabatch.exe'
 pythonBatch = 'C:\\Program Files\\Shotgun\\Python\\python.exe'
 onpath = os.path.dirname(os.path.abspath(__file__)).replace('\\','/')
 
-def abcExport (namespace, exportSet, outputPath, scene, yeti, step_value):
-    if yeti==True:
-        print '@@@@@@@@@@@@@@@@@@'
-        print "load yeti"
-
-    env_load()
-
-    print '@@@@@@@@@@@@@@'
-    print yeti
+def abcExport (namespace, exportSet, outputPath, scene, yeti, step_value,project):
+    if yeti=='True':
+        env_load(project)
     nw_cmd = []
     nw_cmd.append(mayaBatch)
     nw_cmd.append('-command')
@@ -40,7 +34,9 @@ def hairExport (assetPath, namespace, topNode, outputPath, scene):
     print cmd
     ret = subprocess.call(cmd)
 
-def abcAttach (assetPath, namespace,topNode, abcPath, outputPath):#Syntax Error
+def abcAttach (assetPath, namespace,topNode, abcPath, outputPath, yeti,project):
+    if yeti == 'True':
+        env_load(project)
     cmd = []
     cmd.append(mayaBatch)
     cmd.append('-command')
@@ -48,7 +44,7 @@ def abcAttach (assetPath, namespace,topNode, abcPath, outputPath):#Syntax Error
     print cmd
     ret = subprocess.call(cmd)
 
-def animExport (outputPath, oFilename, namespace, regex, scene, yeti):
+def animExport (outputPath, oFilename, namespace, regex, scene, yeti, project):
     print '$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$'
     print outputPath
     print oFilename
@@ -57,11 +53,8 @@ def animExport (outputPath, oFilename, namespace, regex, scene, yeti):
     print scene
     print yeti
     print '$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$'
-    if yeti==True:
-        env_load()
-        print 'CVCCCCCCCCCCCCCCC'
-    else:
-        env_load()
+    if yeti=='True':
+        env_load(project)
 
     cmd = []
     cmd.append(mayaBatch)
@@ -72,7 +65,7 @@ def animExport (outputPath, oFilename, namespace, regex, scene, yeti):
     print cmd
     subprocess.call(cmd)
 
-def animAttach (assetPath, namespace, animPath, outputPath):
+def animAttach (assetPath, namespace, animPath, outputPath,  yeti, project):
 
     print '++++++++++++++++++'
     print assetPath
@@ -80,7 +73,8 @@ def animAttach (assetPath, namespace, animPath, outputPath):
     print animPath
     print outputPath
     print '++++++++++++++++++'
-
+    if yeti == 'True':
+        env_load(project)
     x = assetPath
     cmd = []
     cmd.append(mayaBatch)
@@ -90,7 +84,9 @@ def animAttach (assetPath, namespace, animPath, outputPath):
     print cmd
     ret = subprocess.call(cmd)
 
-def animReplace (namespace, animPath, scene):
+def animReplace (namespace, animPath, scene, yeti, project):
+    if yeti == 'True':
+        env_load(project)
     cmd = []
     cmd.append(mayaBatch)
     cmd.append('-command')
@@ -111,7 +107,9 @@ def camExport (outputPath, oFilename, camScale, scene):
     print cmd
     subprocess.call(cmd)
 
-def repABC (scenePath, repAbcPath):
+def repABC (scenePath, repAbcPath, yeti, project):
+    if yeti == 'True':
+        env_load(project)
     cmd = []
     cmd.append(mayaBatch)
     cmd.append('-command')
@@ -121,10 +119,8 @@ def repABC (scenePath, repAbcPath):
     print cmd
     subprocess.call(cmd)
 
-def env_load():
+def env_load(project):
     # os.environ["_TMP_VRAY_VER"]='36004'
-
-    os.environ["_TMP_ARNOLD_VER"] = "2101"
 
     ND_TOOL_PATH_default = "Y:/tool/ND_Tools/python"
 
@@ -135,4 +131,4 @@ def env_load():
         if path in sys.path: continue
         sys.path.append(path)
     import env_loader
-    env_loader.run(sys.argv[:], fork=True)
+    env_loader.run(project, fork=True)

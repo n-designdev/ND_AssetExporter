@@ -68,7 +68,7 @@ qtSlot = Slot
 
 ### debug mode
 
-testRun = True
+testRun = False
 
 class GUI (QMainWindow):
     WINDOW = 'mem chara export'
@@ -83,6 +83,8 @@ class GUI (QMainWindow):
         self.inputpath = ''
         self.stepValue = 1.0
         self.export_type_list = []
+
+        self.project = ''
 
         self.yeti = False
 
@@ -177,13 +179,10 @@ class GUI (QMainWindow):
         shot = self.inputpath.split('/')[5]
         cut = self.inputpath.split('/')[6]
 
-        print pro_name
-        print shot
-        print cut
 
-        shot_name = self.inputpath.split('/')[5]+self.inputpath.split('/')[6]
+        shot_name = shot +'_'+ cut
         if mst:
-            shot_name = self.inputpath.split('/')[4]+'_'+self.inputpath.split('/')[5]+'_'+self.inputpath.split('/')[6]
+            shot_name = self.inputpath.split('/')[4] + '_' + shot_name
 
 
         self.ui.shot_line.setText(shot)
@@ -193,6 +192,8 @@ class GUI (QMainWindow):
 
         sg = sg_scriptkey.scriptKey()
         project = sg_util.get_project(pro_name)
+
+        self.project = project[0]['name']
 
         filters = [["project", "is", project]]
         asset_fields = self.asset_fields
@@ -209,9 +210,6 @@ class GUI (QMainWindow):
             shot_list = sg.find('Shot', filters, shot_fields)
 
             count = 0
-
-            print asset_list
-            print shot_list
 
             target_asset = []
             for x in shot_list:
@@ -231,7 +229,6 @@ class GUI (QMainWindow):
                     if a['code']==shot_name:
                         for b in a['assets']:
                             target_asset_prot.append('name')
-                print target_asset_prot
                 z = []
                 for x in target_asset_prot:
                     if x["code"]==shot_name:
@@ -239,9 +236,8 @@ class GUI (QMainWindow):
                             z.append(y['name'])
                     else:
                         pass
-                print z
+
                 target_asset = z
-                print '____________________________________________________'
 
             type_count=0
 
@@ -285,13 +281,7 @@ class GUI (QMainWindow):
                                 y.append(item[z])
 
                     x = []
-                    ###AssetList。用途が不明
-                    # for z in shot_fields:
-                    #     if type(shot_list[0][z]) is list:
-                    #         y.insert(-1,shot_list[0][z][0]["name"])
-                    #     else:
-                    #         pass
-                    ################################
+
                     self.tableData0.append(y)
                     self.quantity = self.quantity + 1
                     count = count + 1
@@ -476,31 +466,22 @@ class GUI (QMainWindow):
 
 
     def execExport(self, charaName, inputpath, namespace, exporttype, topnode, assetpath, test, yeti, stepValue):
-        # namespace_2 = self.nest_checker(namespace)
-        # exporttype_2 = self.nest_checker(exporttype)
         args = 'C:\\Program Files\\Shotgun\\Python\\python.exe back_starter_abc.py '
-        args = args + str(charaName)+' '+str(inputpath)+' '+str(namespace)+' '+str(exporttype)+' ' +str(topnode)+' '+str(assetpath)+' '+str(test)+' '+str(yeti)+' '+str(stepValue)
+        args = args + str(charaName)+' '+str(inputpath)+' '+str(namespace)+' '+str(exporttype)+' ' +str(topnode)+' '+str(assetpath)+' '+str(test)+' '+str(yeti)+' '+str(stepValue)+' '+str(self.project)
 
         self.process_list.append(args)
-        # a = subprocess.Popen(args)
-        # a = subprocess.call(args)
-
 
     def execExportAnim(self, charaName, inputpath, namespace, exporttype, topnode, assetpath, test, yeti, stepValue):
-        # namespace_2 = self.nest_checker(namespace)
-        # exporttype_2 = self.nest_checker(exporttype)
 
         args = 'C:\\Program Files\\Shotgun\\Python\\python.exe back_starter_anim.py '
-        args = args + str(charaName)+' '+str(inputpath)+' '+str(namespace)+' '+str(exporttype)+' ' +str(topnode)+' '+str(assetpath)+' '+str(test)+' '+str(yeti)+' '+str(stepValue)
+        args = args + str(charaName)+' '+str(inputpath)+' '+str(namespace)+' '+str(exporttype)+' ' +str(topnode)+' '+str(assetpath)+' '+str(test)+' '+str(yeti)+' '+str(stepValue)+' '+str(self.project)
 
         self.process_list.append(args)
-        # a = subprocess.Popen(args)
-        # a = subprocess.call(args)
 
     def execExportCamera(self, inputpath, camScale, test):
 
         args = 'C:\\Program Files\\Shotgun\\Python\\python.exe back_starter_cam.py '
-        args = args + str(inputpath) +' '+ str(camScale) +' '+ str(test)
+        args = args + str(inputpath) +' '+ str(camScale) +' '+ str(test)+' '+str(self.project)
 
         self.process_list.append(args)
 

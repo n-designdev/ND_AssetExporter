@@ -29,6 +29,7 @@ def _getAllNodes (namespace, regexArgs):
         regexArgs = ['*']
 
     nodes = []
+    regexArgs = regexArgs[0].split(',')
     for regex in regexArgs:
         regexN = ''
         if namespace != '':
@@ -117,11 +118,11 @@ def _exportAnim (publishpath, oFilename, namespaceList, regexArgs, isFilter):
     print namespaceList
     print '***********'
 
+
     for ns in namespaces:
         for _nsList in namespaceList:##ketel
             print _nsList
             print ns
-            print regexArgs
             match = re.match(_nsList, ns)
             print match
             if match != None:

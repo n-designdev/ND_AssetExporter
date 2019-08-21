@@ -15,7 +15,7 @@ for path in ND_TOOL_PATH.split(';'):
         continue
     sys.path.append(path)
 
-def back_starter (a, charaName, inputpath, namespace, exporttype, topnode, assetpath, testRun, yeti,stepValue):
+def back_starter (a, charaName, inputpath, namespace, exporttype, topnode, assetpath, testRun, yeti,stepValue, project):
 
     print '##############'*5
 
@@ -28,6 +28,7 @@ def back_starter (a, charaName, inputpath, namespace, exporttype, topnode, asset
     print testRun
     print yeti
     print stepValue
+    print project
 
     print '##############'*5
 
@@ -45,17 +46,11 @@ def back_starter (a, charaName, inputpath, namespace, exporttype, topnode, asset
 
     output =opc.publishfullanimpath
 
-    # regex =["*_ctrl_L","*_ctrl_R","*_ctrl_FL","*_ctrl_OL","*_ctrl_BL","*_ctrl_IL","*_ctrl_FR","*_ctrl_OR","*_ctrl_BR", "*_ctrl_IR", "*_ctrl_B", "*_ctrl",
-    #      "*_ctrl_UL", "*_ctrl_DL", "*_ctrl_UR", "*_ctrl_DR", "*_ctrl_ZipL", "*_ctrl_ZipR", "*_ctrl_C", "*_ctrl_OL", "*_ctrl_OR", "*_ctrl_U", "*_ctrl_D", "*_ctrl_Zip",
-    #      "*_ctrl_UC", "*_ctrl_DC", "*_ctrl_ZipC", "*_ctrl_AL", "*_ctrl_BL", "*_ctrl_CL", "*_ctrl_AR", "*_ctrl_BR", "*_ctrl_CR", "*_ctrl_TL", "*_ctrl_TR",
-    #      "*_fkCtrl_C", "*_ikCtrl_R", "*_ikCtrl", "*_fkCtrl_L", "*_fkCtrl", "*_fkCtrl_R", "*_ikCtrl_L", "*_ikCtrl_C",
-    #      "*_twk_R", "*_twk_FR", "*_twk_BR", "*_ctrl_C1", "*_twk_BC", "*_twk_FC", "*_ctrl_FC", "*_twk_BL", "*_ctrl_F", "*_ctrl_BC", "*_twk_FL", "*_twk_L",
-    #      "*_ctrl_R1", "*_ctrl_L1", "*root", "*root", "*", "root"]
     regex=[]
     regex.append(topnode)
-    # batch.animExport(output, abcSet, nsChara, regex, inputpath)
 
-    batch.animExport(output,'anim', nsChara, regex, inputpath,yeti)
+
+    batch.animExport(output,'anim', nsChara, regex, inputpath,yeti, project)
     print opc.publishfullanimpath
 
     animFiles = os.listdir(opc.publishfullanimpath)
@@ -67,7 +62,7 @@ def back_starter (a, charaName, inputpath, namespace, exporttype, topnode, asset
         ns = animFile.replace('anim_', '').replace('.ma', '')
         animOutput = opc.publishfullanimpath + '/' + animFile
         charaOutput = opc.publishfullpath + '/' + ns + '.ma'
-        batch.animAttach(assetpath, ns, animOutput, charaOutput)
+        batch.animAttach(assetpath, ns, animOutput, charaOutput,yeti, project)
     opc.makeCurrentDir()
 
     for animFile in animFiles:
@@ -76,7 +71,7 @@ def back_starter (a, charaName, inputpath, namespace, exporttype, topnode, asset
         if animFile[-3:] != '.ma':
             continue
         ns = animFile.replace('anim_', '').replace('.ma', '')
-        batch.animReplace(ns, opc.publishcurrentpath + '/anim/' + animFile, opc.publishcurrentpath + '/'+ns+'.ma')
+        batch.animReplace(ns, opc.publishcurrentpath + '/anim/' + animFile, opc.publishcurrentpath + '/'+ns+'.ma', yeti,project)
 
     print '=================END==================='
 

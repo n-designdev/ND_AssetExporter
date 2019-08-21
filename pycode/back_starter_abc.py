@@ -15,7 +15,7 @@ for path in ND_TOOL_PATH.split(';'):
         continue
     sys.path.append(path)
 
-def back_starter (a, charaName, inputpath, namespace, exporttype, topnode, assetpath, test, yeti,stepValue):
+def back_starter (a, charaName, inputpath, namespace, exporttype, topnode, assetpath, test, yeti,stepValue,project):
 
     print '##############'*5
 
@@ -28,6 +28,7 @@ def back_starter (a, charaName, inputpath, namespace, exporttype, topnode, asset
     print test
     print yeti
     print stepValue
+    print project
 
     print '##############'*5
 
@@ -44,7 +45,7 @@ def back_starter (a, charaName, inputpath, namespace, exporttype, topnode, asset
     print nsChara
 
     batch.abcExport(nsChara, abcSet,
-                    abcOutput, inputpath, yeti, stepValue)
+                    abcOutput, inputpath, yeti, stepValue, project)
 
     abcFiles = os.listdir(opc.publishfullabcpath)
 
@@ -62,7 +63,7 @@ def back_starter (a, charaName, inputpath, namespace, exporttype, topnode, asset
         abcOutput = opc.publishfullabcpath + '/' + abc
         charaOutput = opc.publishfullpath + '/' + abc.replace('abc', 'ma')
         batch.abcAttach(assetpath, ns, ns+':' +
-                        topnode, abcOutput, charaOutput)
+                        topnode, abcOutput, charaOutput, yeti,project)
         allOutput.append([abc.replace('abc', 'ma'), abc])
     opc.makeCurrentDir()
 
@@ -71,7 +72,7 @@ def back_starter (a, charaName, inputpath, namespace, exporttype, topnode, asset
         print output
         charaOutput = opc.publishcurrentpath + '/' + output[0]
         abcOutput = opc.publishcurrentpath + '/abc/' + output[1]
-        batch.repABC(charaOutput, abcOutput)
+        batch.repABC(charaOutput, abcOutput, project)
 
     return 0
 

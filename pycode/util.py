@@ -17,13 +17,14 @@ class outputPathConf (object):
         self.isAnim = isAnim
         self.outputRootDir = 'charSet'
         self.outputCamRootDir = 'Cam'
-        if test:
+
+        if test == True:
             self.outputRootDir = 'test_charSet'
             self.outputCamRootDir = 'test_Cam'
         print self.inputPath
         match = re.match('(P:/Project/[a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)', self.inputPath)
         if match is None:
-            match = re.match('(X:)+/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)', self.inputPath)####後で消す
+            match = re.match('(X:)+/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)', self.inputPath)####後で消す
             if match is None:
                 raise ValueError('directory structure is not n-design format')
 
@@ -35,7 +36,7 @@ class outputPathConf (object):
         self._project  = 'X:/MSTB4'
         self._roll     = match.group(3)
         self._sequence = match.group(4)
-        self._shot     = match.group(5)
+        self._shot     = match.group(5) + '/' + match.group(6) + '/' +match.group(7)
 
         self._shotpath = os.path.join(self._project,  self._roll, self._sequence, self._shot)
 
@@ -46,7 +47,7 @@ class outputPathConf (object):
         print self._shotpath
 
     def createOutputDir (self, char):
-        self._publishpath = os.path.join(self._shotpath, 's005/c066/publish', self.outputRootDir, char)
+        self._publishpath = os.path.join(self._shotpath, 'publish', self.outputRootDir, char)
         print self._publishpath
         print 'createOutputDir'
         if os.path.exists(self._publishpath):
