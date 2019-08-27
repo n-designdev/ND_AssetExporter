@@ -1,14 +1,17 @@
 # -*- coding: utf-8 -*-
 
-import os
+import sys,os
 import re
 import shutil
 import distutils.dir_util
-
-# publishpath = shotpath + 'publish' + 'charSet' + char
-# publishfullpath = publishpath + currentVer
-# publishfullabcpath = publishfullpath + 'abc'
-
+env_key = 'ND_TOOL_PATH_PYTHON'
+ND_TOOL_PATH = os.environ.get(env_key,'Y:/tool/ND_Tools/python')
+for path in ND_TOOL_PATH.split(';'):
+    path = path.replace('\\','/')
+    if path in sys.path: continue
+    sys.path.append(path)
+#------------------------------------
+import ND_lib.util.path as util_path
 
 class outputPathConf (object):
 
@@ -22,32 +25,39 @@ class outputPathConf (object):
             self.outputRootDir = 'test_charSet'
             self.outputCamRootDir = 'test_Cam'
         print self.inputPath
-        match = re.match('(P:/Project/[a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)', self.inputPath)
-        if match is None:
-            match = re.match('(X:)+/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)', self.inputPath)####後で消す
-            if match is None:
-                raise ValueError('directory structure is not n-design format')
 
-        # self._project  = match.group(1)
-        # self._roll     = match.group(3)
-        # self._sequence = match.group(4)
-        # self._shot     = match.group(5)
+        dic = util_path.get_path_dic(self.inputPath)
 
-        self._project  = 'X:/MSTB4'
-        self._roll     = match.group(3)
-        self._sequence = match.group(4)
-        self._shot     = match.group(5) + '/' + match.group(6) + '/' +match.group(7)
+        for k, v in dic.items():
+            print k, v
+            if k == 'project_name':
+                self._pro_name = v
+            elif k == 'shot':
+                self._shot = v
+            elif k == 'sequence':
+                self._sequence = v
+            elif k == 'roll':
+                self._roll = v
 
-        self._shotpath = os.path.join(self._project,  self._roll, self._sequence, self._shot)
+        print self._pro_name
+        print self._shot
+        print self._sequence
+        print self._roll
 
-        print self._project
+        self._shotpath = ''
+
+        for path_parts in self.inputPath.split('/'):
+            self._shotpath = self._shotpath + path_parts+'/'
+            if path_parts == self._shot:
+                break
+
         print self._roll
         print self._sequence
         print self._shot
         print self._shotpath
 
     def createOutputDir (self, char):
-        self._publishpath = os.path.join(self._shotpath, 'publish', self.outputRootDir, char)
+        self._publishpath = os.path.join(self._shotpath+'publish', self.outputRootDir, char)
         print self._publishpath
         print 'createOutputDir'
         if os.path.exists(self._publishpath):
@@ -94,9 +104,6 @@ class outputPathConf (object):
     def makeCurrentDir (self):
         currentDir = os.path.join(self.publishpath, 'current')
         self._publishcurrentpath = currentDir
-        # if os.path.exists(currentDir):
-        #     shutil.rmtree(currentDir)
-        # shutil.copytree(self._publishfullpath, currentDir)
         distutils.dir_util.copy_tree(self._publishfullpath, currentDir)
 
     def removeDir (self):

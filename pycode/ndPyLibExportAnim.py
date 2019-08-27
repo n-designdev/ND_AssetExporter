@@ -52,12 +52,7 @@ def _getAllNodes (namespace, regexArgs):
                 nodes += objSets
         except:
             pass
-        #############################################
-        print '@@@@@@@@@@@@@@@@@@@@@@@@'
-        print mc.ls('*',type='transform')
-        print mc.ls('*:root',type='transform')
-        print objs
-        ###########################################
+
         if len(objs) != 0:
             nodes += objs
 
@@ -101,23 +96,23 @@ def _getNoKeyAttributes (nodes):
     return attrs
 
 
-def _exportAnim (publishpath, oFilename, namespaceList, regexArgs, isFilter):
-    outputfiles = []
-    sframe = mc.playbackOptions(q=True, min=True)
-    eframe = mc.playbackOptions(q=True, max=True)
-    ###
-    sframe -= 10
-    eframe += 10
+def _exportAnim (publishpath, oFilename, namespaceList, regexArgs, isFilter, framerange_output):
 
+    outputfiles = []
     namespaces = _getNamespace()
 
     allNodes = []
 
-    print '***********'
-    print namespaces
-    print namespaceList
-    print '***********'
+    frameHandle = 5
 
+    sframe = mc.playbackOptions(q=True, min=True)-frameHandle
+    eframe = mc.playbackOptions(q=True, max=True)+frameHandle
+
+    ### フレームレンジ読み込み ###
+    if framerange_output == True:
+        with open(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(publishpath))), 'sceneConf.txt').replace('\\', '/'), 'w') as f:
+            f.write(str(sframe)+'\n')
+            f.write(str(eframe)+'\n')
 
     for ns in namespaces:
         for _nsList in namespaceList:##ketel
@@ -200,9 +195,8 @@ def ndPyLibExportAnim (regexArgs, isFilter):
         mc.warning('no exist folder...')
         return
 
-def ndPyLibExportAnim2(outputPath,oFilename,namespaceList, regexArgs, isFilter):
-    print 'x'*20
+def ndPyLibExportAnim2(outputPath,oFilename,namespaceList, regexArgs, isFilter, framerange_output):
     print regexArgs
     print namespaceList
     print outputPath
-    _exportAnim(outputPath,oFilename,namespaceList, regexArgs, isFilter)
+    _exportAnim(outputPath,oFilename,namespaceList, regexArgs, isFilter, framerange_output)

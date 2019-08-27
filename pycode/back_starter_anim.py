@@ -15,7 +15,7 @@ for path in ND_TOOL_PATH.split(';'):
         continue
     sys.path.append(path)
 
-def back_starter (a, charaName, inputpath, namespace, exporttype, topnode, assetpath, testRun, yeti,stepValue, project):
+def back_starter (a, charaName, inputpath, namespace, exporttype, topnode, assetpath, testRun, yeti,stepValue, project, framerange_output):
 
     print '##############'*5
 
@@ -29,6 +29,7 @@ def back_starter (a, charaName, inputpath, namespace, exporttype, topnode, asset
     print yeti
     print stepValue
     print project
+    print framerange_output
 
     print '##############'*5
 
@@ -50,7 +51,7 @@ def back_starter (a, charaName, inputpath, namespace, exporttype, topnode, asset
     regex.append(topnode)
 
 
-    batch.animExport(output,'anim', nsChara, regex, inputpath,yeti, project)
+    batch.animExport(output,'anim', nsChara, regex, inputpath,yeti, project, framerange_output)
     print opc.publishfullanimpath
 
     animFiles = os.listdir(opc.publishfullanimpath)

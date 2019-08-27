@@ -73,16 +73,17 @@ def run(args, **kwargs):
                renderinfo =  version.replace('(','').split(')')
 
     renderer = renderinfo[1].replace('_','').upper()
-    ryear = renderinfo[2]
-    rendver = renderinfo[0]
+    rendver = renderinfo[2]
+    ryear = renderinfo[0]
     oe = "_TMP_"+renderer+"_VER"
-    os.environ[oe] = ryear
+    os.environ[oe] = rendver
 
     print '###render: env_loader#############'
+    print ryear
+    print rendver
     print args
     x = args.split(' ')
     print x[0]
-
     args = x[0].lower()
     print args
     print oe
@@ -90,7 +91,7 @@ def run(args, **kwargs):
     print '###################'
 
 
-    values_ana = [args+'/maya/2018/amd64/win']
+    values_ana = [args+'/maya/'+ryear+'/amd64/win']
 
 
     # name = args.pop(0)

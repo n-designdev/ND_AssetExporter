@@ -33,7 +33,6 @@ def ndPyLibExportCam_searchCamera():
         camShapes.remove('leftShape')
         camShapes.remove('backShape')
         camShapes.remove('bottomShape')
-
         camShapes.remove('front1Shape')
         camShapes.remove('persp1Shape')
         camShapes.remove('side1Shape')
@@ -53,7 +52,6 @@ def ndPyLibExportCam_searchCamera():
         camAll.append(camShapes[i])
 
     return camAll
-#end of ndPyLibExportCamera_searchCamera
 
 def ndPyLibExportCam_bakeCamera(frameHandle, CameraScale):
 
@@ -171,9 +169,6 @@ def ndPyLibExportCam_exportCamera(publishpath, oFilename, isImagePlane, isFbx, i
 
     cams = ndPyLibExportCam_bakeCamera(frameHandle, CameraScale)
 
-
-
-    #empty groupnode
     if cmds.objExists('cam_grp'):
         cmds.delete('cam_grp')
 
@@ -280,6 +275,4 @@ def ndPyLibExportCam(isImagePlane, isFbx, isAbc, frameHandle, CameraScale):
 
 def ndPyLibExportCam2 (publishPath, oFilename, CameraScale):
     FrameHandle = 0
-    # CameraScale = 2
     ndPyLibExportCam_exportCamera(publishPath, oFilename, 1, 1, 1, FrameHandle, CameraScale)
-    print '++++++++++++++++++++++++++'

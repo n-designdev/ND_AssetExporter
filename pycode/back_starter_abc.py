@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os,sys
-import re
-import shutil
 import util
-
 import batch
 
 env_key = 'ND_TOOL_PATH_PYTHON'
@@ -15,20 +12,22 @@ for path in ND_TOOL_PATH.split(';'):
         continue
     sys.path.append(path)
 
-def back_starter (a, charaName, inputpath, namespace, exporttype, topnode, assetpath, test, yeti,stepValue,project):
+
+def back_starter(a, charaName, inputpath, namespace, exporttype, topnode, assetpath, test, yeti, stepValue, project, framerange_output):
 
     print '##############'*5
 
     print charaName
     print inputpath
-    print namespace ###
-    print exporttype ###
+    print namespace
+    print exporttype
     print topnode
     print assetpath
     print test
     print yeti
     print stepValue
     print project
+    print framerange_output
 
     print '##############'*5
 
@@ -39,13 +38,13 @@ def back_starter (a, charaName, inputpath, namespace, exporttype, topnode, asset
     charaOutput = opc.publishfullpath + '/' + charaName + '.abc'
 
     abcSet = exporttype.split('@')
-    nsChara = namespace.split('@') ###
+    nsChara = namespace.split('@')
 
     print abcSet
     print nsChara
 
     batch.abcExport(nsChara, abcSet,
-                    abcOutput, inputpath, yeti, stepValue, project)
+                    abcOutput, inputpath, yeti, stepValue, project, framerange_output)
 
     abcFiles = os.listdir(opc.publishfullabcpath)
 
@@ -56,14 +55,13 @@ def back_starter (a, charaName, inputpath, namespace, exporttype, topnode, asset
     print abcFiles
     allOutput = []
     for abc in abcFiles:
-        ns = abc.replace(charaName+'_', '').replace('.abc', '')
+        ns = abc.replace(charaName + '_', '').replace('.abc', '')
         if '___' in ns:
             ns = ns.replace('___', ':')
 
         abcOutput = opc.publishfullabcpath + '/' + abc
         charaOutput = opc.publishfullpath + '/' + abc.replace('abc', 'ma')
-        batch.abcAttach(assetpath, ns, ns+':' +
-                        topnode, abcOutput, charaOutput, yeti,project)
+        batch.abcAttach(assetpath, ns, ns + ':' + topnode, abcOutput, charaOutput, yeti, project)
         allOutput.append([abc.replace('abc', 'ma'), abc])
     opc.makeCurrentDir()
 
@@ -75,6 +73,7 @@ def back_starter (a, charaName, inputpath, namespace, exporttype, topnode, asset
         batch.repABC(charaOutput, abcOutput, project)
 
     return 0
+
 
 if __name__ == '__main__':
     print sys.argv[:]
