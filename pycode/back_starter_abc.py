@@ -13,14 +13,14 @@ for path in ND_TOOL_PATH.split(';'):
     sys.path.append(path)
 
 
-def back_starter(a, charaName, inputpath, namespace, exporttype, topnode, assetpath, test, yeti, stepValue, project, framerange_output):
+def back_starter(a, charaName, inputpath, namespace, exporttypelist, topnode, assetpath, test, yeti, stepValue, project, framerange_output):
 
     print '##############'*5
 
     print charaName
     print inputpath
     print namespace
-    print exporttype
+    print exporttypelist
     print topnode
     print assetpath
     print test
@@ -37,7 +37,7 @@ def back_starter(a, charaName, inputpath, namespace, exporttype, topnode, assetp
     abcOutput = opc.publishfullabcpath + '/' + charaName + '.abc'
     charaOutput = opc.publishfullpath + '/' + charaName + '.abc'
 
-    abcSet = exporttype.split('@')
+    abcSet = exporttypelist
     nsChara = namespace.split('@')
 
     print abcSet
@@ -61,6 +61,7 @@ def back_starter(a, charaName, inputpath, namespace, exporttype, topnode, assetp
 
         abcOutput = opc.publishfullabcpath + '/' + abc
         charaOutput = opc.publishfullpath + '/' + abc.replace('abc', 'ma')
+        for x in exporttypelist
         batch.abcAttach(assetpath, ns, ns + ':' + topnode, abcOutput, charaOutput, yeti, project)
         allOutput.append([abc.replace('abc', 'ma'), abc])
     opc.makeCurrentDir()

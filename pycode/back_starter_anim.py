@@ -15,14 +15,14 @@ for path in ND_TOOL_PATH.split(';'):
         continue
     sys.path.append(path)
 
-def back_starter (a, charaName, inputpath, namespace, exporttype, topnode, assetpath, testRun, yeti,stepValue, project, framerange_output):
+def back_starter (a, charaName, inputpath, namespace, exporttypelist, topnode, assetpath, testRun, yeti,stepValue, project, framerange_output):
 
     print '##############'*5
 
     print charaName
     print inputpath
     print namespace
-    print exporttype
+    print exporttypelist
     print topnode
     print assetpath
     print testRun
@@ -34,7 +34,6 @@ def back_starter (a, charaName, inputpath, namespace, exporttype, topnode, asset
     print '##############'*5
 
     opc = util.outputPathConf(inputpath, test=testRun)
-    print opc
     opc.createOutputDir(charaName)
 
     abcOutput = opc.publishfullabcpath + '/' + charaName + '.abc'
@@ -42,14 +41,12 @@ def back_starter (a, charaName, inputpath, namespace, exporttype, topnode, asset
 
     # charaSetup = import_module('setting.'+charaName+'Setup')
 
-    abcSet = exporttype.split('@')
     nsChara = namespace.split('@')
 
     output =opc.publishfullanimpath
 
     regex=[]
-    regex.append(topnode)
-
+    regex.append(exporttypelist.replace('[','').replace(']',''))
 
     batch.animExport(output,'anim', nsChara, regex, inputpath,yeti, project, framerange_output)
     print opc.publishfullanimpath

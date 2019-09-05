@@ -27,7 +27,6 @@ import subprocess
 from multiprocessing import Pool
 
 
-# Shotgunのスクリプトキーを取得
 reload(shotgun)
 
 sg = sg_scriptkey.scriptKey()
@@ -187,7 +186,7 @@ class GUI (QMainWindow):
         filters = [["project", "is", project]]
         asset_fields = ["code", "sg_namespace", "sg_export_type", "sg_top_node",
                         "sg_abc_export_list", "sg_anim_export_list", "sg_asset_path", "sequences"]
-        shot_fields = ["code", "sg_assets"]
+        shot_fields = ["code", "assets"]
 
         self.ui.proj_line.setText(pro_name)
         print 'success'
@@ -202,7 +201,7 @@ class GUI (QMainWindow):
         for x in shot_list:
             if x['code'] == shot_name:
                 q = x
-                if len(x['sg_assets']) == 0:
+                if len(x['assets']) == 0:
                     break
                 else:
                     shot_list_flag = 1
@@ -219,7 +218,7 @@ class GUI (QMainWindow):
         ### 対象アセットの選定
         if shot_list_flag == 1:
             try:
-                for x in q["sg_assets"]:
+                for x in q["assets"]:
                     target_asset.append(x['name'])
             except(UnboundLocalError):
                 print 'aa'
@@ -423,15 +422,23 @@ class GUI (QMainWindow):
 
         print "===============Export End=================="
 
-    def execExport(self, charaName, inputpath, namespace, exporttype, topnode, assetpath, test, yeti, stepValue, framerange_output):
+    def execExport(self, charaName, inputpath, namespace,  topnode,exporttype, assetpath, test, yeti, stepValue, framerange_output):
+
+        exporttypelist = '[' + exporttype +']'
+        exporttypelist = exporttypelist.replace(' ','')
         args = 'C:\\Program Files\\Shotgun\\Python\\python.exe back_starter_abc.py '
-        args = args + str(charaName)+' '+str(inputpath)+' '+str(namespace)+' '+str(exporttype)+' ' + str(topnode)+' '+str(
+        args = args + str(charaName)+' '+str(inputpath)+' '+str(namespace)+' '+str(exporttypelist)+' ' + str(topnode)+' '+str(
             assetpath)+' '+str(test)+' '+str(yeti)+' '+str(stepValue)+' '+str(self.project)+' '+str(framerange_output)
         self.process_list.append(args)
 
-    def execExportAnim(self, charaName, inputpath, namespace, exporttype, topnode, assetpath, test, yeti, stepValue, framerange_output):
+    def execExportAnim(self, charaName, inputpath, namespace,  topnode, exporttype, assetpath, test, yeti, stepValue, framerange_output):
+
+        exporttypelist = '[' + exporttype +']'
+        exporttypelist = exporttypelist.replace(' ','')
+
+        print '#'*20
         args = 'C:\\Program Files\\Shotgun\\Python\\python.exe back_starter_anim.py '
-        args = args + str(charaName)+' '+str(inputpath)+' '+str(namespace)+' '+str(exporttype)+' ' + str(topnode)+' '+str(
+        args = args + str(charaName)+' '+str(inputpath)+' '+str(namespace)+' '+str(exporttypelist)+' ' + str(topnode)+' '+str(
             assetpath)+' '+str(test)+' '+str(yeti)+' '+str(stepValue)+' '+str(self.project)+' '+str(framerange_output)
         self.process_list.append(args)
 

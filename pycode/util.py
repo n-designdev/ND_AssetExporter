@@ -172,7 +172,7 @@ class outputPathConf (object):
 
 def addTimeLog (char, inputpath, test):
     from datetime import datetime
-    opc = outputPathConf(inputpath, True, test)
+    opc = outputPathConf(inputpath, char, test)
     try:
         opc.setChar(char)
     except ValueError:
