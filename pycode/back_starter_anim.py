@@ -33,7 +33,7 @@ def back_starter (a, charaName, inputpath, namespace, exporttypelist, topnode, a
 
     print '##############'*5
 
-    opc = util.outputPathConf(inputpath, test=testRun)
+    opc = util.outputPathConf(inputpath, isAnim=True, test=testRun)
     opc.createOutputDir(charaName)
 
     abcOutput = opc.publishfullabcpath + '/' + charaName + '.abc'
