@@ -41,6 +41,7 @@ def _getAllNodes (namespace, regexArgs):
         print 'objs:'
         print objs
 
+        # print mc.ls(type = 'objectSet')
         try:
             objSets = mc.sets(regexN, q=True)
             print 'objSets:   '
@@ -53,8 +54,19 @@ def _getAllNodes (namespace, regexArgs):
         except:
             pass
 
-        if len(objs) != 0:
-            nodes += objs
+        ###
+        # objSets = mc.sets(regexN, q=True)
+        # print 'objSets:   '
+        # print  objSets
+
+        # if len(objs) != 0:
+        #     nodes += objs
+        # if len(objSets) != 0:
+        #     nodes += objSets
+
+        # if len(objs) != 0:
+        #     nodes += objs
+        ####
 
     nodeShort = []
 

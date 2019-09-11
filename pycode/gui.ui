@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1000</width>
-    <height>800</height>
+    <height>805</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -115,6 +115,9 @@ QScrollBar::handle::horizontal {background:  rgb(90, 90, 90);}
         <property name="text">
          <string>project environment load</string>
         </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item>
@@ -199,6 +202,20 @@ QScrollBar::handle::horizontal {background:  rgb(90, 90, 90);}
       </item>
       <item>
        <widget class="QCheckBox" name="framerange_CheckBox">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_8">
+        <property name="text">
+         <string>debug</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="debug_CheckBox">
         <property name="text">
          <string/>
         </property>

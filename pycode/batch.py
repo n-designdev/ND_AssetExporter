@@ -2,6 +2,9 @@
 import sys
 import os
 import subprocess
+
+print sys.version
+
 import yaml
 
 
@@ -9,7 +12,7 @@ import yaml
 mayaBatch_def = 'C:\\Program Files\\Autodesk\\Maya2015\\bin\\mayabatch.exe'
 # mayaBatch = 'C:\\Program Files\\Autodesk\\Maya2018\\bin\\mayabatch.exe'
 # mayaBatch =  'C:\\Program Files\\Autodesk\\Maya2018\\bin\\maya.exe'
-pythonBatch = 'C:\\Program Files\\Shotgun\\Python\\python.exe'
+pythonBatch = 'Y:\\tool\\MISC\\Python2710_amd64_vs2010\\python.exe'
 onpath = os.path.dirname(os.path.abspath(__file__)).replace('\\','/')
 
 

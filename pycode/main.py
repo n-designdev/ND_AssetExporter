@@ -31,7 +31,7 @@ reload(shotgun)
 
 sg = sg_scriptkey.scriptKey()
 
-pythonBatch = 'C:\\Program Files\\Shotgun\\Python\\python.exe'
+pythonBatch = 'Y:\\tool\\MISC\\Python2710_amd64_vs2010\\python.exe'
 
 
 try:
@@ -69,10 +69,12 @@ class GUI (QMainWindow):
         self.export_type_list = []
         self.project = ''  # プロジェクト名
         self.camera_rig_export = False  # シーン内にあるカメラを使うか
-        self.yeti = False   # shotgun環境を読むか
+        self.yeti = True  # shotgun環境を読むか
         self.process_list = []  # プロセスを格納 サブプロセスで使用
         self.framerange_output = True
         ################
+
+        self.test = False
 
         debug = ''
         if testRun:
@@ -112,6 +114,8 @@ class GUI (QMainWindow):
             self.framerange_stateChange)
 
         self.ui.main_table.doubleClicked.connect(self.main_table_clicked)
+
+        self.ui.debug_CheckBox.stateChanged.connect(self.debug_clicked)
         ###############
 
     def eventFilter(self, object, event):
@@ -127,6 +131,9 @@ class GUI (QMainWindow):
                     self.ui.stepValue_LineEdit.text())
             else:
                 self.stepValue = 1.0
+
+    def debug_clicked(self):
+        self.test = self.ui.debug_CheckBox.isChecked()
 
     def stepValue_LineEdit_stateChange(self):
         currentState = self.ui.stepValue_CheckBox.isChecked()
@@ -157,6 +164,12 @@ class GUI (QMainWindow):
 
         ### ショットガン経由でプロジェクト名等を取得
         dic = util_path.get_path_dic(self.inputpath)
+
+        print 'Input Path : '+self.inputpath
+        print '__dic___'
+        print dic
+        print '________'
+
         for k, v in dic.items():
             print k, v
             if k == 'project_name':
@@ -167,6 +180,7 @@ class GUI (QMainWindow):
                 sequence = v
             elif k == 'roll':
                 roll = v
+
         shot_name = dic["shot_code"]
         ###
 
@@ -370,6 +384,8 @@ class GUI (QMainWindow):
 
     def start_button_clicked(self):
 
+        testRun = self.test
+
         if self.ui.pro_num_CheckBox.isChecked:
             pro_num = self.ui.pro_num.value()
         else:
@@ -426,7 +442,7 @@ class GUI (QMainWindow):
 
         exporttypelist = '[' + exporttype +']'
         exporttypelist = exporttypelist.replace(' ','')
-        args = 'C:\\Program Files\\Shotgun\\Python\\python.exe back_starter_abc.py '
+        args = pythonBatch + ' back_starter_abc.py '
         args = args + str(charaName)+' '+str(inputpath)+' '+str(namespace)+' '+str(exporttypelist)+' ' + str(topnode)+' '+str(
             assetpath)+' '+str(test)+' '+str(yeti)+' '+str(stepValue)+' '+str(self.project)+' '+str(framerange_output)
         self.process_list.append(args)
@@ -437,13 +453,13 @@ class GUI (QMainWindow):
         exporttypelist = exporttypelist.replace(' ','')
 
         print '#'*20
-        args = 'C:\\Program Files\\Shotgun\\Python\\python.exe back_starter_anim.py '
+        args = pythonBatch + ' back_starter_anim.py '
         args = args + str(charaName)+' '+str(inputpath)+' '+str(namespace)+' '+str(exporttypelist)+' ' + str(topnode)+' '+str(
             assetpath)+' '+str(test)+' '+str(yeti)+' '+str(stepValue)+' '+str(self.project)+' '+str(framerange_output)
         self.process_list.append(args)
 
     def execExportCamera(self, inputpath, camScale, test):
-        args = 'C:\\Program Files\\Shotgun\\Python\\python.exe back_starter_cam.py '
+        args = pythonBatch + ' back_starter_cam.py '
         args = args + str(inputpath) + ' ' + str(camScale) + \
             ' ' + str(test)+' '+str(self.project)
         self.process_list.append(args)
