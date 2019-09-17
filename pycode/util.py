@@ -21,7 +21,7 @@ class outputPathConf (object):
         self.outputRootDir = 'charSet'
         self.outputCamRootDir = 'Cam'
 
-        if test == True:
+        if test == 'True':
             self.outputRootDir = 'test_charSet'
             self.outputCamRootDir = 'test_Cam'
         print self.inputPath

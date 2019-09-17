@@ -1,10 +1,20 @@
 # -*- coding: utf-8 -*-
 
 from ndPyLibAnimGetAnimNodeAndAttr import *
-import maya.cmds as mc
+import maya.cmds as cmds
 import os
 
 def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName, inForNodes, isCheckAnimCurve, isCheckConstraint):
+    print '$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$'
+    print isFilterCurve
+    print inPfxInfo
+    print inDirPath
+    print inFileName
+    print inForNodes
+    print isCheckAnimCurve
+    print isCheckConstraint
+    print '$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$'
+
     retNodes = []
     addCmd = []
 
@@ -20,24 +30,24 @@ def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName,
 
     if len(retNodes) <= 0:
         message = 'No Animation Nodes!\n' + 'Do you want to continue ?\n'
-        resultStr = mc.confirmDialog(title='Confirm', message=message,
+        resultStr = cmds.confirmDialog(title='Confirm', message=message,
             button=['Yes', 'No'], defaultButton='Yes', cancelButton='No', dismissString='No')
         if resultStr == 'No':
-            mc.confirmDialog(title='Abort', message='Stop export.')
+            cmds.confirmDialog(title='Abort', message='Stop export.')
             return
 
-    mc.select(cl=True)
+    cmds.select(cl=True)
     count = 0
     for i in range(len(retNodes)/2):
-        if mc.objExists(retNodes[i*2+1]) == 1:
+        if cmds.objExists(retNodes[i*2+1]) == 1:
             buf = retNodes[i*2+1].split(':')
             if len(buf) == 2:
-                rn = mc.rename(retNodes[i*2+1], buf[1])
+                rn = cmds.rename(retNodes[i*2+1], buf[1])
                 retNodes[i*2+1] = rn
-            mc.select(retNodes[i*2+1], add=True)
+            cmds.select(retNodes[i*2+1], add=True)
 
     if isFilterCurve:
-        mc.filterCurve()
+        cmds.filterCurve()
     else:
         print '[nd] Not use filterCurve\n'
 
@@ -56,17 +66,34 @@ def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName,
     if not os.path.exists(filePathNamex):
         os.makedirs(filePathNamex)
 
+    # print '###########'
 
-    mc.file(filePathName, f=True, es=True, typ='mayaAscii', ch=0, chn=0, exp=0, con=0, sh=0) ######ここで止まる
-
-    inc = 0
-    # print retNodes
+    info = {}
     for i in range(len(retNodes)/2):
-        print retNodes[i*2+1], inPfxInfo, NS[pfxSw], retNodes[i*2]
+        if cmds.objExists(retNodes[i*2+1])==1:
+            s = retNodes[i*2+1]
+            sn = retNodes[i*2].split(':')[0]
+            info['asset'] = sn
+            info['ver'] = 'v0.0.0'
+            info['tool'] = 'ND_AssetExporter'
+            addInfoAttr(s, info)
+    print '###########'
+    print ''
+
+    cmds.file(filePathName, f=True, es=True, typ='mayaAscii', ch=0, chn=0, exp=0, con=0, sh=0)
+
+    i = 0
+    # print retNodes
+
+
+    for i in range(len(retNodes)/2):
+        # print retNodes[i*2+1], inPfxInfo, NS[pfxSw], retNodes[i*2]
         node = retNodes[i*2].split('|')[-1]
         # cmd = 'connectAttr \"' + retNodes[i*2+1] + '.output\" \":' + inPfxInfo[1] + NS[pfxSw] + retNodes[i*2] + '\";\n'
         cmd = 'connectAttr \"' + retNodes[i*2+1] + '.output\" \":' + inPfxInfo[1] + NS[pfxSw] + node + '\";\n'
+        # print cmd
         addCmd.append(cmd)
+
 
     try:
         readFileID = open(inDirPath+'/'+fileName, 'r')
@@ -94,3 +121,14 @@ def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName,
     os.rename(tmp, org)
 
     ###
+
+def addInfoAttr(node, info):
+    print node
+    for key in info.keys():
+        print key
+        print info[key]
+        try:
+            cmds.getAttr(node+'.'+key)
+        except:
+            cmds.addAttr(node, ln=key, dt='string')
+            cmds.setAttr(node+'.'+key, info[key], type='string')

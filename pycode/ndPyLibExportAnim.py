@@ -79,7 +79,6 @@ def _getConstraintAttributes (nodes):
     attrs = []
     for n in nodes:
         const = mc.listConnections(n, s=True, d=False, p=False, c=True, t='constraint')
-        print n, const
         if const is None: continue
         for i in range(0, len(const), 2):
             attrs.append(const[i])
@@ -168,7 +167,6 @@ def _exportAnim (publishpath, oFilename, namespaceList, regexArgs, isFilter, fra
         for n in allNodes:
             if ns+':' in n:
                 pickNodes.append(n)
-        print pickNodes
         if len(pickNodes) != 0:
 
             outputfiles.append(publishpath+oFilename+'_'+ns+'.ma')

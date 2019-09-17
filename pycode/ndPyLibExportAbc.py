@@ -80,6 +80,8 @@ def _exportAbc (publishpath, oFilename, namespaceList, regexArgs):
     for ns in allNamespaces:
         pickNodes = []
         pickNodes = allNodes[ns]
+        print '#########picknodes############'
+        print pickNodes
         if len(pickNodes) == 0: continue
         outputfile = os.path.join(publishpath, oFilename+'_'+ns+'.abc')
         outputfile = outputfile.replace(os.path.sep, '/')
