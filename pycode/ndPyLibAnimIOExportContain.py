@@ -4,17 +4,17 @@ from ndPyLibAnimGetAnimNodeAndAttr import *
 import maya.cmds as cmds
 import os
 
-def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName, inForNodes, isCheckAnimCurve, isCheckConstraint):
+def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName, inForNodes, inForNodesAttr, isCheckAnimCurve, isCheckConstraint):
     print '$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$'
     print isFilterCurve
     print inPfxInfo
     print inDirPath
     print inFileName
     print inForNodes
+    print inForNodesAttr #Attr直指定
     print isCheckAnimCurve
     print isCheckConstraint
     print '$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$'
-
     retNodes = []
     addCmd = []
 
@@ -25,8 +25,10 @@ def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName,
 
     if pfxSw<3:
         retNodes = ndPyLibAnimGetAnimNodeAndAttr(inForNodes, 2, isCheckAnimCurve, isCheckConstraint)
+        retNodes += ndPyLibAnimGetAnimNodeAndAttr(inForNodesAttr, 2, isCheckAnimCurve, isCheckConstraint)
     else:
         retNodes = ndPyLibAnimGetAnimNodeAndAttr(inForNodes, 0, isCheckAnimCurve, isCheckConstraint)
+        retNodes += ndPyLibAnimGetAnimNodeAndAttr(inForNodesAttr, 0, isCheckAnimCurve, isCheckConstraint)
 
     if len(retNodes) <= 0:
         message = 'No Animation Nodes!\n' + 'Do you want to continue ?\n'
@@ -123,10 +125,7 @@ def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName,
     ###
 
 def addInfoAttr(node, info):
-    print node
     for key in info.keys():
-        print key
-        print info[key]
         try:
             cmds.getAttr(node+'.'+key)
         except:

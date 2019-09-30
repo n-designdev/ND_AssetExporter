@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # ------------------------------
-__version__ = '0.1'
+__version__ = '0.3'
 __author__ = "Yoshihisa Okano, Kei Ueda"
 
 import os,sys
@@ -25,6 +25,7 @@ import ND_lib.util.path as util_path
 import util
 import subprocess
 from multiprocessing import Pool
+from importlib import import_module
 
 
 reload(shotgun)
@@ -71,7 +72,7 @@ class GUI (QMainWindow):
         self.camera_rig_export = False  # シーン内にあるカメラを使うか
         self.yeti = True  # shotgun環境を読むか
         self.process_list = []  # プロセスを格納 サブプロセスで使用
-        self.framerange_output = True
+        self.framerange_output = True #フレームレンジをtxtで出力するか
         ################
 
         self.test = False
