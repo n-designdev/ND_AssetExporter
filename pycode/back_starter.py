@@ -1,0 +1,201 @@
+# -*- coding: utf-8 -*-
+
+import os,sys
+import re
+import shutil
+import util
+
+import batch
+
+env_key = 'ND_TOOL_PATH_PYTHON'
+ND_TOOL_PATH = os.environ.get(env_key, 'Y:/tool/ND_Tools/python')
+for path in ND_TOOL_PATH.split(';'):
+    path = path.replace('\\', '/')
+    if path in sys.path:
+        continue
+    sys.path.append(path)
+
+import ND_lib.deadline.common as common
+import ND_lib.env as util_env
+
+def spsymbol_remover(litteral, sp_check=None):
+    listitem = ['exportitem', 'framerange']
+    if sp_check in listitem:
+        litteral = re.sub(':|\'|{|}', '', litteral)
+        litteral = litteral.rstrip(',')
+    else:
+        litteral = re.sub(':|\'|,|{|}', '', litteral)
+    url_list = ['inputpath', 'assetpath']
+    if sp_check in url_list:
+        litteral = litteral.replace('/', ':/', 1)
+    return litteral
+
+
+def strdict_parse(original_string):
+    parsed_dic = {}
+    original_string_iter = iter(original_string)
+    for key, item in zip(original_string_iter, original_string_iter):
+        key = spsymbol_remover(key)
+        #TODO:リスト形式が詰まってしまう問題
+
+        item = spsymbol_remover(item, key)
+
+        parsed_dic[key] = item
+    return parsed_dic
+
+
+def back_starter(**kwargs):
+    argsdic = kwargs
+    print argsdic
+    inputpath = argsdic['inputpath']
+    project = argsdic['project']
+
+    charaName = argsdic['chara']
+    nsChara = argsdic['namespace']
+    exporttype = argsdic['exporttype']
+    exportitem = argsdic['exportitem']
+    topnode = argsdic['topnode']
+    assetpath = argsdic['assetpath']
+
+    stepValue = argsdic['stepValue']
+    env_load = argsdic['env_load']
+
+    testmode = argsdic['testmode']
+
+    if exporttype == 'anim':
+        isAnim = True
+    else:
+        isAnim = False
+
+    for x in kwargs:
+        print x
+
+    opc = util.outputPathConf(inputpath, isAnim=isAnim, test=testmode)
+
+    if exporttype == 'camera':
+        opc.createCamOutputDir()
+    else:
+        opc.createOutputDir(charaName)
+
+    abcOutput = opc.publishfullabcpath + '/' + charaName + '.abc'
+    charaOutput = opc.publishfullpath + '/' + charaName + '.abc'
+
+    argsdic['abcOutput'] = abcOutput
+
+    output = opc.publishfullanimpath
+    argsdic['output'] = output
+
+    progress = 5
+    print("Progress: {}%".format(progress))
+
+
+    if exporttype == 'anim':
+        batch.animExport(**argsdic)
+        animFiles = os.listdir(opc.publishfullanimpath)
+
+        progress = 40
+        print("Progress: {}%".format(progress))
+
+        if len(animFiles) == 0:
+            opc.removeDir()
+            return
+
+        for animFile in animFiles:
+            ns = animFile.replace('anim_', '').replace('.ma', '')
+            animOutput = opc.publishfullanimpath + '/' + animFile
+            charaOutput = opc.publishfullpath + '/' + ns + '.ma'
+            argsdic['animOutput'] = animOutput
+            argsdic['charaOutput'] = charaOutput
+            argsdic['ns'] = ns
+            batch.animAttach(**argsdic)
+
+        progress = 80
+        print("Progress: {}%".format(progress))
+
+        opc.makeCurrentDir()
+
+        for animFile in animFiles:
+            if animFile[:5] != 'anim_':continue
+            if animFile[-3:] != '.ma':continue
+
+            ns = animFile.replace('anim_', '').replace('.ma', '')
+
+            argsdic['ns'] = ns
+            argsdic['animPath'] = (
+                opc.publishcurrentpath
+                + '/anim/'
+                + animFile
+            )
+            argsdic['scene'] = (
+                opc.publishcurrentpath
+                + '/' + ns + '.ma'
+            )
+
+            batch.animReplace(**argsdic)
+
+    elif exporttype == 'abc':
+        opc.createOutputDir(charaName)
+        argsdic['abcOutput'] = '{}/{}.abc'.format(opc.publishfullabcpath, charaName)
+        batch.abcExport(**argsdic)
+
+        abcFiles = os.listdir(opc.publishfullabcpath)
+
+        if len(abcFiles) == 0:
+            opc.removeDir()
+            print 'abc not found'
+            return
+        allOutput = []
+        for abc in abcFiles:
+            ns = abc.replace(charaName + '_', '').replace('.abc', '')
+            if '___' in ns:
+                ns = ns.replace('___', ':')
+            abcOutput = opc.publishfullabcpath + '/' + abc
+            charaOutput = opc.publishfullpath + '/' + abc.replace('abc', 'ma')
+            argsdic['Ntopnode'] = ns + ':' + argsdic['topnode']
+            argsdic['ns'] = ns
+            argsdic['attachPath'] = charaOutput
+            argsdic['abcOutput'] = abcOutput
+            batch.abcAttach(**argsdic)
+            allOutput.append([abc.replace('abc', 'ma'), abc])
+        opc.makeCurrentDir()
+
+        for output in allOutput:
+            argsdic['charaOutput'] = opc.publishcurrentpath + '/' + output[0]
+            argsdic['abcOutput'] = opc.publishcurrentpath + '/abc/' + output[1]
+            batch.repABC(**argsdic)
+
+    elif exporttype == 'camera':
+        argsdic['publishPath'] = opc.publishfullpath #ディレクトリ名
+        oFilename = opc.sequence + opc.shot + opc.shot + '_cam'
+        argsdic['camOutput'] = '{}/{}.abc'.format(opc.publishfullcampath, oFilename) #フルパスとファイル名
+        batch.camExport(**argsdic)
+
+        camFiles = os.listdir(opc.publishfullcampath)
+        if len(camFiles) == 0:
+            print 'abc not found'
+            return
+
+        for camFile in camFiles:
+            srcFile = os.path.join(opc.publishfullpath, camFile)
+            if srcFile.split('.')[-1] == 'ma':
+                dstDir = os.path.join(opc.publishfullpath, '..')
+                try:
+                    shutil.copy(srcFile, dstDir)
+                except:
+                    pass
+        opc.makeCurrentDir()
+
+    print 'Output directry: {}'.format(opc.publishfullpath.replace('/','\\'))
+
+    print '=================END==================='
+
+
+def test_submit():
+    x = deadline()
+    x.submit_to_deadline()
+
+if __name__ == '__main__':
+    argslist = sys.argv[:]
+    argslist.pop(0) # 先頭はpyファイルなので
+    argsdict = strdict_parse(argslist)
+    back_starter(**argsdict)

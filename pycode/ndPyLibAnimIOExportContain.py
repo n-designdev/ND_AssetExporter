@@ -4,14 +4,14 @@ from ndPyLibAnimGetAnimNodeAndAttr import *
 import maya.cmds as cmds
 import os
 
-def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName, inForNodes, inForNodesAttr, isCheckAnimCurve, isCheckConstraint):
+def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName, inForNodes, inForNodesAttr, isCheckAnimCurve, isCheckConstraint, frameRange, bakeAnim):
     print '$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$'
     print isFilterCurve
     print inPfxInfo
     print inDirPath
     print inFileName
     print inForNodes
-    print inForNodesAttr #Attr直指定
+    print inForNodesAttr  # Attr直指定
     print isCheckAnimCurve
     print isCheckConstraint
     print '$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$'
@@ -25,10 +25,12 @@ def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName,
 
     if pfxSw<3:
         retNodes = ndPyLibAnimGetAnimNodeAndAttr(inForNodes, 2, isCheckAnimCurve, isCheckConstraint)
-        retNodes += ndPyLibAnimGetAnimNodeAndAttr(inForNodesAttr, 2, isCheckAnimCurve, isCheckConstraint)
+        if len(inForNodesAttr)!=0:
+            retNodes += ndPyLibAnimGetAnimNodeAndAttr(inForNodesAttr, 2, isCheckAnimCurve, isCheckConstraint)
     else:
         retNodes = ndPyLibAnimGetAnimNodeAndAttr(inForNodes, 0, isCheckAnimCurve, isCheckConstraint)
-        retNodes += ndPyLibAnimGetAnimNodeAndAttr(inForNodesAttr, 0, isCheckAnimCurve, isCheckConstraint)
+        if len(inForNodesAttr)!=0:
+            retNodes += ndPyLibAnimGetAnimNodeAndAttr(inForNodesAttr, 0, isCheckAnimCurve, isCheckConstraint)
 
     if len(retNodes) <= 0:
         message = 'No Animation Nodes!\n' + 'Do you want to continue ?\n'
@@ -58,17 +60,10 @@ def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName,
     fileName = inFileName + '.ma'
     filePathName = inDirPath + '/' + fileName
 
-    print '/////////////////////////'
-    print inFileName
-
-    print filePathName
-
     filePathNamex = os.path.dirname(filePathName)
 
     if not os.path.exists(filePathNamex):
         os.makedirs(filePathNamex)
-
-    # print '###########'
 
     info = {}
     for i in range(len(retNodes)/2):
@@ -79,14 +74,8 @@ def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName,
             info['ver'] = 'v0.0.0'
             info['tool'] = 'ND_AssetExporter'
             addInfoAttr(s, info)
-    print '###########'
-    print ''
 
     cmds.file(filePathName, f=True, es=True, typ='mayaAscii', ch=0, chn=0, exp=0, con=0, sh=0)
-
-    i = 0
-    # print retNodes
-
 
     for i in range(len(retNodes)/2):
         # print retNodes[i*2+1], inPfxInfo, NS[pfxSw], retNodes[i*2]
@@ -95,7 +84,6 @@ def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName,
         cmd = 'connectAttr \"' + retNodes[i*2+1] + '.output\" \":' + inPfxInfo[1] + NS[pfxSw] + node + '\";\n'
         # print cmd
         addCmd.append(cmd)
-
 
     try:
         readFileID = open(inDirPath+'/'+fileName, 'r')
@@ -122,7 +110,6 @@ def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName,
     os.remove(org)
     os.rename(tmp, org)
 
-    ###
 
 def addInfoAttr(node, info):
     for key in info.keys():

@@ -23,21 +23,25 @@ def _getNamespace ():
     namespaces.remove('shared')
     return namespaces
 
-def _getAllNodes (outputPath, namespace, regexArgs):
+def _getAllNodes (outputPath, namespace, _regexArgs):
 
-    if len(regexArgs) == 0:
+    if len(_regexArgs) == 0:
         regexArgs = ['*']
 
     nodes = []
-    regexArgs = regexArgs[0].split(',')
+    regexArgs = _regexArgs.split(',')
 
     for regex in regexArgs:
         regexN = ''
         if namespace != '':
             regexN += namespace + ':'
         regexN = regexN + regex
-        objs = mc.ls(regexN, type='transform')
-        objSets = mc.sets(regexN, q=True)
+        try:
+            objs = mc.ls(regexN, type='transform')
+            objSets = mc.sets(regexN, q=True)
+        except:
+            continue
+
         if len(objs) != 0:
             nodes += objs
         if len(objSets) != 0:
@@ -58,122 +62,29 @@ def _getAllNodes (outputPath, namespace, regexArgs):
                 pass
     return nodes
 
-@norefresh
-def _exportAbc (publishpath, oFilename, namespaceList, regexArgs):
+
+def _exportAbc2 (outputPath, _namespaceList, regexArgs, step_value, frameHundle, _frameRange):
+
+    namespaceList = _namespaceList.split(',')
+    for i, namespaceItem in enumerate(namespaceList):
+        namespaceList[i] = '[a-zA-Z0-9_:]*{}$'.format(namespaceItem)
     sframe = mc.playbackOptions(q=True, min=True)
     eframe = mc.playbackOptions(q=True, max=True)
 
-    allNamespaces = []
-    if len(namespaceList) == 0:
-        allNamespaces = _getNamespace()
-    else:
-        allNamespaces = namespaceList
-
-    allNodes = {}
-    for ns in allNamespaces:
-        allNodes[ns] = _getAllNodes(publishpath, ns, regexArgs)
-
-    if not mc.pluginInfo('AbcExport', q=True, l=True):
-        mc.loadPlugin('AbcExport')
-
-    outputfiles = []
-    for ns in allNamespaces:
-        pickNodes = []
-        pickNodes = allNodes[ns]
-        print '#########picknodes############'
-        print pickNodes
-        if len(pickNodes) == 0: continue
-        outputfile = os.path.join(publishpath, oFilename+'_'+ns+'.abc')
-        outputfile = outputfile.replace(os.path.sep, '/')
-        outputfiles.append(outputfile)
-
-        strAbc = ''
-        strAbc = strAbc + '-frameRange '
-        strAbc = strAbc + str(sframe) + ' '
-        strAbc = strAbc + str(eframe) + ' '
-        strAbc = strAbc + '-uvWrite '
-        strAbc = strAbc + '-worldSpace '
-        strAbc = strAbc + '-writeVisibility '
-        strAbc = strAbc + '-eulerFilter '
-        strAbc = strAbc + '-dataFormat ogawa '
-        for pn in pickNodes:
-            strAbc = strAbc + '-root '
-            strAbc = strAbc + pn + ' '
-        strAbc = strAbc + '-file '
-        strAbc = strAbc + outputfile
-
-        print 'AbcExport -j ' + strAbc
-        #mel.eval('AbcExport -j ' + '"' + strAbc + '"')
-
-    return outputfiles
-
-
-def ndPyLibExportAbc (namespaceList, regexArgs, outputFile=None, isLatest=1):
-    if mc.file(q=True, modified=True):
-        mc.warning('please save scene file...')
-        return
-
-    filepath = mc.file(q=True, sceneName=True)
-    filename = os.path.basename(filepath)
-
-    match = re.match('(P:/Project/[a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)', filepath)
-    if match is None:
-        mc.warning('aaaaaa')
-        mc.warning('directory structure is not n-design format')
-        return
-
-    project  = match.group(1)
-    roll     = match.group(3)
-    sequence = match.group(4)
-    shot     = match.group(5)
-
-    shotpath = os.path.join(project, 'shots', roll, sequence, shot)
-
-    abcOutDir = 'animGeo'
-    publishpath = os.path.join(shotpath, 'publish', abcOutDir, filename)
-
-    oFilename = sequence + shot + '_animGeoCache'
-
-    if not os.path.exists(shotpath):
-        mc.warning('no exist folder...')
-        return
-
-    if not os.path.exists(publishpath):
-        publishpath = os.path.normpath(publishpath)
-        os.makedirs(publishpath)
-
-    outputfiles = _exportAbc(publishpath, oFilename, namespaceList, regexArgs)
-
-    for o in outputfiles:
-        print 'output file : ' + o
-
-    if outputFile is not None:
-        print outputFile
-        with open(outputFile, 'w') as fp:
-            for o in outputfiles:
-                fp.write(o)
-
-    return outputfiles
-
-    # if isLatest:
-    #     for o in outputfiles:
-
-
-def _exportAbc2 (outputPath, namespaceList, regexArgs, step_value):
-
-    sframe = mc.playbackOptions(q=True, min=True)
-    eframe = mc.playbackOptions(q=True, max=True)
+    if _frameRange != 'None':
+        _frameRange = _frameRange.lstrip('u')
+        frameRange = _frameRange.split(',')
+        sframe = float(frameRange[0])
+        eframe = float(frameRange[1])
 
     ###
-    sframe -= 10
-    eframe += 10
+    sframe -= float(frameHundle)
+    eframe += float(frameHundle)
 
     allNamespaces = []
     if len(namespaceList) == 0:
         allNamespaces = _getNamespace()
-
     else:
-        # allNamespaces = namespaceList
         tmpNS = _getNamespace()
         for _nsList in namespaceList:
             for _ns in tmpNS:
@@ -182,6 +93,7 @@ def _exportAbc2 (outputPath, namespaceList, regexArgs, step_value):
                     allNamespaces.append(_ns)
 
     allNodes = {}
+
     for ns in allNamespaces:
         allNodes[ns] = _getAllNodes(outputPath, ns, regexArgs)
 
@@ -207,7 +119,7 @@ def _exportAbc2 (outputPath, namespaceList, regexArgs, step_value):
         strAbc = strAbc + '-eulerFilter '
         strAbc = strAbc + '-dataFormat ogawa '
         strAbc = strAbc + '-step '
-        strAbc = strAbc + step_value + ' '
+        strAbc = strAbc + str(step_value) + ' '
         for pn in pickNodes:
             strAbc = strAbc + '-root '
             strAbc = strAbc + pn + ' '
@@ -217,11 +129,19 @@ def _exportAbc2 (outputPath, namespaceList, regexArgs, step_value):
         print 'AbcExport -j ' + strAbc
         mel.eval('AbcExport -verbose -j ' + '"' + strAbc + '"')
 
+def ndPyLibExportAbc2 (args):
+    argsdic = args
+    outputPath = argsdic['abcOutput']
+    namespaceList = argsdic['namespace']
+    try:
+        step_value = argsdic['step_value']
+    except KeyError:
+        step_value = 1.0
+    frameHundle = argsdic['framehundle']
+    frameRange = argsdic['framerange']
+    regexArgs = argsdic['exportitem']
+    _exportAbc2(
+        outputPath, namespaceList,
+        regexArgs, step_value,
+        frameHundle, frameRange)
 
-def ndPyLibExportAbc2 (namespaceList, regexArgs, outputPath, step_value):
-    print 'x'*20
-    print regexArgs
-    print namespaceList
-    print outputPath
-    print step_value
-    _exportAbc2(outputPath, namespaceList, regexArgs, step_value)

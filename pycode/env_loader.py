@@ -57,25 +57,23 @@ def run(args, **kwargs):
     #プロジェクト名からShotgunの設定を取得する
     project_app_launcher = "%s\\ND_sgtoolkit_%s\\%s" % (toolkit_path, args.lower(), app_launcher_path)
 
-
-    f = open(project_app_launcher, "r+")
+    f = open(project_app_launcher, "r")
     data = yaml.load(f)
 
     f.close()
 
     for dcc in dcc_tools:
         for version in data["launch_%s" % dcc]["versions"]:
-            #print version, type(version)
             args = data["launch_%s" % dcc]["windows_args"]
-
             if dcc == 'maya':
-
-               renderinfo =  version.replace('(','').split(')')
+                renderinfo = version.replace('(','').split(')')
 
     renderer = renderinfo[1].replace('_','').upper()
     rendver = renderinfo[2]
-    ryear = renderinfo[0]
-    oe = "_TMP_"+renderer+"_VER"
+    # ryear = renderinfo[0]
+    ryear = '2017'
+
+    oe = "_TMP_" + renderer + "_VER"
     os.environ[oe] = rendver
 
     print '###render: env_loader#############'

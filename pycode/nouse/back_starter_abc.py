@@ -38,10 +38,7 @@ def back_starter(a, charaName, inputpath, namespace, exporttypelist, topnode, as
     charaOutput = opc.publishfullpath + '/' + charaName + '.abc'
 
     abcSet = exporttypelist
-    nsChara = namespace.split('@')
-
-    print abcSet
-    print nsChara
+    nsChara = namespace
 
     batch.abcExport(nsChara, abcSet,
                     abcOutput, inputpath, yeti, stepValue, project, framerange_output)

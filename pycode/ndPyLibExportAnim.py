@@ -8,7 +8,31 @@ import maya.mel as mel
 
 from ndPyLibAnimIOExportContain import *
 
-def _getNamespace ():
+def spsymbol_remover(litteral, sp_check=None):
+    listitem = ['exportitem']
+    if sp_check in listitem:
+        litteral = re.sub(':|\'|{|}', '', litteral)
+    else:
+        litteral = re.sub(':|\'|,|{|}', '', litteral)
+    url_list = ['inputpath', 'assetpath']
+    if sp_check in url_list:
+        litteral = litteral.replace('/', ':/')
+    return litteral
+
+
+def strdict_parse(original_string):
+    parsed_dic = {}
+    original_string_iter = iter(original_string)
+    for key, item in zip(original_string_iter, original_string_iter):
+        key = spsymbol_remover(key)
+        #TODO:リスト形式が詰まってしまう問題
+
+        item = spsymbol_remover(item, key)
+
+        parsed_dic[key] = item
+    return parsed_dic
+
+def _getNamespace():
     print '_getNamespace'
     print cmds.namespaceInfo(lon=True)
     namespaces = cmds.namespaceInfo(lon=True)
@@ -28,7 +52,6 @@ def _getAllNodes (namespace, regexArgs):
     if len(regexArgs) == 0:
         regexArgs = ['*']
     nodes = []
-    regexArgs = regexArgs[0].split(',')
     for regex in regexArgs:
         regexN = ''
         if namespace != '':
@@ -38,14 +61,10 @@ def _getAllNodes (namespace, regexArgs):
         objs = cmds.ls(regexN, type='transform')
         objs += cmds.ls(regexN, type='locator')
         objs += cmds.ls(regexN, shapes=True)
-        print 'objs:'
-        print objs
 
         # print cmds.ls(type = 'objectSet')
         try:
             objSets = cmds.sets(regexN, q=True)
-            print 'objSets:   '
-            print  objSets
 
             if len(objs) != 0:
                 nodes += objs
@@ -54,25 +73,12 @@ def _getAllNodes (namespace, regexArgs):
         except:
             pass
 
-        ###
-        # objSets = cmds.sets(regexN, q=True)
-        # print 'objSets:   '
-        # print  objSets
-
-        # if len(objs) != 0:
-        #     nodes += objs
-        # if len(objSets) != 0:
-        #     nodes += objSets
-
-        # if len(objs) != 0:
-        #     nodes += objs
-        ####
-
+    nodes = list(set(nodes))
     nodeShort = []
 
     for node in nodes:
         nodeShort.append(node.split('|')[-1])
-
+    print "allNodes:", nodeShort
     return nodeShort
 
 def _getConstraintAttributes (nodes):
@@ -109,12 +115,13 @@ def _getNoKeyAttributes (nodes):
     return attrs
 
 
-def _exportAnim (publishpath, oFilename, namespaceList, regexArgs, isFilter, framerange_output):
-    regexArgs = regexArgs[0].split(',')
-    regexArgs.append('wave8.dropoffPosition')
+def _exportAnim (publishpath, oFilename, strnamespaceList, strregexArgs, isFilter, bakeAnim, strextra_dic, framehundle, framerange):
+
     regexArgsN = [] #regexArgs Normal
     regexArgsAttrs = [] #regexArgs Attribute用
-    # regexArgs.append('wave8.minRadius')
+    regexArgs = strregexArgs.split(',')
+    namespaceList = strnamespaceList.split(',')
+
     for regexArg in regexArgs:
         if '.' in regexArg:
             regexArgsAttrs.append(regexArg)
@@ -127,22 +134,28 @@ def _exportAnim (publishpath, oFilename, namespaceList, regexArgs, isFilter, fra
     allNodes = []
     nodeAndAttrs = [] # ns+node+attr, ex:ketel_evo:wave8.minRadius
 
-    frameHandle = 0
+    frameHandle = framehundle
+    if frameHandle == 'None':
+        frameHandle = 0
 
-    sframe = cmds.playbackOptions(q=True, min=True)-frameHandle
-    eframe = cmds.playbackOptions(q=True, max=True)+frameHandle
+    sframe = cmds.playbackOptions(q=True, min=True) - float(frameHandle)
+    eframe = cmds.playbackOptions(q=True, max=True) + float(frameHandle)
+
+    if framerange != None:
+        frameRange = [sframe, eframe]
+    else:
+        frameRange = framerange
 
     ### フレームレンジ読み込み ###
-    if framerange_output == True:
-        with open(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(publishpath))), 'sceneConf.txt').replace('\\', '/'), 'w') as f:
-            f.write(str(sframe)+'\n')
-            f.write(str(eframe)+'\n')
+    with open(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(publishpath))), 'sceneConf.txt').replace('\\', '/'), 'w') as f:
+        f.write(str(sframe)+'\n')
+        f.write(str(eframe)+'\n')
+    for i, _nsList in enumerate(namespaceList):
+        namespaceList[i] = '[a-zA-Z0-9_:]*' + _nsList + '$'
+
     for ns in namespaces:
-        for _nsList in namespaceList:##ketel
-            print _nsList
-            print ns
+        for _nsList in namespaceList:
             match = re.match(_nsList, ns)
-            print match
             if match != None:
                 allNodes += _getAllNodes(ns, regexArgsN)
     for ns in namespaceList:
@@ -168,8 +181,19 @@ def _exportAnim (publishpath, oFilename, namespaceList, regexArgs, isFilter, fra
         print 'merge animation layers'
     cmds.select(cl=True)
 
+    if strextra_dic != None:
+        for extra_dicitem in strextra_dic:
+            _key, item = extra_dicitem.split(':')
+        for ns in namespaceList:
+            for _nsList in namespaceList:
+                _ns = ns.split('*')[1].rstrip('$')
+                cmds.setAttr(_ns + ':' + _key, int(item)) # 整数限定
+                cmds.setKeyframe(_ns + ':' + _key, t=1)
+
     attrs = _getNoKeyAttributes(allNodes)
-    attrs += _getNoKeyAttributes(nodeAndAttrs)
+
+    if len(nodeAndAttrs) !=0:
+        attrs += _getNoKeyAttributes(nodeAndAttrs)
 
     if len(attrs) != 0:
         cmds.setKeyframe(attrs, t=sframe, insertBlend=False)
@@ -191,7 +215,7 @@ def _exportAnim (publishpath, oFilename, namespaceList, regexArgs, isFilter, fra
         if len(pickNodes) != 0:
             outputfiles.append(publishpath+oFilename+'_'+ns+'.ma')
             # ndPyLibAnimIOExportContain(isFilter, ['3', ''], publishpath, x+'_'+ns, pickNodes, 0, 0)
-            ndPyLibAnimIOExportContain(isFilter, ['3', ''], publishpath, oFilename+'_'+ns, pickNodes,pickNodesAttr, 0, 0)
+            ndPyLibAnimIOExportContain(isFilter, ['3', ''], publishpath, oFilename+'_'+ns, pickNodes, pickNodesAttr, 0, 0, frameRange, bakeAnim)
 
     return outputfiles
 
@@ -225,8 +249,25 @@ def ndPyLibExportAnim (regexArgs, isFilter):
         cmds.warning('no exist folder...')
         return
 
-def ndPyLibExportAnim2(outputPath,oFilename,namespaceList, regexArgs, isFilter, framerange_output):
-    print regexArgs
-    print namespaceList
-    print outputPath
-    _exportAnim(outputPath,oFilename,namespaceList, regexArgs, isFilter, framerange_output)
+def ndPyLibExportAnim2(args):
+    # argsdic = strdict_parse(args)
+    # strdict_parse(args)
+    argsdic = args
+    outputPath = argsdic['output']
+    oFilename = argsdic['exporttype']
+    namespaceList = argsdic['namespace']
+    regexArgs = argsdic['exportitem']
+    bakeAnim = argsdic['bakeAnim']
+    # extradic = argsdic['extra_dic']
+    try:
+        frameHundle = argsdic['framehundle']
+    except KeyError:
+        frameHundle = 0
+    try:
+        frameRange = argsdic['framerange']
+    except KeyError:
+        frameRange = None
+    extra_dic = None
+    isFilter = 1
+
+    _exportAnim(outputPath, oFilename, namespaceList, regexArgs, isFilter, bakeAnim, extra_dic, frameHundle, frameRange)
