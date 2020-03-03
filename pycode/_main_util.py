@@ -92,15 +92,10 @@ class TableModelMaker(QAbstractTableModel):
                     else:
                         value = self.table_data[row][column]
             else:
-                try:
-                    value = self.table_data[row][column]
-                except:
-                    value = ""
+                value = self.table_data[row][column]
             return value
 
         elif role == QtCore.Qt.BackgroundRole:
-            if "{Empty!}" in self.table_data[row]:
-                return QtGui.QColor("#AA0000")
             if row in self.executed_row:
                 return QtGui.QColor("#BBBBBB")
             else:
@@ -144,15 +139,12 @@ def tabledata_maker(headers, convert_dic, target_assets):
                 sg_code = convert_dic[header]
                 if sg_code == 'sg_export_type':
                     if target_asset[sg_code] == 'anim':
-                        td_row.append("anim")
+                        td_row.append(target_asset[sg_code])
                         sg_code = 'sg_anim_export_list'
                     elif target_asset[sg_code] == 'abc':
-                        td_row.append("abc")
+                        td_row.append(target_asset[sg_code])
                         sg_code = 'sg_abc_export_list'
-                    else:
-                        td_row.append('{Empty!}')
-                        td_row.append('{Empty!}')
-                        break
+
                 td_row.append(target_asset[sg_code])
         tabledata.append(td_row)
 

@@ -64,7 +64,8 @@ class GUI (QMainWindow):
         debug = ''
         if self.test:debug = '__debug__'
         self.setWindowTitle('%s %s %s' % (self.WINDOW, __version__, debug))
-        # 静的変数
+        # self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+        # # 静的変数
         self.headers_item = [
             "Asset name", "Name space",
             "Export Type", "Export Item",
@@ -119,8 +120,6 @@ class GUI (QMainWindow):
         self.ui.stepValue_CheckBox.stateChanged.connect(self.stepValue_clicked)
 
         self.ui.main_table.clicked.connect(self.main_table_clicked)
-        # for x in dir(self.ui.main_table):
-        #     print x
         self.ui.main_table.doubleClicked.connect(self.main_table_doubleclicked)
         self.ui.debug_CheckBox.stateChanged.connect(self.debug_clicked)
 
@@ -220,11 +219,13 @@ class GUI (QMainWindow):
             qtcombobox.addItems(itemlist)
 
         def _setComboBoxValue(qtcombobox, value, subvalue=None):
-            try:
-                combo_index = qtcombobox.findText(value)
-            except:
-                if subvalue != None:
-                    combo_index = qtcombobox.findText(subvalue)
+            combo_index = qtcombobox.findText(value)
+            if combo_index == -1:
+                combo_index = qtcombobox.findText(value.lower())
+                if combo_index == -1:
+                    if subvalue != None:
+                        combo_index = qtcombobox.findText(subvalue)
+            print combo_index
             qtcombobox.setCurrentIndex(combo_index)
 
         _groups = util_env.deadline_group #dictかも
@@ -236,9 +237,6 @@ class GUI (QMainWindow):
         _pools.sort()
         _setComboBoxList(self.ui.poollist, _pools)
         _setComboBoxValue(self.ui.poollist, self.project, 'normal')
-        #-----------------------------------------
-        #
-        #-----------------------------------------
 
         model = mu.TableModelMaker(
             tabledata, self.headers)
@@ -411,14 +409,14 @@ class GUI (QMainWindow):
                     execargs_ls['camScale'] = camScale
                 else:
                     pass
-                if isSubmit == 1:
-                    DLclass = mu.DeadlineMod(**execargs_ls)
-                    jobFileslist.append(DLclass.make_submit_files(file_number))
-                    file_number += 1
-                elif isSubmit == 0:
-                    mu.execExporter(**execargs_ls)
-                util.addTimeLog(chara, self.inputpath, test=self.test)
-
+                if "{Empty!}" not in execargs_ls.values():
+                    if isSubmit == 1:
+                        DLclass = mu.DeadlineMod(**execargs_ls)
+                        jobFileslist.append(DLclass.make_submit_files(file_number))
+                        file_number += 1
+                    elif isSubmit == 0:
+                        mu.execExporter(**execargs_ls)
+                    util.addTimeLog(chara, self.inputpath, test=self.test)
             else:
                 pass
 

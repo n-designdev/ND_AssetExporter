@@ -2,9 +2,7 @@
 
 import maya.cmds as mc
 import maya.mel as mel
-
 import os
-
 
 def newScene ():
     mc.file(new=True)
@@ -86,9 +84,6 @@ def attachABC (abcPath,namespace,hierarchyList):
         pass
         # setAttr - type "string" _LXM:pgYetiMaya_LXMShape.cacheFileName "a"
         # setAttr - type "string" _LXM:pgYetiMaya_LXMShape.outputCacheFileName "b"
-
-
-
 
 def replaceABCPath (repAbcPath):
     abcNodes = mc.ls(type='AlembicNode')
