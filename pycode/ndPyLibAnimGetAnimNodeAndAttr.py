@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-import maya.cmds as mc
+import maya.cmds as cmds
 from ndPyLibStrDeletePrefix import *
 
 
@@ -11,8 +11,8 @@ def ndPyLibAnimGetAnimNodeAndAttr (inForNodes, inMode, isCheckAnimCurve, isCheck
     if (inMode >= 0 and inMode <= 3) and len(inForNodes)>0:
         retNodes = ndPyLibAnimGetAnimNodeAndAttrFunc(inForNodes, inMode, isCheckAnimCurve, isCheckConstraint)
     else:
-        mc.confirmDialog(title='Error...', message='Please select the mode that 0-3 is correct or node is zero.')
-        mc.error('[nd] Please select the mode that 0-3 is correct or node is zero.\n')
+        cmds.confirmDialog(title='Error...', message='Please select the mode that 0-3 is correct or node is zero.')
+        cmds.error('[nd] Please select the mode that 0-3 is correct or node is zero.\n')
     return retNodes
 
 def _GetAnimNodeAndAttrFunc (inNode, inMode):
@@ -26,7 +26,7 @@ def _GetAnimNodeAndAttrFunc (inNode, inMode):
         flag = 1
         nodes = []
 
-        nodes = mc.listConnections(inNode, c=True, type=l)
+        nodes = cmds.listConnections(inNode, c=True, type=l)
         if nodes is not None:
             if inMode == 0 or inMode == 2:
                 for k in range(0, len(nodes)):
@@ -51,7 +51,7 @@ def _GetAnimNodeAndAttrFunc (inNode, inMode):
                             nodeAttr = nodes[k].split('.')
                             delPfxNode = ndPyLibStrDeletePrefix(nodeAttr[0])
                             retNodes[count] = delPfxNode + '.' + nodeAttr[1]
-                        
+
                         flag = 0
                         count+=1
                     else:
@@ -95,7 +95,7 @@ def ndPyLibAnimGetAnimNodeAndAttrFunc (inForNodes, inMode, isCheckAnimCurve, isC
             else:
                 message = '[No Animation Node:] No Check'
             message = message + '\n\n'
-            
+
             if isCheckConstraint:
                 if listConstraintConnectNodeCnt>0:
                     message = message + '[Constraint Connect Node:] \n' + '\n'.join(listConstraintConnectNode)
@@ -106,6 +106,5 @@ def ndPyLibAnimGetAnimNodeAndAttrFunc (inForNodes, inMode, isCheckAnimCurve, isC
             message = message + '\n'
 
             ### result
-    
+
     return retNodesAll
-            

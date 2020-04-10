@@ -2,9 +2,7 @@
 
 import maya.cmds as mc
 import maya.mel as mel
-
 import os
-
 
 def newScene ():
     mc.file(new=True)
@@ -24,9 +22,14 @@ def save ():
 def replaceAsset (assetPath, namespace):
     mc.warning( 'replace start ')
     refs = mc.ls(type='reference')
+    # import pdb;pdb.set_trace()
     try:
         print refs
         refs.remove('sharedReferenceNode')
+    except:
+        pass
+    try:
+        refs.remove(namespace.replace('_anim','')+':_UNKNOWN_REF_NODE_')
     except:
         pass
     tgtRN = ''
@@ -35,13 +38,14 @@ def replaceAsset (assetPath, namespace):
         if namespace == ns:
             tgtRN = r
             break
-    else:
-        mc.error('can not replace')
+        else:
+            print r+' can not replace'
 
     try:
         mc.file(assetPath, loadReference=tgtRN)
     except:
         pass
+
     mc.warning('replace end')
 
 
@@ -80,9 +84,6 @@ def attachABC (abcPath,namespace,hierarchyList):
         pass
         # setAttr - type "string" _LXM:pgYetiMaya_LXMShape.cacheFileName "a"
         # setAttr - type "string" _LXM:pgYetiMaya_LXMShape.outputCacheFileName "b"
-
-
-
 
 def replaceABCPath (repAbcPath):
     abcNodes = mc.ls(type='AlembicNode')

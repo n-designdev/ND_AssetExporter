@@ -3,18 +3,40 @@
 import os
 import re, glob
 
-import maya.cmds as mc
+import maya.cmds as cmds
 import maya.mel as mel
 
 from ndPyLibAnimIOExportContain import *
 
-def _getNamespace ():
+def spsymbol_remover(litteral, sp_check=None):
+    listitem = ['exportitem']
+    if sp_check in listitem:
+        litteral = re.sub(':|\'|{|}', '', litteral)
+    else:
+        litteral = re.sub(':|\'|,|{|}', '', litteral)
+    url_list = ['inputpath', 'assetpath']
+    if sp_check in url_list:
+        litteral = litteral.replace('/', ':/')
+    return litteral
+
+
+def strdict_parse(original_string):
+    parsed_dic = {}
+    original_string_iter = iter(original_string)
+    for key, item in zip(original_string_iter, original_string_iter):
+        key = spsymbol_remover(key)
+        item = spsymbol_remover(item, key)
+        parsed_dic[key] = item
+    return parsed_dic
+
+
+def _getNamespace():
     print '_getNamespace'
-    print mc.namespaceInfo(lon=True)
-    namespaces = mc.namespaceInfo(lon=True)
+    print cmds.namespaceInfo(lon=True)
+    namespaces = cmds.namespaceInfo(lon=True)
     _nestedNS = []
     for ns in namespaces:
-        nestedNS = mc.namespaceInfo(ns, lon=True)
+        nestedNS = cmds.namespaceInfo(ns, lon=True)
         print ns, nestedNS
         if nestedNS != None:
             _nestedNS += nestedNS
@@ -24,159 +46,248 @@ def _getNamespace ():
     print namespaces
     return namespaces
 
+
 def _getAllNodes (namespace, regexArgs):
     if len(regexArgs) == 0:
         regexArgs = ['*']
-
     nodes = []
-    regexArgs = regexArgs[0].split(',')
     for regex in regexArgs:
         regexN = ''
         if namespace != '':
             regexN += namespace + ':'
         regexN = regexN + regex
         print 'regexN:   ' + regexN
-        objs = mc.ls(regexN, type='transform')
-        objs += mc.ls(regexN, type='locator')
-        print 'objs:'
-        print objs
-
+        objs = cmds.ls(regexN, type='transform')
+        objs += cmds.ls(regexN, type='locator')
+        objs += cmds.ls(regexN, shapes=True)
         try:
-            objSets = mc.sets(regexN, q=True)
-            print 'objSets:   '
-            print  objSets
-
-            if len(objs) != 0:
-                nodes += objs
-            if len(objSets) != 0:
-                nodes += objSets
+            objSets = cmds.sets(regexN, q=True)
         except:
-            pass
-
+            objSets = []
+        print objSets
         if len(objs) != 0:
             nodes += objs
+        if len(objSets) != 0:
+            nodes += objSets
 
+    nodes = list(set(nodes))
     nodeShort = []
 
     for node in nodes:
         nodeShort.append(node.split('|')[-1])
-
+    print "allNodes:", nodeShort
     return nodeShort
+
 
 def _getConstraintAttributes (nodes):
     attrs = []
     for n in nodes:
-        const = mc.listConnections(n, s=True, d=False, p=False, c=True, t='constraint')
-        print n, const
+        const = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='constraint')
         if const is None: continue
         for i in range(0, len(const), 2):
             attrs.append(const[i])
     return attrs
 
+
 def _getPairBlendAttributes (nodes):
     attrs = []
     for n in nodes:
-        pairblend = mc.listConnections(n, s=True, d=False, p=False, c=True, t='pairBlend')
+        pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='pairBlend')
         if pairblend is None: continue
         for i in range(0, len(pairblend), 2):
             attrs.append(pairblend[i])
     return attrs
 
+
 def _getNoKeyAttributes (nodes):
     attrs = []
     for n in nodes:
-        gAttrs = mc.listAttr(n, keyable=True)
+        if '.' in n:
+            n = n.split('.')[0]
+        gAttrs = cmds.listAttr(n, keyable=True)
         print n, gAttrs
         if gAttrs is None: continue
         for attr in gAttrs:
             if '.' not in attr:
-                if mc.listConnections(n+'.'+attr, s=True, d=False) is None:
+                if cmds.listConnections(n+'.'+attr, s=True, d=False) is None:
                     attrs.append(n+'.'+attr)
                     print 'find no key attribute : ' + n + '.' + attr
     return attrs
 
 
-def _exportAnim (publishpath, oFilename, namespaceList, regexArgs, isFilter, framerange_output):
+def _exportAnim (publishpath, oFilename, strnamespaceList, strregexArgs, isFilter, bakeAnim, strextra_dic, framehundle, framerange):
+
+    regexArgsN = [] #regexArgs Normal
+    regexArgsAttrs = [] #regexArgs Attribute用
+    regexArgs = strregexArgs.split(',')
+    namespaceList = strnamespaceList.split(',')
+    _namespaceList = namespaceList[:]
+
+    for regexArg in regexArgs:
+        if '.' in regexArg:
+            regexArgsAttrs.append(regexArg)
+        else:
+            regexArgsN.append(regexArg)
 
     outputfiles = []
     namespaces = _getNamespace()
-
     allNodes = []
+    nodeAndAttrs = [] # ns+node+attr, ex:ketel_evo:wave8.minRadius
 
-    frameHandle = 5
+    frameHandle = framehundle
+    if frameHandle == 'None':
+        frameHandle = 0
 
-    sframe = mc.playbackOptions(q=True, min=True)-frameHandle
-    eframe = mc.playbackOptions(q=True, max=True)+frameHandle
+    sframe = cmds.playbackOptions(q=True, min=True) - float(frameHandle)
+    eframe = cmds.playbackOptions(q=True, max=True) + float(frameHandle)
 
-    ### フレームレンジ読み込み ###
-    if framerange_output == True:
-        with open(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(publishpath))), 'sceneConf.txt').replace('\\', '/'), 'w') as f:
-            f.write(str(sframe)+'\n')
-            f.write(str(eframe)+'\n')
+    ### 解像度書き込み ###
+    with open(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(publishpath))), "resolutionConf.txt").replace("\\", "/"), "w") as f:
+        f.write(str(cmds.getAttr("defaultResolution.width"))+"\n")
+        f.write(str(cmds.getAttr("defaultResolution.height"))+"\n")
+
+    # MST用
+    if 'camera_base' in _namespaceList:
+        root_list = cmds.ls("root", r=True)
+        print root_list
+        for root in root_list:
+            if 'camera_base' in root:
+                # for x in cmds.ls(root.split(":")[0]+":*"):
+                try:
+                    cam_objs = cmds.listRelatives(root, ad=True)
+                    camera_name = root.split(":")[0]
+                    cam_objs.remove(camera_name+":aim_jt1")
+                    cam_objs.remove(camera_name+":aim_jt2")
+                    cmds.bakeResults(cam_objs, t=(sframe, eframe), sb=1, simulation=True)
+                    for x in cmds.listRelatives(root, ad=True):
+                        if "Constraint" in cmds.objectType(x):
+                            cmds.delete(x)
+                    cmds.select(root)
+                    _path = os.path.dirname(publishpath)+"/"+root.split(":")[0]
+                    cmds.file(_path, f=True, es=True, typ="mayaAscii", ch=1, chn=1, exp=1, sh=0)
+                    outputfiles.append(_path)
+                except Exception as e:
+                    print e
+
+        return outputfiles
+
+    if 'camera_simple' in _namespaceList:
+        root_list = cmds.ls("camera", r=True)
+        print root_list
+        for root in root_list:
+            if 'camera_simple' in root:
+                try:
+                    # for x in cmds.ls(root.split(":")[0]+":*"):
+                    cam_objs = cmds.listRelatives(root, ad=True)
+                    camera_name = root.split(":")[0]
+                    cmds.bakeResults(cam_objs, hi='below', t=(sframe, eframe), simulation=True)
+                    for x in cmds.listRelatives(root, ad=True):
+                        if "Constraint" in cmds.objectType(x):
+                            cmds.delete(x)
+                    cmds.select(root)
+                    _path = os.path.dirname(publishpath)+"/"+root.split(":")[0]
+                    cmds.file(_path, f=True, es=True, typ="mayaAscii", ch=1, chn=1, exp=1, sh=0)
+                    outputfiles.append(_path)
+                except Exception as e:
+                    print e
+        return outputfiles
+
+    if framerange != None:
+        frameRange = [sframe, eframe]
+    else:
+        frameRange = framerange
+
+    ### フレームレンジ書き込み ###
+    with open(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(publishpath))), 'sceneConf.txt').replace('\\', '/'), 'w') as f:
+        f.write(str(sframe)+'\n')
+        f.write(str(eframe)+'\n')
+
+    for i, _nsList in enumerate(namespaceList):
+        namespaceList[i] = '[a-zA-Z0-9_:]*' + _nsList + '[0-9]*$'
 
     for ns in namespaces:
-        for _nsList in namespaceList:##ketel
+        for _nsList in namespaceList:
             print _nsList
-            print ns
+            print "####"
             match = re.match(_nsList, ns)
-            print match
             if match != None:
-                allNodes += _getAllNodes(ns, regexArgs)
+                allNodes += _getAllNodes(ns, regexArgsN)
 
-    print allNodes
+    for ns in namespaceList:
+        for regexArgsAttr in regexArgsAttrs:
+            regexAttr = ns+':'+regexArgsAttr
+            if cmds.objExists(regexAttr):
+                nodeAndAttrs.append(regexAttr)
     print '==========================='
 
-    characterSet = mc.ls(type='character')
+    characterSet = cmds.ls(type='character')
     if len(characterSet) == 0:
-        mc.delete(characterSet)
+        cmds.delete(characterSet)
 
-    mc.select(allNodes)
-    baseAnimationLayer = mc.animLayer(q=True, r=True)
+    cmds.select(allNodes)
+    baseAnimationLayer = cmds.animLayer(q=True, r=True)
 
-    if baseAnimationLayer!=None:
-        animLayers = mc.ls(type='animLayer')
+    if baseAnimationLayer!=None and len(cmds.ls(sl=True))!=0 :
+        animLayers = cmds.ls(type='animLayer')
         for al in animLayers:
-            mc.animLayer(al, e=True, sel=False)
-        mc.animLayer(baseAnimationLayer, e=True, sel=True)
-        mc.bakeResults(t=(sframe, eframe), sb=True, ral=True)
+            cmds.animLayer(al, e=True, sel=False)
+
+        cmds.animLayer(baseAnimationLayer, e=True, sel=True)
+        cmds.bakeResults(t=(sframe, eframe), sb=True, ral=True)
         print 'merge animation layers'
-    mc.select(cl=True)
+    cmds.select(cl=True)
+
+    if strextra_dic != None:
+        for extra_dicitem in strextra_dic:
+            _key, item = extra_dicitem.split(':')
+        for ns in namespaceList:
+            for _nsList in namespaceList:
+                _ns = ns.split('*')[1].rstrip('$')
+                cmds.setAttr(_ns + ':' + _key, int(item)) # 整数限定
+                cmds.setKeyframe(_ns + ':' + _key, t=1)
 
     attrs = _getNoKeyAttributes(allNodes)
+
+    if len(nodeAndAttrs) !=0:
+        attrs += _getNoKeyAttributes(nodeAndAttrs)
+
     if len(attrs) != 0:
-        mc.setKeyframe(attrs, t=sframe, insertBlend=False)
+        cmds.setKeyframe(attrs, t=sframe, insertBlend=False)
 
     attrs = _getConstraintAttributes(allNodes)
     attrs += _getPairBlendAttributes(allNodes)
+
     if len(attrs)!=0:
-        mc.bakeResults(attrs, t=(sframe, eframe), sb=True)
+        cmds.bakeResults(attrs, t=(sframe, eframe), sb=True)
 
     for ns in namespaces:
         pickNodes = []
+        pickNodesAttr = []
         for n in allNodes:
             if ns+':' in n:
                 pickNodes.append(n)
-        print pickNodes
+        for n in nodeAndAttrs:
+            if ns+':' in n:
+                pickNodesAttr.append(n)
         if len(pickNodes) != 0:
-
             outputfiles.append(publishpath+oFilename+'_'+ns+'.ma')
             # ndPyLibAnimIOExportContain(isFilter, ['3', ''], publishpath, x+'_'+ns, pickNodes, 0, 0)
-            ndPyLibAnimIOExportContain(isFilter, ['3', ''], publishpath, oFilename+'_'+ns, pickNodes, 0, 0)
+            ndPyLibAnimIOExportContain(isFilter, ['3', ''], publishpath, oFilename+'_'+ns, pickNodes, pickNodesAttr, 0, 0, frameRange, bakeAnim)
 
     return outputfiles
 
 
 def ndPyLibExportAnim (regexArgs, isFilter):
-    if mc.file(q=True, modified=True):
-        mc.warning('please save scene file...')
+    if cmds.file(q=True, modified=True):
+        cmds.warning('please save scene file...')
     return
 
-    filepath = mc.file(q=True, sceneName=True)
+    filepath = cmds.file(q=True, sceneName=True)
     filename = os.path.basename(filepath)
 
     match = re.match('(P:/Project/[a-zA-Z0-9]+)/([a-zA-Z0-9]+)/([a-zA-Z0-9]+)/([a-zA-Z0-9]+)/([a-zA-Z0-9]+)', filepath)
     if match is None:
-        mc.warning('directory structure is not n-design format')
+        cmds.warning('directory structure is not n-design format')
         return
 
     project  = match.group(1)
@@ -192,11 +303,27 @@ def ndPyLibExportAnim (regexArgs, isFilter):
     oFilename = sequence + shot + '_anim'
 
     if not os.path.exists(shotpath):
-        mc.warning('no exist folder...')
+        cmds.warning('no exist folder...')
         return
 
-def ndPyLibExportAnim2(outputPath,oFilename,namespaceList, regexArgs, isFilter, framerange_output):
-    print regexArgs
-    print namespaceList
-    print outputPath
-    _exportAnim(outputPath,oFilename,namespaceList, regexArgs, isFilter, framerange_output)
+def ndPyLibExportAnim2(args):
+    # argsdic = strdict_parse(args)
+    # strdict_parse(args)
+    argsdic = args
+    outputPath = argsdic['output']
+    oFilename = argsdic['exporttype']
+    namespaceList = argsdic['namespace']
+    regexArgs = argsdic['exportitem']
+    bakeAnim = argsdic['bakeAnim']
+    # extradic = argsdic['extra_dic']
+    try:
+        frameHundle = argsdic['framehundle']
+    except KeyError:
+        frameHundle = 0
+    try:
+        frameRange = argsdic['framerange']
+    except KeyError:
+        frameRange = None
+    extra_dic = None
+    isFilter = 1
+    _exportAnim(outputPath, oFilename, namespaceList, regexArgs, isFilter, bakeAnim, extra_dic, frameHundle, frameRange)
