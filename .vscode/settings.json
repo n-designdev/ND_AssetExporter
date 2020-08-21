@@ -1,0 +1,37 @@
+{
+    "workbench.colorCustomizations": {
+        "[fairyfloss]": {
+            "editor.selectionHighlightBackground": "#ffff0070",
+            "editor.selectionBackground": "#00ff0060",
+            "editor.lineHighlightBackground": "#00ff0060",
+            "editor.lineHighlightBorder": "#00ff0060",
+            "editor.findMatchBackground": "#ff000090",
+            "editor.findMatchHighlightBackground": "#ff000090"
+        },
+        "[Ayu Light]": {
+            "editor.selectionHighlightBackground": "#ffff0070",
+            "editor.selectionBackground": "#00ff0060",
+            "editor.lineHighlightBackground": "#00ff0060"
+        },
+        "[Bubblegum]": {
+            "editor.selectionHighlightBackground": "#a200ff",
+            "editor.lineHighlightBackground": "#00ff0040"
+        },
+        "titleBar.activeForeground": "#C6E9FF",
+        "titleBar.activeBackground": "#236B98",
+        "titleBar.inactiveForeground": "#DEF2FF",
+        "titleBar.inactiveBackground": "#3AABF2",
+        "activityBar.foreground": "#C6E9FF",
+        "activityBar.background": "#236B98",
+        "activityBar.inactiveForeground": "#309697",
+        "activityBarBadge.foreground": "#FFFFFF",
+        "activityBarBadge.background": "#AFA2FF",
+        "statusBar.foreground": "#000000",
+        "statusBar.background": "#46BC7C",
+        "statusBarItem.hoverBackground": "#155A4C",
+        "statusBarItem.remoteForeground": "#00080A",
+        "statusBarItem.remoteBackground": "#51A9C1",
+        "statusBar.debuggingForeground": "#000000",
+        "statusBar.debuggingBackground": "#46BC7C"
+    }
+}
