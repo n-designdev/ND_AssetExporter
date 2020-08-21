@@ -112,4 +112,3 @@ if __name__ == "__main__":
     sg_shot = SGGen_Cate("MSTB4", "Shot", shot_fieldcodes)
     x = sg_shot.make_nameddict('code')
     print sg_shot.codekeyed_dict['ep0906_s005_c056']['assets']
-
