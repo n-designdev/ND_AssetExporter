@@ -22,7 +22,6 @@ def save ():
 def replaceAsset (assetPath, namespace):
     mc.warning( 'replace start ')
     refs = mc.ls(type='reference')
-    # import pdb;pdb.set_trace()
     try:
         print refs
         refs.remove('sharedReferenceNode')
@@ -40,7 +39,6 @@ def replaceAsset (assetPath, namespace):
             break
         else:
             print r+' can not replace'
-
     try:
         mc.file(assetPath, loadReference=tgtRN)
     except:
@@ -65,8 +63,8 @@ def attachABC (abcPath,namespace,hierarchyList):
     mel.eval('AbcImport -mode import -fitTimeRange -debug -connect ' + '\"' + hierarchy + '\" ' + '\"' + abcPath + '\"')
 
     outputFile = os.path.dirname(os.path.dirname(abcPath))+'/yetimem.txt'
-    print outputFile
-    print namespace
+    print "outputFile: {}".format(outputFile)
+    print "namespace: {}".format(namespace)
     try:
         with open(outputFile, 'r') as fp:
 

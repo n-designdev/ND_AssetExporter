@@ -28,9 +28,13 @@ class outputPathConf (object):
 
         dic = util_path.get_path_dic(self.inputPath)
 
-        self._pro_name = dic['project_name']
-        self._shot = dic['shot']
-        self._sequence = dic['sequence']
+        try:
+            self._pro_name = dic['project_name']
+            self._shot = dic['shot']
+            self._sequence = dic['sequence']
+        except:
+            self._shot = "animation"
+            self._sequence = "TR012_sq002"
         # self._roll = dic['roll']
 
         print self._pro_name

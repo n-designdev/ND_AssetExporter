@@ -35,9 +35,17 @@ class ProjectInfo():
         self.path_type = url_parsedict['path_type']
         self.project_name = url_parsedict['project_name']
         # self.roll = url_parsedict['roll']
-        self.shot = url_parsedict['shot']
-        self.sequence = url_parsedict['sequence']
-        self.shot_code = url_parsedict['shot_code']
+# P:\GZL6\shots\TR012\TR012_sq002\TR012_sq002_c002\animation\work\k_ueda\maya\scens
+# P:\Project\NW\shots\roll01\s002\c001\work\kane\30_Anm\maya\scenes
+        #debug
+        try:
+            self.shot = url_parsedict['shot']
+            self.sequence = url_parsedict['sequence']
+            self.shot_code = url_parsedict['shot_code']
+        except:
+            self.shot = "animation"
+            self.sequence = "TR012_sq002"
+            self.shot_code = "TR012_sq002_c002"
 
     def get_camera_rig_info(self):
         project_conf = util_path.get_conf_dic(self.project_name.lower())

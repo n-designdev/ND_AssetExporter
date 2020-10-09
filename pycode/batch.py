@@ -23,6 +23,9 @@ def mayacmd_maker(unique_order, file=None, mayaBatch=None):
     cmd = [mayaBatch]
     cmd.append('-command')
     cmd.append("python(\"{}\")".format(batch_firstact))
+    # cmd.append('-log')
+    # cmd.append('C:/Users/k_ueda/Desktop/temp/maya_result.txt')
+
     if file is not None:
         cmd.append('-file')
         cmd.append(file)
@@ -100,16 +103,19 @@ def animExport(**kwargs):
     if argsdic['env_load']:
         env_load(argsdic['project'])
         mayaBatch = maya_version(argsdic['project'])
+    else:
+        mayaBatch = None
     original_litte = (
+        'from mayaBasic import *;'
         'from ndPyLibExportAnim import ndPyLibExportAnim2;'
         'ndPyLibExportAnim2({})'.format(str(argsdic))
     )
     cmd = mayacmd_maker(original_litte, argsdic['inputpath'], mayaBatch)
     cmd[2] = str(cmd[2]).replace('\\\\','\\')
     print cmd
-    # cmd[2] = str(cmd[2]).replace('\\','')
-    subprocess.call(cmd)
-
+    import pdb;pdb.set_trace()
+    p = subprocess.Popen(cmd, shell=True)
+    p.wait()
 
 def animAttach(**kwargs):
     argsdic = kwargs
@@ -225,6 +231,12 @@ def maya_version(project):
 
     ryear = renderinfo[0]
     print ryear
-    return  'C:\\Program Files\\Autodesk\\Maya'+ryear+'\\bin\\mayabatch.exe'
+    return  'C:\\Program Files\\Autodesk\\Maya2019'+'\\bin\\maya.exe'
+    # return  'C:\\Program Files\\Autodesk\\Maya'+ryear+'\\bin\\mayabatch.exe'
 
 
+# ['C:\\Program Files\\Autodesk\\Maya2018\\bin\\mayabatch.exe', '-command',
+# 'python("import sys;sys.path.append(\'Y:/tool/ND_Tools/DCC/ND_AssetExporter/pycode\');
+# from ndPyLibExportAnim import ndPyLibExportAnim2;
+# ndPyLibExportAnim2({\\\'Group\\\': \\\'u16gb\\\', \\\'sequence\\\': \\\'s002\\\', \\\'exporttype\\\': \\\'anim\\\', \\\'env_load\\\': \\\'True\\\', \\\'Priority\\\': \\\'u50\\\', \\\'shot\\\': \\\'c001\\\', \\\'stepValue\\\': \\\'1.0\\\', \\\'namespace\\\': \\\'NBGNml_Rig_AH\\\', \\\'bakeAnim\\\': \\\'True\\\', \\\'abcOutput\\\': \\\'P:/Project/NW/shots/roll01/s002/c001/publish/test_charSet/NBGNml/v026/abc/NBGNml.abc\\\', \\\'framerange_output\\\': \\\'True\\\', \\\'inputpath\\\': \\\'P:/Project/NW/shots/roll01/s002/c001/work/kane/30_Anm/maya/scenes/s002c001_lay_v002.ma\\\', \\\'Pool\\\': \\\'unw\\\', \\\'assetpath\\\': \\\'P:/Project/NW/assets/chara/NBG/NBGNml/publish/Setup/AH/maya/current/NBGNml_Rig_AH.mb\\\', \\\'framerange\\\': \\\'None\\\', \\\'chara\\\': \\\'NBGNml\\\', \\\'topnode\\\': \\\'root\\\', \\\'framehundle\\\': \\\'0\\\', \\\'project\\\': \\\'NW\\\', \\\'testmode\\\': \\\'True\\\', \\\'output\\\': \\\'P:/Project/NW/shots/roll01/s002/c001/publish/test_charSet/NBGNml/v026/anim\\\', \\\'exportitem\\\': \\\'ctrl_sets\\\'});"
+# )', '-file', 'P:/Project/NW/shots/roll01/s002/c001/work/kane/30_Anm/maya/scenes/s002c001_lay_v002.ma']

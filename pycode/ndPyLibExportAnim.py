@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import os
+import os, sys
 import re, glob
 
 import maya.cmds as cmds
@@ -31,44 +31,55 @@ def strdict_parse(original_string):
 
 
 def _getNamespace():
-    print '_getNamespace'
-    print cmds.namespaceInfo(lon=True)
     namespaces = cmds.namespaceInfo(lon=True)
+    print namespaces
     _nestedNS = []
     for ns in namespaces:
         nestedNS = cmds.namespaceInfo(ns, lon=True)
-        print ns, nestedNS
         if nestedNS != None:
             _nestedNS += nestedNS
     namespaces += _nestedNS
     namespaces.remove('UI')
     namespaces.remove('shared')
-    print namespaces
     return namespaces
 
 
 def _getAllNodes (namespace, regexArgs):
     if len(regexArgs) == 0:
         regexArgs = ['*']
+    print regexArgs
     nodes = []
     for regex in regexArgs:
-        regexN = ''
-        if namespace != '':
-            regexN += namespace + ':'
-        regexN = regexN + regex
-        print 'regexN:   ' + regexN
-        objs = cmds.ls(regexN, type='transform')
-        objs += cmds.ls(regexN, type='locator')
-        objs += cmds.ls(regexN, shapes=True)
-        try:
-            objSets = cmds.sets(regexN, q=True)
-        except:
-            objSets = []
-        print objSets
-        if len(objs) != 0:
+        if "*" in regex:
+            ns_objs = cmds.ls(str(namespace)+":*")
+            objs = []
+            if regex[0]=="*":
+                objs.extend([i for i in ns_objs[:] if re.search(r"[a-zA-Z0-9_:]{}".format(regex), i) != None])
+            elif regex[-1]=="*":
+                objs.extend([i for i in ns_objs[:] if re.search(r"{}:{}[a-zA-Z0-9_:]*".format(namespace, regex), i)!= None])
             nodes += objs
-        if len(objSets) != 0:
-            nodes += objSets
+        else:
+            regexN = ''
+            if namespace != '':
+                regexN += namespace + ':'
+            regexN = regexN + regex
+            print 'regexN:   ' + regexN
+            objs = cmds.ls(regexN, type='transform')
+            objs += cmds.ls(regexN, type='locator')
+            objs += cmds.ls(regexN, type="joint")
+            objs += cmds.ls(regexN, shapes=True)
+            try:
+                objSets = cmds.sets(regexN, q=True)
+                objSets = cmds.sets(regexN, q=True)
+            except:
+                objSets = []
+            if objSets is None:
+                objSets = []
+            print "objSets:{}".format(objSets)
+            if len(objs) != 0:
+                nodes += objs
+            if len(objSets) != 0:
+                nodes += objSets
 
     nodes = list(set(nodes))
     nodeShort = []
@@ -173,7 +184,6 @@ def _exportAnim (publishpath, oFilename, strnamespaceList, strregexArgs, isFilte
 
     if 'camera_simple' in _namespaceList:
         root_list = cmds.ls("camera", r=True)
-        print root_list
         for root in root_list:
             if 'camera_simple' in root:
                 try:
@@ -202,13 +212,12 @@ def _exportAnim (publishpath, oFilename, strnamespaceList, strregexArgs, isFilte
         f.write(str(sframe)+'\n')
         f.write(str(eframe)+'\n')
 
-    for i, _nsList in enumerate(namespaceList):
-        namespaceList[i] = '[a-zA-Z0-9_:]*' + _nsList + '[0-9]*$'
+    #debug
+    # for i, _nsList in enumerate(namespaceList):
+    #     namespaceList[i] = '[a-zA-Z0-9_:]*' + _nsList + '[0-9]*$'
 
     for ns in namespaces:
         for _nsList in namespaceList:
-            print _nsList
-            print "####"
             match = re.match(_nsList, ns)
             if match != None:
                 allNodes += _getAllNodes(ns, regexArgsN)
@@ -218,6 +227,7 @@ def _exportAnim (publishpath, oFilename, strnamespaceList, strregexArgs, isFilte
             regexAttr = ns+':'+regexArgsAttr
             if cmds.objExists(regexAttr):
                 nodeAndAttrs.append(regexAttr)
+
     print '==========================='
 
     characterSet = cmds.ls(type='character')
@@ -260,10 +270,12 @@ def _exportAnim (publishpath, oFilename, strnamespaceList, strregexArgs, isFilte
     if len(attrs)!=0:
         cmds.bakeResults(attrs, t=(sframe, eframe), sb=True)
 
+
     for ns in namespaces:
         pickNodes = []
         pickNodesAttr = []
         for n in allNodes:
+            # print ns, n
             if ns+':' in n:
                 pickNodes.append(n)
         for n in nodeAndAttrs:
@@ -327,3 +339,5 @@ def ndPyLibExportAnim2(args):
     extra_dic = None
     isFilter = 1
     _exportAnim(outputPath, oFilename, namespaceList, regexArgs, isFilter, bakeAnim, extra_dic, frameHundle, frameRange)
+    print "ndPylibExportAnim End"
+    return

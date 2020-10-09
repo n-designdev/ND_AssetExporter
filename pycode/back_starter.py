@@ -85,10 +85,12 @@ def back_starter(**kwargs):
 
     if exporttype == 'anim':
         batch.animExport(**argsdic)
+        print opc.publishfullanimpath
         animFiles = os.listdir(opc.publishfullanimpath)
-
         progress = 40
-        print("Progress: {}%".format(progress))
+
+        import pdb;pdb.set_trace()
+
 
         if charaName == "camera_base" or charaName == "camera_simple":
             # 'X:/MST3MV/Data/60_SHOT/epD/s048/c007/publish/test_charSet/camera_simple/v001/anim
@@ -102,8 +104,8 @@ def back_starter(**kwargs):
             return
 
         if len(animFiles) == 0:
-            print charaName
-            print argsdic
+            print "charaName: {}".format(charaName)
+            print "argsdic: {}".format(argsdic)
 
         if len(animFiles)==0:
             opc.removeDir()

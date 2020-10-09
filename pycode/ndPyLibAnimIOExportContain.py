@@ -5,16 +5,16 @@ import maya.cmds as cmds
 import os
 
 def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName, inForNodes, inForNodesAttr, isCheckAnimCurve, isCheckConstraint, frameRange, bakeAnim):
-    print '$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$'
-    print isFilterCurve
-    print inPfxInfo
-    print inDirPath
-    print inFileName
-    print inForNodes
-    print inForNodesAttr  # Attr直指定
-    print isCheckAnimCurve
-    print isCheckConstraint
-    print '$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$'
+    print '================================================'
+    print "isFilterCurve: {}".format(isFilterCurve)
+    print "inPfxInfo: {}".format(inPfxInfo)
+    print "inDirPath: {}:".format(inDirPath)
+    print "inFileName: {}:".format(inFileName)
+    print "inForNodes: {}".format(inForNodes)
+    print "inForNodesAttr: {}".format(inForNodesAttr)  # Attr直指定
+    print "isCheckAnimCurve: {}".format(isCheckAnimCurve)
+    print "isCheckConstraint: {}".format(isCheckConstraint)
+    print '================================================'
     retNodes = []
     addCmd = []
 
@@ -88,7 +88,8 @@ def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName,
             info['ver'] = 'v0.0.0'
             info['tool'] = 'ND_AssetExporter'
             addInfoAttr(s, info)
-    cmds.file(filePathName, f=True, es=True, typ='mayaAscii', ch=0, chn=0, exp=0, con=0, sh=0)
+
+    print cmds.file(filePathName, f=True, es=True, typ='mayaAscii', ch=0, chn=0, exp=0, con=0, sh=0)
 
     for i in range(len(retNodes)/2):
         node = retNodes[i*2].split('|')[-1]
@@ -109,15 +110,16 @@ def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName,
             else:
                 writeFileID.write(line)
             line = readFileID.readline()
-    except:
-        pass
+    except Exception as e:
+        print e
     finally:
         readFileID.close()
         writeFileID.close()
-
     org = inDirPath + '/' + fileName
     tmp = inDirPath + '/' + tmpFile
 
+    print "org:{}".format(org)
+    print "tmp:{}".format(tmp)
     os.remove(org)
     os.rename(tmp, org)
 
