@@ -70,8 +70,8 @@ def run(args, **kwargs):
 
     renderer = renderinfo[1].replace('_','').upper()
     rendver = renderinfo[2]
-    # ryear = renderinfo[0]
-    ryear = '2017'
+    ryear = renderinfo[0]
+    # ryear = '2017'
 
     oe = "_TMP_" + renderer + "_VER"
     os.environ[oe] = rendver
@@ -110,7 +110,6 @@ def run(args, **kwargs):
 
     #-----------------------------------
     env = util_env.getEnvDict(envDict, env=os.environ, expand=True)
-
     # #-----------------------------------
     # import subprocess
     # if fork:
