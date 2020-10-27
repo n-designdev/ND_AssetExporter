@@ -310,7 +310,6 @@ class GUI (QMainWindow):
         self.ui.sFrame.setEnabled(fr_state)
         self.ui.eFrame.setEnabled(fr_state)
 
-
     def overrideValue_LineEdit_stateChange(self):
         currentState = self.ui.cameraScaleOverride_CheckBox.isChecked()
         self.ui.overrideValue_LineEdit.setEnabled(currentState)

@@ -11,8 +11,6 @@ for path in ND_TOOL_PATH.split(';'):
     sys.path.append(path)
 # ------------------------------------
 
-# sys.path.append('C:/Users/k_ueda/Desktop/ND_AssetExporter_v03/pycode')  #ツールの場所
-
 import ND_lib.shotgun.sg_util as sg_util
 import ND_lib.util.path as util_path
 import ND_lib.env as util_env
@@ -34,18 +32,13 @@ class ProjectInfo():
         self.path = url_parsedict['path']
         self.path_type = url_parsedict['path_type']
         self.project_name = url_parsedict['project_name']
-        # self.roll = url_parsedict['roll']
-# P:\GZL6\shots\TR012\TR012_sq002\TR012_sq002_c002\animation\work\k_ueda\maya\scens
-# P:\Project\NW\shots\roll01\s002\c001\work\kane\30_Anm\maya\scenes
-        #debug
-        try:
-            self.shot = url_parsedict['shot']
-            self.sequence = url_parsedict['sequence']
-            self.shot_code = url_parsedict['shot_code']
-        except:
-            self.shot = "animation"
-            self.sequence = "TR012_sq002"
-            self.shot_code = "TR012_sq002_c002"
+
+        self.shot = url_parsedict['shot']
+        self.sequence = url_parsedict['sequence']
+        self.shot_code = url_parsedict['shot_code']
+        self.shot = "animation"
+        self.sequence = "TR012_sq002"
+        self.shot_code = "TR012_sq002_c002"
 
     def get_camera_rig_info(self):
         project_conf = util_path.get_conf_dic(self.project_name.lower())
