@@ -113,7 +113,6 @@ def animExport(**kwargs):
     cmd = mayacmd_maker(original_litte, argsdic['inputpath'], mayaBatch)
     cmd[2] = str(cmd[2]).replace('\\\\','\\')
     print cmd
-    import pdb;pdb.set_trace()
     p = subprocess.Popen(cmd, shell=True)
     p.wait()
 
@@ -183,7 +182,6 @@ def camExport(**kwargs):
 
 def env_load(project):
     ND_TOOL_PATH_default = "Y:/tool/ND_Tools/python"
-
     env_key = "ND_TOOL_PATH_PYTHON"
     ND_TOOL_PATH = os.environ.get(env_key, ND_TOOL_PATH_default)
     for path in ND_TOOL_PATH.split(';'):
@@ -191,7 +189,6 @@ def env_load(project):
         if path in sys.path: continue
         sys.path.append(path)
     import env_loader
-
     env_loader.run(project, fork=True)
 
 def maya_version(project):
@@ -217,7 +214,6 @@ def maya_version(project):
 
     f = open(project_app_launcher, "r")
     data = yaml.load(f)
-
     f.close()
 
     for dcc in dcc_tools:
@@ -226,13 +222,11 @@ def maya_version(project):
             args = data["launch_%s" % dcc]["windows_args"]
 
             if dcc == 'maya':
-
                renderinfo = version.replace('(','').split(')')
 
     ryear = renderinfo[0]
-    print ryear
-    return  'C:\\Program Files\\Autodesk\\Maya2019'+'\\bin\\maya.exe'
-    # return  'C:\\Program Files\\Autodesk\\Maya'+ryear+'\\bin\\mayabatch.exe'
+    # return  'C:\\Program Files\\Autodesk\\Maya2019'+'\\bin\\mayabatch.exe'
+    return  'C:\\Program Files\\Autodesk\\Maya'+ryear+'\\bin\\mayabatch.exe'
 
 
 # ['C:\\Program Files\\Autodesk\\Maya2018\\bin\\mayabatch.exe', '-command',

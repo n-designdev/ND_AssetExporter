@@ -89,11 +89,7 @@ def back_starter(**kwargs):
         animFiles = os.listdir(opc.publishfullanimpath)
         progress = 40
 
-        import pdb;pdb.set_trace()
-
-
         if charaName == "camera_base" or charaName == "camera_simple":
-            # 'X:/MST3MV/Data/60_SHOT/epD/s048/c007/publish/test_charSet/camera_simple/v001/anim
             os.rmdir(output)
             if len(os.listdir(os.path.dirname(output)))==0:
                 os.rmdir(output)
@@ -181,7 +177,6 @@ def back_starter(**kwargs):
         oFilename = opc.sequence + opc.shot + opc.shot + '_cam'
         argsdic['camOutput'] = '{}/{}.abc'.format(opc.publishfullcampath, oFilename) #フルパスとファイル名
         batch.camExport(**argsdic)
-
         camFiles = os.listdir(opc.publishfullcampath)
         if len(camFiles) == 0:
             print 'abc not found'

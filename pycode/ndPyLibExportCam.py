@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
-
 import os
 
 import maya.cmds as cmds
 import maya.mel as mel
-
 
 
 def Euler_filter(obj_list):
@@ -70,7 +68,7 @@ def ndPyLibExportCam_bakeCamera(sframe, eframe, CameraScale):
 
     for t in range(int(sframe),int(eframe+1)):
         for i in range(0, len(cams), 2):
-
+            cam = cams[i]
             cmds.currentTime(t)
 
             attrsTrans = cmds.xform(fromCam[i],q=True,ws=True,t=True)
@@ -83,7 +81,6 @@ def ndPyLibExportCam_bakeCamera(sframe, eframe, CameraScale):
             cmds.setKeyframe(toCam[int(i)],t=cmds.currentTime(q=True), v=attrsRot[1], at='ry')
             cmds.setKeyframe(toCam[int(i)],t=cmds.currentTime(q=True), v=attrsRot[2], at='rz')
 
-            cam = 'shotCam:shotCameraShape'
             cmds.camera(cam, e=True, aspectRatio=cmds.getAttr('defaultResolution.deviceAspectRatio'))
             cmds.camera(cam, e=True, filmFit='horizontal')
 
@@ -178,19 +175,19 @@ def ndPyLibExportCam(camOutput, CameraScale, frameHundle, _frameRange):
 
     grp = cmds.group(em=True, n='cam_grp')
     toCam = []
-    if(len(cams)==3):#カメラが一つの場合
-        toCam.append(cams[0])
-        cmds.parent(toCam[0],'cam_grp')
-        cmds.rename(toCam[0],'rend_cam')
-    else:#カメラが複数の場合
-        for i in range(0, len(cams), 3):
 
-            toCam.append(cams[i])
-            toCam.append(cams[i+1])
-            toCam.append(cams[i+2])
-
-            cmds.parent(toCam[i],'cam_grp')
-            cmds.rename(toCam[i],toCam[i+2]+'_rend_cam')
+    # if(len(cams)==3):#カメラが一つの場合
+    # if(len(cams)==None):#カメラが一つの場合
+    #     toCam.append(cams[0])
+    #     cmds.parent(toCam[0],'cam_grp')
+    #     cmds.rename(toCam[0],'rend_cam')
+    # else:#カメラが複数の場合
+    for i in range(0, len(cams), 3):
+        toCam.append(cams[i])
+        toCam.append(cams[i+1])
+        toCam.append(cams[i+2])
+        cmds.parent(toCam[i],'cam_grp')
+        # cmds.rename(toCam[i],toCam[i+2]+'_rend_cam')
 
     cmds.select('cam_grp')
 

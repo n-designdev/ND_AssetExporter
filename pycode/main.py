@@ -179,7 +179,6 @@ class GUI (QMainWindow):
 
         # カメラタイプの取得
         self.camera_rig_export = ProjectInfoClass.get_camera_rig_info()
-        print self.camera_rig_export
         SGAssetClass = sg_mod.SGGen_Cate(pro_name, 'Asset', self.asset_fields)
         SGShotClass = sg_mod.SGGen_Cate(pro_name, 'Shot', self.shot_fields)
 

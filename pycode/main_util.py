@@ -223,13 +223,13 @@ def dictlist_parse(dictlist):
 class DeadlineMod():
     def __init__(self, **kwargs):
         #jobFile
-        self.target_py = "Y:/users/env/Tools/ND_AssetExporter/pycode/main_util.py"
+        self.target_py = "Y:/tool/ND_Tools/DCC/ND_AssetExporter/pycode/main_util.py"
 
         #infoFile
         self.argsdict = kwargs
 
         self.executer = "Y:/tool/MISC/Python2710_amd64_vs2010/python.exe"
-        self.stg_dir = "Y:/users/env/Tools/ND_AssetExporter/pycode"
+        self.stg_dir = "Y:/tool/ND_Tools/DCC/ND_AssetExporter/pycode"
         self.tmp_dir = os.environ.get('TEMP', 'E:/TEMP')
 
         self.job_dict = self.job_content()
@@ -339,8 +339,11 @@ def submit_to_deadlineJobs(jobs, farm="Deadline", version="10"):
 if __name__ == '__main__':
     import sys
     import subprocess
-    setting_bat = r"Y:\users\env\Tools\ND_AssetExporter\pycode\__env__.bat"
-    subprocess.call(setting_bat)
+
+
+
+    # setting_bat = r"Y:\users\env\Tools\ND_AssetExporter\pycode\__env__.bat"
+    # subprocess.call(setting_bat)
     _strargv = sys.argv
     _strargv.pop(0)
     argsdict = dictlist_parse(_strargv)
