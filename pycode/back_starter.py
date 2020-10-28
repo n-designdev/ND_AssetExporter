@@ -179,7 +179,7 @@ def back_starter(**kwargs):
         batch.camExport(**argsdic)
         camFiles = os.listdir(opc.publishfullcampath)
         if len(camFiles) == 0:
-            print 'abc not found'
+            print 'camera not found'
             return
 
         for camFile in camFiles:

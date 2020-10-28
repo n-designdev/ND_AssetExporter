@@ -187,10 +187,9 @@ def ndPyLibExportCam(camOutput, CameraScale, frameHundle, _frameRange):
         toCam.append(cams[i+1])
         toCam.append(cams[i+2])
         cmds.parent(toCam[i],'cam_grp')
-        # cmds.rename(toCam[i],toCam[i+2]+'_rend_cam')
+        cmds.rename(toCam[i],toCam[i+2])
 
     cmds.select('cam_grp')
-
     publishdir = os.path.dirname(camOutput)
 
     if not os.path.exists(publishdir):

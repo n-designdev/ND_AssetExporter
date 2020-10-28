@@ -98,7 +98,7 @@ class outputPathConf (object):
         self._publishfullpath = os.path.join(self._publishpath, self._currentVer)
         self._publishfullabcpath = os.path.join(self._publishfullpath, 'abc')
         self._publishfullanimpath = os.path.join(self._publishfullpath, 'anim')
-        self._publishfullcampath = os.path.join(self._publishfullpath, 'abc')
+        self._publishfullcampath = os.path.join(self._publishfullpath,'abc')
         try:
             os.mkdir(self._publishfullpath)
             if isCam == True:

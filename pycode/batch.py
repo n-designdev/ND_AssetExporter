@@ -32,9 +32,7 @@ def mayacmd_maker(unique_order, file=None, mayaBatch=None):
     return cmd
 
 def abcExport(**kwargs):
-
     argsdic = kwargs
-
     if argsdic['env_load']:
         env_load(argsdic['project'])
         mayaBatch = maya_version(argsdic['project'])
@@ -47,6 +45,7 @@ def abcExport(**kwargs):
         'from ndPyLibExportAbc import ndPyLibExportAbc2;'
         'ndPyLibExportAbc2({})'.format(argsdic)
     )
+
     cmd = mayacmd_maker(original_litte, argsdic['inputpath'], mayaBatch)
     cmd[2] = str(cmd[2]).replace('\\\\', '\\')
     subprocess.call(cmd)
@@ -227,10 +226,3 @@ def maya_version(project):
     ryear = renderinfo[0]
     # return  'C:\\Program Files\\Autodesk\\Maya2019'+'\\bin\\mayabatch.exe'
     return  'C:\\Program Files\\Autodesk\\Maya'+ryear+'\\bin\\mayabatch.exe'
-
-
-# ['C:\\Program Files\\Autodesk\\Maya2018\\bin\\mayabatch.exe', '-command',
-# 'python("import sys;sys.path.append(\'Y:/tool/ND_Tools/DCC/ND_AssetExporter/pycode\');
-# from ndPyLibExportAnim import ndPyLibExportAnim2;
-# ndPyLibExportAnim2({\\\'Group\\\': \\\'u16gb\\\', \\\'sequence\\\': \\\'s002\\\', \\\'exporttype\\\': \\\'anim\\\', \\\'env_load\\\': \\\'True\\\', \\\'Priority\\\': \\\'u50\\\', \\\'shot\\\': \\\'c001\\\', \\\'stepValue\\\': \\\'1.0\\\', \\\'namespace\\\': \\\'NBGNml_Rig_AH\\\', \\\'bakeAnim\\\': \\\'True\\\', \\\'abcOutput\\\': \\\'P:/Project/NW/shots/roll01/s002/c001/publish/test_charSet/NBGNml/v026/abc/NBGNml.abc\\\', \\\'framerange_output\\\': \\\'True\\\', \\\'inputpath\\\': \\\'P:/Project/NW/shots/roll01/s002/c001/work/kane/30_Anm/maya/scenes/s002c001_lay_v002.ma\\\', \\\'Pool\\\': \\\'unw\\\', \\\'assetpath\\\': \\\'P:/Project/NW/assets/chara/NBG/NBGNml/publish/Setup/AH/maya/current/NBGNml_Rig_AH.mb\\\', \\\'framerange\\\': \\\'None\\\', \\\'chara\\\': \\\'NBGNml\\\', \\\'topnode\\\': \\\'root\\\', \\\'framehundle\\\': \\\'0\\\', \\\'project\\\': \\\'NW\\\', \\\'testmode\\\': \\\'True\\\', \\\'output\\\': \\\'P:/Project/NW/shots/roll01/s002/c001/publish/test_charSet/NBGNml/v026/anim\\\', \\\'exportitem\\\': \\\'ctrl_sets\\\'});"
-# )', '-file', 'P:/Project/NW/shots/roll01/s002/c001/work/kane/30_Anm/maya/scenes/s002c001_lay_v002.ma']
