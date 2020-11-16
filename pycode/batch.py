@@ -10,8 +10,7 @@ import yaml
 pythonBatch = 'C:\\Program Files]\\Shotgun\\Python\\python.exe'
 onpath = os.path.dirname(os.path.abspath(__file__)).replace('\\','/')
 
-
-def mayacmd_maker(unique_order, file=None, mayaBatch=None):
+def mayacmd_maker(unique_order, mayafile=None, mayaBatch=None):
     batch_firstact = (
         "import sys;"
         "sys.path.append(\'{}\');".format(onpath)
@@ -23,12 +22,9 @@ def mayacmd_maker(unique_order, file=None, mayaBatch=None):
     cmd = [mayaBatch]
     cmd.append('-command')
     cmd.append("python(\"{}\")".format(batch_firstact))
-    # cmd.append('-log')
-    # cmd.append('C:/Users/k_ueda/Desktop/temp/maya_result.txt')
-
-    if file is not None:
+    if mayafile is not None:
         cmd.append('-file')
-        cmd.append(file)
+        cmd.append(mayafile)
     return cmd
 
 def abcExport(**kwargs):
@@ -111,9 +107,7 @@ def animExport(**kwargs):
     )
     cmd = mayacmd_maker(original_litte, argsdic['inputpath'], mayaBatch)
     cmd[2] = str(cmd[2]).replace('\\\\','\\')
-    print cmd
-    p = subprocess.Popen(cmd, shell=True)
-    p.wait()
+    subprocess.call(cmd)
 
 def animAttach(**kwargs):
     argsdic = kwargs
@@ -124,12 +118,6 @@ def animAttach(**kwargs):
     assetPath = argsdic['assetpath'].replace("\\","/")
     animPath = argsdic['animOutput']
     namespace = argsdic['ns']
-    print "#######"
-    print "outputpath: ", outputPath
-    print "assetPath: ", assetPath
-    print "animPath: ", animPath
-    print "namespace: ", namespace
-    print "#######"
 
     original_litte = (
         'from mayaBasic import *;'
@@ -141,7 +129,6 @@ def animAttach(**kwargs):
     )
     cmd = mayacmd_maker(original_litte, None, mayaBatch)
     cmd[2] = str(cmd[2]).replace('\\\\', '\\')
-
     subprocess.call(cmd)
 
 
@@ -153,7 +140,6 @@ def animReplace(**kwargs):
     animPath = argsdic['animPath'].replace("\\","/")
     namespace = argsdic['ns']
     scene = argsdic['scene']
-
     original_litte = (
         'from mayaBasic import *;'
         'replaceAsset(\'{}\', \'{}_anim\');'.format(animPath, namespace) +
@@ -190,6 +176,7 @@ def env_load(project):
     import env_loader
     env_loader.run(project, fork=True)
 
+
 def maya_version(project):
     # ------------------------------------
     env_key = 'ND_TOOL_PATH_PYTHON'
@@ -207,8 +194,6 @@ def maya_version(project):
     app_launcher_path = "config\\env\\includes\\app_launchers.yml"
     dcc_tools = ["maya", "nuke", "nukex"]
 
-
-    # プロジェクト名からShotgunの設定を取得する
     project_app_launcher = "%s\\ND_sgtoolkit_%s\\%s" % (toolkit_path, project.lower(), app_launcher_path)
 
     f = open(project_app_launcher, "r")

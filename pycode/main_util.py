@@ -36,9 +36,6 @@ class ProjectInfo():
         self.shot = url_parsedict['shot']
         self.sequence = url_parsedict['sequence']
         self.shot_code = url_parsedict['shot_code']
-        self.shot = "animation"
-        self.sequence = "TR012_sq002"
-        self.shot_code = "TR012_sq002_c002"
 
     def get_camera_rig_info(self):
         project_conf = util_path.get_conf_dic(self.project_name.lower())
@@ -150,6 +147,12 @@ def tabledata_maker(headers, convert_dic, target_assets):
                     elif target_asset[sg_code] == 'abc':
                         td_row.append("abc")
                         sg_code = 'sg_abc_export_list'
+                    elif target_asset[sg_code] == 'abc_anim':
+                        td_row.append("abc_anim")
+                        anim_item = target_asset["sg_anim_export_list"]
+                        abc_item = target_asset["sg_abc_export_list"]
+                        td_row.append("{{anim:{}, abc:{}}})".format(anim_item, abc_item))
+                        continue
                     else:
                         td_row.append('{Empty!}')
                         td_row.append('{Empty!}')
@@ -189,11 +192,9 @@ def argsmaker(new_arg, args=None):
 def execExporter(**kwargs):
     progress = 5
     print("Progress: {}%".format(progress))
-
     args = argsmaker(pythonBatch)
     args = argsmaker('back_starter.py', args)
     args = argsmaker(str(kwargs), args)
-
     subprocess.call(args)
 
 def spsymbol_remover(litteral, itemtype):
@@ -339,11 +340,6 @@ def submit_to_deadlineJobs(jobs, farm="Deadline", version="10"):
 if __name__ == '__main__':
     import sys
     import subprocess
-
-
-
-    # setting_bat = r"Y:\users\env\Tools\ND_AssetExporter\pycode\__env__.bat"
-    # subprocess.call(setting_bat)
     _strargv = sys.argv
     _strargv.pop(0)
     argsdict = dictlist_parse(_strargv)

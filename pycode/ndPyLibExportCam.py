@@ -21,6 +21,8 @@ def Euler_filter(obj_list):
 
 def ndPyLibExportCam_searchCamera():
     camShapes = cmds.ls(ca=True)
+    for x in camShapes:
+        print x
     try:
         camShapes.remove('frontShape')
         camShapes.remove('perspShape')
@@ -37,7 +39,6 @@ def ndPyLibExportCam_searchCamera():
         pass
 
     cams = cmds.listRelatives(camShapes, p=True)
-
     camAll = []
 
     for i in range(len(cams)):
@@ -63,8 +64,6 @@ def ndPyLibExportCam_bakeCamera(sframe, eframe, CameraScale):
         fromCam.append(cams[i])
         fromCam.append(cams[i+1])
 
-    if int(CameraScale) == -1:
-            CameraScale = 1.2
 
     for t in range(int(sframe),int(eframe+1)):
         for i in range(0, len(cams), 2):
@@ -84,7 +83,8 @@ def ndPyLibExportCam_bakeCamera(sframe, eframe, CameraScale):
             cmds.camera(cam, e=True, aspectRatio=cmds.getAttr('defaultResolution.deviceAspectRatio'))
             cmds.camera(cam, e=True, filmFit='horizontal')
 
-            if CameraScale != None or CameraScale != "None":
+            if int(CameraScale) !=-1:
+                import pdb;pdb.set_trace()
                 cmds.setKeyframe(toCam[i+1],t=cmds.currentTime(q=True), v=float(CameraScale), at='.cs')
             else:
                 camScale = cmds.getAttr(fromCam[i+1]+'.cameraScale')

@@ -212,23 +212,16 @@ def _exportAnim (publishpath, oFilename, strnamespaceList, strregexArgs, isFilte
         f.write(str(sframe)+'\n')
         f.write(str(eframe)+'\n')
 
-    #debug
-    # for i, _nsList in enumerate(namespaceList):
-    #     namespaceList[i] = '[a-zA-Z0-9_:]*' + _nsList + '[0-9]*$'
-
     for ns in namespaces:
         for _nsList in namespaceList:
             match = re.match(_nsList, ns)
             if match != None:
                 allNodes += _getAllNodes(ns, regexArgsN)
-
     for ns in namespaceList:
         for regexArgsAttr in regexArgsAttrs:
             regexAttr = ns+':'+regexArgsAttr
             if cmds.objExists(regexAttr):
                 nodeAndAttrs.append(regexAttr)
-
-    print '==========================='
 
     characterSet = cmds.ls(type='character')
     if len(characterSet) == 0:
@@ -260,16 +253,13 @@ def _exportAnim (publishpath, oFilename, strnamespaceList, strregexArgs, isFilte
 
     if len(nodeAndAttrs) !=0:
         attrs += _getNoKeyAttributes(nodeAndAttrs)
-
     if len(attrs) != 0:
         cmds.setKeyframe(attrs, t=sframe, insertBlend=False)
 
     attrs = _getConstraintAttributes(allNodes)
     attrs += _getPairBlendAttributes(allNodes)
-
     if len(attrs)!=0:
         cmds.bakeResults(attrs, t=(sframe, eframe), sb=True)
-
 
     for ns in namespaces:
         pickNodes = []
