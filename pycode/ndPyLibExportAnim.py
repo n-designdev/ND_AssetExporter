@@ -152,12 +152,10 @@ def _exportAnim (publishpath, oFilename, strnamespaceList, strregexArgs, isFilte
     sframe = cmds.playbackOptions(q=True, min=True) - float(frameHandle)
     eframe = cmds.playbackOptions(q=True, max=True) + float(frameHandle)
 
-    ### 解像度書き込み ###
     with open(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(publishpath))), "resolutionConf.txt").replace("\\", "/"), "w") as f:
         f.write(str(cmds.getAttr("defaultResolution.width"))+"\n")
         f.write(str(cmds.getAttr("defaultResolution.height"))+"\n")
 
-    # MST用
     if 'camera_base' in _namespaceList:
         root_list = cmds.ls("root", r=True)
         print root_list
@@ -212,11 +210,17 @@ def _exportAnim (publishpath, oFilename, strnamespaceList, strregexArgs, isFilte
         f.write(str(sframe)+'\n')
         f.write(str(eframe)+'\n')
 
+    print "getting allNodes..."
+    print "nanespaceList: {}".format(namespaceList)
+    print "namespaces: {}".format(namespaces)
     for ns in namespaces:
         for _nsList in namespaceList:
             match = re.match(_nsList, ns)
             if match != None:
+                print ns, regexArgsN
                 allNodes += _getAllNodes(ns, regexArgsN)
+    print "getting nodeAndAttrs"
+    print "regexArgsAttrs:{}".format(regexArgsAttrs)
     for ns in namespaceList:
         for regexArgsAttr in regexArgsAttrs:
             regexAttr = ns+':'+regexArgsAttr

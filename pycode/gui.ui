@@ -255,6 +255,9 @@ QScrollBar::handle::horizontal {background:  rgb(90, 90, 90);}
         <property name="text">
          <string>FrameHundle</string>
         </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item>
@@ -263,7 +266,7 @@ QScrollBar::handle::horizontal {background:  rgb(90, 90, 90);}
          <bool>false</bool>
         </property>
         <property name="text">
-         <string/>
+         <string>5</string>
         </property>
        </widget>
       </item>
