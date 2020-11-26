@@ -1,0 +1,59 @@
+call %~dp0..\__env__.bat
+set DP_MST3_TOOL=%DP_TOOL_ROOT%\dpx_tools\maya\dpMST3.0.1
+set DP_METAN=%DP_TOOL_ROOT%\dpx_tools\maya\metan-master-1.0.2
+set DP_OGRIG2=%DP_TOOL_ROOT%\dpx_tools\maya\ogrig2-master-1.1.0
+set DP_OMOCAP=%DP_TOOL_ROOT%\dpx_tools\maya\omocap-master-0.0.4
+set DP_OSEL=%DP_TOOL_ROOT%\dpx_tools\maya\osel-master-1.0.1
+set DP_OLIGHT=%DP_TOOL_ROOT%\dpx_tools\maya\olight-master-0.0.3
+set DP_OMODEL=%DP_TOOL_ROOT%\dpx_tools\maya\omodel-master-0.0.1
+set DP_OPIPELINE=%DP_TOOL_ROOT%\dpx_tools\maya\opipeline-master-0.0.1
+set DP_RENDERSETUP=%DP_TOOL_ROOT%\dpx_tools\maya\rendersetup-master-0.0.1
+set DP_MSTB4=%DP_TOOL_ROOT%\dpx_tools\maya\mstb4-master-0.0.4
+set DP_SHOT_TOOL=%DP_TOOL_ROOT%\dpx_tools\maya\shot_tool-master-1.0.0
+
+set STUDIOLIBRARY=%DP_TOOL_ROOT%\dpx_tools\maya\studiolibrary-2.6.3
+set MGEAR=%DP_TOOL_ROOT%\dpx_tools\maya\mgear
+
+set WD=%DP_TOOL_ROOT%\dpx_tools\maya\weightDriver
+set ANIMSCHOOLPICKER=%DP_TOOL_ROOT%\dpx_tools\maya\animSchoolPicker
+set JOIN=%DP_TOOL_ROOT%\jointool-v1.0.665
+
+set ANIMA_TOOL=%DP_TOOL_ROOT%\MV3Tools_look_v07
+set RTSHADER_DIR=%DP_MST3_TOOL%\rtShaders
+
+set MAYA_MODULE_PATH=%MAYA_MODULE_PATH%;%DP_MST3_TOOL%
+set MAYA_MODULE_PATH=%MAYA_MODULE_PATH%;%DP_METAN%
+set MAYA_MODULE_PATH=%MAYA_MODULE_PATH%;%DP_OGRIG2%
+set MAYA_MODULE_PATH=%MAYA_MODULE_PATH%;%DP_OMOCAP%
+set MAYA_MODULE_PATH=%MAYA_MODULE_PATH%;%DP_OSEL%
+set MAYA_MODULE_PATH=%MAYA_MODULE_PATH%;%DP_OMODEL%
+set MAYA_MODULE_PATH=%MAYA_MODULE_PATH%;%DP_OLIGHT%
+set MAYA_MODULE_PATH=%MAYA_MODULE_PATH%;%DP_OPIPELINE%
+set MAYA_MODULE_PATH=%MAYA_MODULE_PATH%;%DP_RENDERSETUP%
+set MAYA_MODULE_PATH=%MAYA_MODULE_PATH%;%DP_MSTB4%
+set MAYA_MODULE_PATH=%MAYA_MODULE_PATH%;%DP_SHOT_TOOL%
+set MAYA_MODULE_PATH=%MAYA_MODULE_PATH%;%STUDIOLIBRARY%
+set MAYA_MODULE_PATH=%MAYA_MODULE_PATH%;%WD%
+set MAYA_MODULE_PATH=%MAYA_MODULE_PATH%;%ANIMSCHOOLPICKER%
+set MAYA_MODULE_PATH=%MAYA_MODULE_PATH%;%JOIN%
+
+set MGEAR_SYNOPTIC_PATH=%MGEAR%\env\synoptic
+set MAYA_MODULE_PATH=%MAYA_MODULE_PATH%;%MGEAR%
+
+call %ANIMA_TOOL%\bin\maya2018.bat
+
+set ARNOLD_PLUGIN_PATH=%ARNOLD_PLUGIN_PATH%;%DP_MST3_TOOL%\shaders
+set MTOA_TEMPLATES_PATH=%MTOA_TEMPLATES_PATH%;%DP_MST3_TOOL%\scripts\AETemplate
+
+set MAYA_COLOR_MANAGEMENT_POLICY_FILE=%DP_MST3_TOOL%\presets\color_management\default_synColorConfig.xml
+set MAYA_COLOR_MANAGEMENT_POLICY_LOCK=1
+
+set USE_OPENGL_VIEWPORT=1
+
+if %USE_OPENGL_VIEWPORT%==1 (
+	set MAYA_VP2_DEVICE_OVERRIDE=VirtualDeviceGLCore
+)
+
+set XLDBPATH=%DP_MST3_TOOL%\db\xldb\asset_db.xls
+set ASSET_ROOT=%DP_ASSET_ROOT%
+pause
