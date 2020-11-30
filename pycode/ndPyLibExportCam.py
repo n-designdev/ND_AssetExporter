@@ -35,6 +35,7 @@ def ndPyLibExportCam_searchCamera():
         camShapes.remove('persp1Shape')
         camShapes.remove('side1Shape')
         camShapes.remove('top1Shape')
+        camShapes.remove('persp2Shape')
     except ValueError:
         pass
 
@@ -80,11 +81,11 @@ def ndPyLibExportCam_bakeCamera(sframe, eframe, CameraScale):
             cmds.setKeyframe(toCam[int(i)],t=cmds.currentTime(q=True), v=attrsRot[1], at='ry')
             cmds.setKeyframe(toCam[int(i)],t=cmds.currentTime(q=True), v=attrsRot[2], at='rz')
 
-            cmds.camera(cam, e=True, aspectRatio=cmds.getAttr('defaultResolution.deviceAspectRatio'))
-            cmds.camera(cam, e=True, filmFit='horizontal')
+            # cmds.camera(cam, e=True, aspectRatio=cmds.getAttr('defaultResolution.deviceAspectRatio'))
+            # cmds.camera(cam, e=True, filmFit=cmds.getAttr('{}.filmFit'.format(fromCam[i])))
+            cmds.setAttr("{}.filmFit".format(toCam[i]), cmds.getAttr('{}.filmFit'.format(fromCam[1])))
 
             if int(CameraScale) !=-1:
-                import pdb;pdb.set_trace()
                 cmds.setKeyframe(toCam[i+1],t=cmds.currentTime(q=True), v=float(CameraScale), at='.cs')
             else:
                 camScale = cmds.getAttr(fromCam[i+1]+'.cameraScale')
