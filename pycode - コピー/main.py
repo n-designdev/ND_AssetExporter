@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
-
 # ------------------------------
 __version__ = '0.4'
 __author__ = "Yoshihisa Okano, Kei Ueda"
-
+# ------------------------------
 import os,sys
 
-# ------------------------------
 env_key = 'ND_TOOL_PATH_PYTHON'
-
 ND_TOOL_PATH = os.environ.get(env_key, 'Y:/tool/ND_Tools/python')
 
 for path in ND_TOOL_PATH.split(';'):
@@ -62,28 +59,18 @@ class GUI (QMainWindow):
         debug = ''
         if self.test:debug = '__debug__'
         self.setWindowTitle('%s %s %s' % (self.WINDOW, __version__, debug))
-        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
-        self.headers_item = ["Asset name", "Name space","Export Type", "Export Item","Top Node", "Asset Path"]
-        self.asset_fields = [
-            "code", "sg_namespace", "sg_export_type", "sg_top_node",
-            "sg_abc_export_list", "sg_anim_export_list", "sg_asset_path","sequences"]
+        # self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+        self.headers_item = ["Asset name", "Name space", "Export Type", "Export Item","Top Node", "Asset Path"]
+        self.asset_fields = ["code", "sg_namespace", "sg_export_type", "sg_top_node","sg_abc_export_list", "sg_anim_export_list", "sg_asset_path","sequences"]
         self.shot_fields = ["code", "assets"]
-        self.convert_dic = {
-            "Asset name": "code", "Name space": "sg_namespace",
-            "Export Type": "sg_export_type", "Top Node": "sg_top_node",
-            "Asset Path": "sg_asset_path"}
-        self.headers = [""] + (self.headers_item)
-
-        self.camera_rig_export = False  # シーン内にあるカメラを使うか
-        self.load_env = True  # shotgun環境を読むか
+        self.convert_dic = {"Asset name": "code", "Name space": "sg_namespace","Export Type": "sg_export_type", "Top Node": "sg_top_node","Asset Path": "sg_asset_path"}
+        self.headers = ["", self.headers_item]
+        self.check_row = []
+        self.executed_row = []
+        self.camera_rig_export = False
+        self.load_env = True
         self.priority = 50
         self.group = '16gb'
-
-        self.tabledata = []
-        self.exportTgtList = []
-        self.executed_row = []
-        self.check_row = []
-        self.export_type_list = []
         self.slitem = None
         ###############
 
@@ -92,7 +79,7 @@ class GUI (QMainWindow):
         #UIと関数のコネクト
         #-----------------------------------------
         self.ui.overrideValue_LineEdit.setEnabled(False)
-        self.ui.yeti_CheckBox.stateChanged.connect(self.env_checker)
+        self.ui.yeti_CheckBox.stateChanged.connect(self.load_env_checker)
         self.ui.Change_Area.setCurrentIndex(0)
 
         self.ui.cameraScaleOverride_CheckBox.stateChanged.connect(self.overrideValue_LineEdit_stateChange)
@@ -117,12 +104,10 @@ class GUI (QMainWindow):
     def eventFilter(self, object, event):
         if event.type() == QEvent.DragEnter:
             event.acceptProposedAction()
-
         if event.type() == QEvent.Drop:
             mimedata = event.mimeData()
             urldata = mimedata.urls()
             self.drop_act(urldata)
-
         return True
 
     def debug_clicked(self):
@@ -143,8 +128,6 @@ class GUI (QMainWindow):
         self.group = self.ui.grouplist.currentText()
 
     def drop_act(self, urldata):
-        self.tabledata = []
-
         self.inputpath = urldata[0].toString().replace("file:///", "")
         self.ui.path_line.setText(self.inputpath)
         self.ui.Change_Area.setCurrentIndex(1)
@@ -164,12 +147,9 @@ class GUI (QMainWindow):
         SGAssetClass = sg_mod.SGGen_Cate(pro_name, 'Asset', self.asset_fields)
         SGShotClass = sg_mod.SGGen_Cate(pro_name, 'Shot', self.shot_fields)
 
-        #target_assetの選定
-        target_asset_list = (
-            SGShotClass.make_nameddict('code')[shot_code]['assets'])
-
-        all_asset_dics = (
-            SGAssetClass.make_nameddict('code'))
+        # target_assetの選定
+        target_asset_list = (SGShotClass.make_nameddict('code')[shot_code]['assets'])
+        all_asset_dics = (SGAssetClass.make_nameddict('code'))
 
         # target_asset_list内の名前をもとにAssetPageから取得
         target_asset_dics = []
@@ -185,9 +165,6 @@ class GUI (QMainWindow):
         self.tabledata = mu.tabledata_maker(self.headers_item, self.convert_dic, target_asset_dics)
         self.tabledata = mu.add_camera_row(self.headers_item, self.tabledata, self.camera_rig_export)
 
-        #-----------------------------------------
-        #deadline系変数を取得、セット
-        #-----------------------------------------
         def _setComboBoxList(qtcombobox, itemlist):
             qtcombobox.clear()
             qtcombobox.addItems(itemlist)
@@ -259,18 +236,16 @@ class GUI (QMainWindow):
         currentState = self.ui.cameraScaleOverride_CheckBox.isChecked()
         self.ui.overrideValue_LineEdit.setEnabled(currentState)
 
-    def env_checker(self):
+    def load_env_checker(self):
         self.load_env = self.ui.yeti_CheckBox.isChecked()
 
     def start_button_clicked(self):
-        print 'Local'
-        self.export_body(isSubmit=False)
+        self.export_body(mode="Local")
 
     def start_submit_button_clicked(self):
-        print 'Submit'
-        self.export_body(isSubmit=True)
+        self.export_body(mode="Submit")
 
-    def export_body(self, isSubmit):
+    def export_body(self, mode):
         if self.ui.cameraScaleOverride_CheckBox.isChecked():
             camScale = float(self.ui.overrideValue_LineEdit.text())
         else:
@@ -291,7 +266,7 @@ class GUI (QMainWindow):
         else:
             framerange = None
 
-        if isSubmit == True:
+        if mode == "Submit":
             file_number = 1
             jobFileslist = []
 
@@ -330,8 +305,7 @@ class GUI (QMainWindow):
                     'framehundle': framehundle,
                     'Priority': self.ui.priority.text(),
                     'Pool': self.ui.poollist.currentText(),
-                    'Group': self.ui.grouplist.currentText()
-                }
+                    'Group': self.ui.grouplist.currentText()}
 
                 for key, item in execargs_ls.items():
                     print key, item
@@ -348,16 +322,16 @@ class GUI (QMainWindow):
                 else:
                     pass
                 if "{Empty!}" not in execargs_ls.values():
-                    if isSubmit == True:
+                    if mode == "Submit":
                         DLclass = mu.DeadlineMod(**execargs_ls)
                         jobFileslist.append(DLclass.make_submit_files(file_number))
                         file_number += 1
-                    elif isSubmit == False:
+                    elif mode == "Local":
                         mu.execExporter(**execargs_ls)
                     util.addTimeLog(chara, self.inputpath, test=self.test)
             else:
                 pass
-        if isSubmit == True:
+        if mode == "Submit":
             mu.submit_to_deadlineJobs(jobFileslist)
         self.executed_row = list(set(self.executed_row))
         mu.TableModelMaker(self.tabledata, self.headers,self.check_row, self.executed_row)
@@ -369,7 +343,7 @@ class GUI (QMainWindow):
             self.slitem = None
 
 
-    def main_table_doubleclicked(self):  # ダブルクリックされたとき
+    def main_table_doubleclicked(self):
         clicked_row = self.ui.main_table.selectedIndexes()[0].row()
         if clicked_row in self.check_row:
             self.check_row.remove(clicked_row)
