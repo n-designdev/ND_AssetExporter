@@ -398,7 +398,6 @@ class GUI (QMainWindow):
                         if new_item!=None:
                             new_item = new_item.replace(", ", ",")
                         execargs_ls[key] = new_item
-
                 if exporttype == 'camera':
                     execargs_ls['camScale'] = camScale
                 else:

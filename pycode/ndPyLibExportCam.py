@@ -21,8 +21,6 @@ def Euler_filter(obj_list):
 
 def ndPyLibExportCam_searchCamera():
     camShapes = cmds.ls(ca=True)
-    for x in camShapes:
-        print x
     try:
         camShapes.remove('frontShape')
         camShapes.remove('perspShape')
@@ -38,8 +36,11 @@ def ndPyLibExportCam_searchCamera():
         camShapes.remove('persp2Shape')
     except ValueError:
         pass
+    for camShape in camShapes[:]:
+        if cmds.getAttr("{}.orthographic".format(camShape)):
+            camShapes.remove(camShape)
 
-    cams = cmds.listRelatives(camShapes, p=True)
+    cams = cmds.listRelatives(camShapes, p=True, f=True)
     camAll = []
 
     for i in range(len(cams)):
@@ -188,7 +189,7 @@ def ndPyLibExportCam(camOutput, CameraScale, frameHundle, _frameRange):
         toCam.append(cams[i+1])
         toCam.append(cams[i+2])
         cmds.parent(toCam[i],'cam_grp')
-        cmds.rename(toCam[i],toCam[i+2])
+        cmds.rename(toCam[i],toCam[i+2].split("|")[-1])
 
     cmds.select('cam_grp')
     publishdir = os.path.dirname(camOutput)

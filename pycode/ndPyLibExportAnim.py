@@ -177,7 +177,6 @@ def _exportAnim (publishpath, oFilename, strnamespaceList, strregexArgs, isFilte
                     outputfiles.append(_path)
                 except Exception as e:
                     print e
-
         return outputfiles
 
     if 'camera_simple' in _namespaceList:

@@ -21,6 +21,7 @@ def save ():
 
 def replaceAsset (assetPath, namespace):
     mc.warning( 'replace start ')
+    print assetPath, namespace
     refs = mc.ls(type='reference')
     try:
         print refs

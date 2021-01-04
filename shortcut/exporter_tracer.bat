@@ -9,7 +9,7 @@ set hh=%time2:~0,2%
 set mn=%time2:~3,2%
 set ss=%time2:~6,2%
 "Y:\tool\MISC\Python2710_amd64_vs2010\python.exe" main.py "" > ..\\log\\%mm%%dd%%hh%%mn%%ss%_%USERNAME%.txt 2>&1
-
+type ..\\log\\%mm%%dd%%hh%%mn%%ss%_%USERNAME%.txt
 popd
 
 pause

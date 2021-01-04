@@ -19,7 +19,7 @@ import ND_lib.deadline.common as common
 import ND_lib.env as util_env
 
 def spsymbol_remover(litteral, sp_check=None):
-    listitem = ['exportitem', 'framerange']
+    listitem = ["exportitem", "framerange", "namespace"]
     if sp_check in listitem:
         litteral = re.sub(':|\'|{|}', '', litteral)
         litteral = litteral.rstrip(',')
@@ -46,7 +46,6 @@ def back_starter(**kwargs):
     inputpath = argsdic['inputpath']
     project = argsdic['project']
     charaName = argsdic['chara']
-    nsChara = argsdic['namespace']
     exporttype = argsdic['exporttype']
     exportitem = argsdic['exportitem']
     topnode = argsdic['topnode']
