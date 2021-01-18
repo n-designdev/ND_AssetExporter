@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os,sys
-
+import ast
 # ------------------------------
 env_key = 'ND_TOOL_PATH_PYTHON'
 ND_TOOL_PATH = os.environ.get(env_key, 'Y:/tool/ND_Tools/python')
@@ -212,7 +212,9 @@ def dictlist_parse(dictlist):
     受け取ったdictだったリストを再度dictに変換
     '''
     argsdict = {}
+    print dictlist
     for dictparts in dictlist:
+        print dictparts
         if dictparts[-1] == ':':
             key = spsymbol_remover(dictparts, 'key')
         else:
@@ -336,11 +338,15 @@ def submit_to_deadlineJobs(jobs, farm="Deadline", version="10"):
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=devnull)
     lines_iterator = iter(process.stdout.readline, b"")
     return lines_iterator
+    
 
 if __name__ == '__main__':
     import sys
     import subprocess
     _strargv = sys.argv
     _strargv.pop(0)
-    argsdict = dictlist_parse(_strargv)
+    try:
+        argsdict = ast.literal_eval(_strargv[0])
+    except:
+        argsdict = dictlist_parse(_strargv)
     execExporter(**argsdict)

@@ -13,6 +13,7 @@ ND_TOOL_PATH = os.environ.get(env_key, 'Y:/tool/ND_Tools/python')
 
 for path in ND_TOOL_PATH.split(';'):
     path = path.replace('\\', '/')
+    print path
     if path in sys.path:
         continue
     sys.path.append(path)
@@ -26,6 +27,7 @@ import ND_lib.shotgun.sg_util as sg_util
 import ND_lib.util.path as util_path
 import util
 import subprocess
+import datetime
 from multiprocessing import Pool
 from importlib import import_module
 
@@ -351,6 +353,9 @@ class GUI (QMainWindow):
             file_number = 1
             jobFileslist = []
 
+        self.ui.Change_Area.setCurrentIndex(2)
+        self.ui.repaint()
+        
         for count in range(len(self.tabledata)):
             if count in self.executed_row:
                 pass
@@ -408,13 +413,28 @@ class GUI (QMainWindow):
                         jobFileslist.append(DLclass.make_submit_files(file_number))
                         file_number += 1
                     elif isSubmit == 0:
-                        mu.execExporter(**execargs_ls)
+                        python = "Y:\\tool\\MISC\\Python2710_amd64_vs2010\\python.exe"
+                        py_path = "Y:\\tool\\ND_Tools\\DCC\\ND_AssetExporter\\pycode\\main_util.py"
+                        order_str = "Y:\\tool\\MISC\\Python2710_amd64_vs2010\\python.exe Y:\\tool\\ND_Tools\\DCC\\ND_AssetExporter\\pycode\\main_util.execExporter.py"
+                        # output_file = "Y:\\tool\\ND_Tools\\DCC\\ND_AssetExporter\\log\\result_text.txt"
+                        now = datetime.datetime.now()
+                        filename = "log_" + now.strftime('%Y%m%d_%H%M%S') + ".txt"
+                        output_file = "E:\\temp\\exporter_log\\" + os.environ.get("USERNAME") + "\\" + filename
+                        current_dir = "Y:\\tool\\ND_Tools\\DCC\\ND_AssetExporter\\pycode"
+                        print execargs_ls
+                        if not os.path.exists("E:\\temp\\exporter_log\\" + os.environ.get("USERNAME")):
+                            os.makedirs("E:\\temp\\exporter_log\\" + os.environ.get("USERNAME"))
+                        with open(output_file, "w+")as f:
+                            proc = subprocess.call([python, py_path,str(execargs_ls)], shell=True,stdout=f, cwd=current_dir)
+    
+                        # mu.execExporter(**execargs_ls)
                     util.addTimeLog(chara, self.inputpath, test=self.test)
             else:
                 pass
 
         if isSubmit == 1:
             mu.submit_to_deadlineJobs(jobFileslist)
+        self.ui.Change_Area.setCurrentIndex(1)
 
         self.executed_row = list(set(self.executed_row))
         mu.TableModelMaker(
@@ -459,10 +479,11 @@ def runs(*argv):
     tx_r = tx_o.read()
     tx_o.close()
     app.setStyleSheet(tx_r)
-    if argv[0][0] == '':
-        ui = GUI()
-    else:
-        ui = GUI(mode=argv[0][0])
+    ui = GUI()
+    # if argv[0][0] == '':
+    #     ui = GUI()
+    # else:
+    #     ui = GUI(mode=argv[0][0])
     ui.show()
     app.exec_()
 

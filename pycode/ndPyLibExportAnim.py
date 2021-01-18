@@ -127,7 +127,6 @@ def _getNoKeyAttributes (nodes):
 
 
 def _exportAnim (publishpath, oFilename, strnamespaceList, strregexArgs, isFilter, bakeAnim, strextra_dic, framehundle, framerange):
-
     regexArgsN = [] #regexArgs Normal
     regexArgsAttrs = [] #regexArgs Attribute用
     regexArgs = strregexArgs.split(',')

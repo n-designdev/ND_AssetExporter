@@ -108,7 +108,7 @@ def ndPyLibExportCam_bakeCamera(sframe, eframe, CameraScale):
             cmds.setAttr(fromCam[i]+'.'+thisAttr, lock=False)
 
         cmds.setAttr(toCam[i+1]+'.renderable', True)
-        cmds.setAttr(toCam[i+1]+'.renderable', lock=True)
+        cmds.setAttr(toCam[i+1]+'.renderable', lock=False)
 
         cmds.setAttr(toCam[i]+'.rotateAxisX', cmds.getAttr(fromCam[i]+'.rotateAxisX'))
         cmds.setAttr(toCam[i]+'.rotateAxisY', cmds.getAttr(fromCam[i]+'.rotateAxisY'))
@@ -137,9 +137,7 @@ def ndPyLibExportCam_bakeCamera(sframe, eframe, CameraScale):
 
 
 def ndPyLibPlatform(text):
-
     prefix = 'nd'
-
     otsr = ''
     otsr = otsr+'['+prefix+']'+text+'\n'
 
@@ -148,9 +146,7 @@ def ndPyLibPlatform(text):
 
 
 def ndPyLibExportCam(camOutput, CameraScale, frameHundle, _frameRange):
-
     isImagePlane = 1
-
     outputfiles = []
 
     sframe = cmds.playbackOptions(q=True, min=True)

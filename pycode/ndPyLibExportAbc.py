@@ -17,14 +17,13 @@ def norefresh (func):
     return _norefresh
 
 
-def _getNamespace ():
+def _getNamespace():
     namespaces = mc.namespaceInfo(lon=True, r=True)
     namespaces.remove('UI')
     namespaces.remove('shared')
     return namespaces
 
-def _getAllNodes (outputPath, namespace, _regexArgs):
-
+def _getAllNodes(outputPath, namespace, _regexArgs):
     if len(_regexArgs) == 0:
         regexArgs = ['*']
 
@@ -32,7 +31,6 @@ def _getAllNodes (outputPath, namespace, _regexArgs):
     regexArgs = _regexArgs.split(',')
 
     for regex in regexArgs:
-
         objs = []
         objSets = []
         regexN = ''
@@ -67,8 +65,7 @@ def _getAllNodes (outputPath, namespace, _regexArgs):
     return nodes
 
 
-def _exportAbc2 (outputPath, _namespaceList, regexArgs, step_value, frameHundle, _frameRange):
-
+def _exportAbc2(outputPath, _namespaceList, regexArgs, step_value, frameHundle, _frameRange):
     namespaceList = _namespaceList.split(',')
     for i, namespaceItem in enumerate(namespaceList):
         namespaceList[i] = '[a-zA-Z0-9_:]*{}$'.format(namespaceItem)
@@ -81,7 +78,6 @@ def _exportAbc2 (outputPath, _namespaceList, regexArgs, step_value, frameHundle,
         sframe = float(frameRange[0])
         eframe = float(frameRange[1])
 
-    ###
     sframe -= float(frameHundle)
     eframe += float(frameHundle)
 
