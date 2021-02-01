@@ -28,6 +28,20 @@ def strdict_parse(original_string):
         item = spsymbol_remover(item, key)
         parsed_dic[key] = item
     return parsed_dic
+    
+
+def Euler_filter(obj_list):
+    xyz = ['.rotateX', '.rotateY', '.rotateZ']
+    for obj in obj_list:
+        anim_cv = map(lambda x: cmds.connectionInfo(obj+x, sfd=True), xyz)
+        anim_cv = map(lambda x: x.rstrip('.output'), anim_cv)
+        try:
+            anim_cv = filter(lambda x: cmds.nodeType(x) in ['animCurveTL', 'animCurveTU', 'animCurveTA', 'animCurveTT'], anim_cv)
+            cmds.filterCurve(anim_cv, f='euler')
+        except:
+            print '# Euler FilterFailed: '+obj+' #'
+            continue
+        print '# Euler Filter Success: '+obj+' #'
 
 
 def _getNamespace():
@@ -257,11 +271,13 @@ def _exportAnim (publishpath, oFilename, strnamespaceList, strregexArgs, isFilte
         attrs += _getNoKeyAttributes(nodeAndAttrs)
     if len(attrs) != 0:
         cmds.setKeyframe(attrs, t=sframe, insertBlend=False)
-
+    
     attrs = _getConstraintAttributes(allNodes)
     attrs += _getPairBlendAttributes(allNodes)
     if len(attrs)!=0:
         cmds.bakeResults(attrs, t=(sframe, eframe), sb=True)
+
+    Euler_filter(allNodes)
 
     for ns in namespaces:
         pickNodes = []

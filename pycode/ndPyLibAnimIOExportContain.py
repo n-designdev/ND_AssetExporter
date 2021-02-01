@@ -70,10 +70,8 @@ def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName,
         print '[nd] Not use filterCurve\n'
 
     inFileName = inFileName.replace(":","_")
-
     fileName = inFileName + '.ma'
     filePathName = inDirPath + '/' + fileName
-
     filePathNamex = os.path.dirname(filePathName)
 
     if not os.path.exists(filePathNamex):
@@ -89,7 +87,7 @@ def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName,
             info['tool'] = 'ND_AssetExporter'
             addInfoAttr(s, info)
 
-    print cmds.file(filePathName, f=True, es=True, typ='mayaAscii', ch=0, chn=0, exp=0, con=0, sh=0)
+    cmds.file(filePathName, f=True, es=True, typ='mayaAscii', ch=0, chn=0, exp=0, con=0, sh=0)
 
     for i in range(len(retNodes)/2):
         node = retNodes[i*2].split('|')[-1]

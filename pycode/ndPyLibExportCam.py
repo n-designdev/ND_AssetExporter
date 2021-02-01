@@ -97,8 +97,6 @@ def ndPyLibExportCam_bakeCamera(sframe, eframe, CameraScale):
                 # anim = cmds.listConnections(fromCam[i+1]+'.'+thisAttr)
                 # if anim is not None and len(anim) > 0:
 
-    Euler_filter(toCam[0:len(toCam):2])
-
     for i in range(0, len(cams), 2):
         cmds.setAttr(toCam[1]+'.'+thisAttr, cmds.getAttr(fromCam[1]+'.'+thisAttr))
 
@@ -131,6 +129,7 @@ def ndPyLibExportCam_bakeCamera(sframe, eframe, CameraScale):
         bakeCams.append(cams[int(i)])
 
         mel.eval('setAttr '+toCam[i+1]+'.bestFitClippingPlanes true')
+    Euler_filter(toCam[0:len(toCam):2])
 
     return bakeCams
 #end of ndPylibExportCam_bakeCamera
