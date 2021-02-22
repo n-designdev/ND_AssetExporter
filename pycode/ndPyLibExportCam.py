@@ -42,10 +42,11 @@ def ndPyLibExportCam_searchCamera():
 
     cams = cmds.listRelatives(camShapes, p=True, f=True)
     camAll = []
-
+    if cams is None:
+        return
     for i in range(len(cams)):
         if cmds.referenceQuery(cams[i], inr=True):
-            refFile = cmds.referenceQuery(cmds.referenceQuery(cams[i], rfn=True), f=True)
+            refFile = cmds.referenceQuery(cmds.referenceQuery("anguirus:asset", rfn=True, tr=True), f=True)
             cmds.file(refFile, importReference=True)
         camAll.append(cams[i])
         camAll.append(camShapes[i])
@@ -55,6 +56,8 @@ def ndPyLibExportCam_searchCamera():
 
 def ndPyLibExportCam_bakeCamera(sframe, eframe, CameraScale):
     cams = ndPyLibExportCam_searchCamera()
+    if cams is None:
+        return
     shapeAttrs = ['fl','hfa','vfa','lsr','fs','fd','sa','coi','ncp','fcp']
 
     bakeCams = []
@@ -166,6 +169,8 @@ def ndPyLibExportCam(camOutput, CameraScale, frameHundle, _frameRange):
             cmds.warning('delete imagePlanes...')
 
     cams = ndPyLibExportCam_bakeCamera(sframe, eframe, CameraScale)
+    if cams is None:
+        return
 
     if cmds.objExists('cam_grp'):
         cmds.delete('cam_grp')

@@ -60,7 +60,7 @@ class outputPathConf (object):
 
     def verInc (self, isCam=False):
         vers = os.listdir(self._publishpath)
-        if len(vers) == 0:
+        if len(vers) == 0 or isCam:
             self._currentVer = 'v001'
         else:
             vers.sort()
@@ -72,7 +72,7 @@ class outputPathConf (object):
         self._publishfullpath = os.path.join(self._publishpath, self._currentVer)
         self._publishfullabcpath = os.path.join(self._publishfullpath, 'abc')
         self._publishfullanimpath = os.path.join(self._publishfullpath, 'anim')
-        self._publishfullcampath = os.path.join(self._publishfullpath,'abc')
+        self._publishfullcampath = os.path.join(self._publishfullpath,'cam')
         try:
             os.mkdir(self._publishfullpath)
             if isCam == True:

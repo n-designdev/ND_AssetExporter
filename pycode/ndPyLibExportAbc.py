@@ -22,6 +22,19 @@ def _getNamespace():
     namespaces.remove('UI')
     namespaces.remove('shared')
     return namespaces
+    
+def Euler_filter(obj_list):
+    xyz = ['.rotateX', '.rotateY', '.rotateZ']
+    for obj in obj_list:
+        anim_cv = map(lambda x: cmds.connectionInfo(obj+x, sfd=True), xyz)
+        anim_cv = map(lambda x: x.rstrip('.output'), anim_cv)
+        try:
+            anim_cv = filter(lambda x: cmds.nodeType(x) in ['animCurveTL', 'animCurveTU', 'animCurveTA', 'animCurveTT'], anim_cv)
+            cmds.filterCurve(anim_cv, f='euler')
+        except:
+            print '# Euler FilterFailed: '+obj+' #'
+            continue
+        print '# Euler Filter Success: '+obj+' #'
 
 def _getAllNodes(outputPath, namespace, _regexArgs):
     if len(_regexArgs) == 0:
@@ -103,6 +116,7 @@ def _exportAbc2(outputPath, _namespaceList, regexArgs, step_value, frameHundle, 
     for ns in allNamespaces:
         pickNodes = []
         pickNodes = allNodes[ns]
+        # Euler_filter(pickNodes)
         if len(pickNodes) == 0: continue
 
         if ':' in ns:

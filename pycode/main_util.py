@@ -39,9 +39,13 @@ class ProjectInfo():
 
     def get_camera_rig_info(self):
         project_conf = util_path.get_conf_dic(self.project_name.lower())
-        self.camera_rig_export = (
-            project_conf.get("preferences").get("camera_rig_export")
-        )
+        try:
+            self.camera_rig_export = (
+                project_conf.get("preferences").get("camera_rig_export")
+            )
+        except AttributeError:
+            self.camera_rig_export = False
+        
         return self.camera_rig_export
 
 
@@ -350,3 +354,4 @@ if __name__ == '__main__':
     except:
         argsdict = dictlist_parse(_strargv)
     execExporter(**argsdict)
+    sys.exit()
