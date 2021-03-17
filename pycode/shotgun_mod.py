@@ -19,69 +19,40 @@ reload(shotgun)
 sg = sg_scriptkey.scriptKey()
 onpath = os.path.dirname(os.path.abspath(__file__)).replace('\\', '/')
 
-
-class SGGen_Proj(object):
-    def __init__(self, project):
+class SGProjectClass(object):
+    def __init__(self, project, field_codes):
         self.project_name = project
         self.project_code = sg_util.get_project(project)
         self.filters = [["project", "is", self.project_code]]
-
-
-class SGGen_Cate(SGGen_Proj):
-    '''
-    カテゴリーを絞ったショットガンの遣り取りをする関数
-    フィールドがカテゴリーごとのため実質こちらを使う
-    project名
-    '''
-    # TODO: フィールドを可変、更新を行えるようにする
-
-    def __init__(self, project, category, FieldItems=None):
-        super(SGGen_Cate, self).__init__(project)
-        self.category = category  # e.g. "Assets"
-        if FieldItems == None:
+        if field_codes == None:
             self.field_codes = ["code"]
         else:
-            self.field_codes = FieldItems
-        self.field_dict_list = self.sg_get(self.field_codes)
+            self.field_codes = field_codes
 
-    def sg_get(self, field_items):
-        '''
-        ショットガンからフィールドの中身を拾ってくる
-        '''
-        category = self.category
-        filters = self.filters
-        field_codes = self.field_codes
+    def get_dict(self, category):
         try:
-            sg_recieveditem = sg.find(category, filters, field_codes)
+            field_dict = sg.find(category, self.filters, self.field_codes)
         except shotgun.Fault:
             raise ValueError('Coudn\'t get from Shotgun....')
         else:
-            return sg_recieveditem
+            self.field_dict_list = field_dict
+            return field_dict
 
-    def sg_write(self, attribute_name, field_code, field_data):
-        '''
-        ショットガンフィールドを書き換える
-        新フィールドの対象コードと値のdictが引数
-        '''
-        category = self.category
-        itemid = self.codekeyed_dict[attribute_name]['id']
+    def sg_write(self, category, attribute_name, field_code, new_data):
+        item_id = self.codekeyed_dict[attribute_name]['id']
+        sg.update(category, item_id, {field_code: new_data})
 
-        go_field_data = field_data
-        sg.update(category, itemid, {field_code: go_field_data})
-
-        return 0
-
-    def make_nameddict(self, priority_field):
+    def get_keying_dict(self, priority_field):
         '''
         特定のコードをキーに格納
         '''
-        twofold_dict = {}
+        two_fold_dict = {}
         for dict_piece in self.field_dict_list:
             pri_item = dict_piece[priority_field]
-            twofold_dict[pri_item] = dict_piece
-        return twofold_dict
+            two_fold_dict[pri_item] = dict_piece
+        return two_fold_dict
 
-    def get_topicitem(self, target_field, topic_item):
+    def get_keying_list(self, target_field, topic_item):
         '''
         特定のキー:アイテムのリストを返す(重複がありうるので)
         '''
@@ -93,22 +64,18 @@ class SGGen_Cate(SGGen_Proj):
         return sp_ls
 
 
-
-def printlist_singleline(cent):
-    print cent
-
-    ''''''
-
-
 if __name__ == "__main__":
     # SGGen_Proj('mem2')
     asset_fieldcodes = ["code", "sg_namespace", "sg_export_type", "sg_top_node",
-                                       "sg_abc_export_list", "sg_anim_export_list", "sg_asset_path",
-                                       "sequences"]
-    sg_asset = SGGen_Cate("mem2", "Asset", asset_fieldcodes)
-    sg_dict = sg_asset.field_dict_list
-
+                        "sg_abc_export_list", "sg_anim_export_list", "sg_asset_path",
+                        "sequences"]
+    fa23_class = SGProjectClass("FA23", asset_fieldcodes)
+    sg_dict = fa23_class.get_dict("Asset")
     shot_fieldcodes = ['code','shots', 'assets']
-    sg_shot = SGGen_Cate("MSTB4", "Shot", shot_fieldcodes)
-    x = sg_shot.make_nameddict('code')
-    print sg_shot.codekeyed_dict['ep0906_s005_c056']['assets']
+    sg_shot = SGProjectClass("FA23", shot_fieldcodes)
+    x = sg_shot.get_dict("Shot")
+    print x
+    # .get_keying_dict("code")
+    # print sg_asset.codekeyed_dict['ep0906_s005_c056']['assets']
+    import pprint
+    # pprint.pprint(x)

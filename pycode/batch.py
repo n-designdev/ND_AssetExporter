@@ -27,13 +27,14 @@ def mayacmd_maker(unique_order, mayafile=None, mayaBatch=None):
         cmd.append(mayafile)
     return cmd
 
+
 def abcExport(**kwargs):
     argsdic = kwargs
     if argsdic['env_load']:
         env_load(argsdic['project'])
         mayaBatch = maya_version(argsdic['project'])
     namespace = argsdic['namespace']
-    outputPath = argsdic['abcOutput'] + '/' + namespace + 'abc'
+    outputPath = argsdic['abcOutput'] + '/' + namespace +'/'+ 'abc'
     assetPath = argsdic['assetpath'].replace("\\","/")
     exportitem = argsdic['exportitem']
 
@@ -108,6 +109,7 @@ def animExport(**kwargs):
     cmd = mayacmd_maker(original_litte, argsdic['inputpath'], mayaBatch)
     cmd[2] = str(cmd[2]).replace('\\\\','\\')
     subprocess.call(cmd)
+
 
 def animAttach(**kwargs):
     argsdic = kwargs

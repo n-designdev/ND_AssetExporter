@@ -4,6 +4,7 @@ import os,sys
 import re
 import shutil
 import util
+import shutil
 
 import batch
 
@@ -53,6 +54,7 @@ def back_starter(**kwargs):
     stepValue = argsdic['stepValue']
     env_load = argsdic['env_load']
     testmode = argsdic['testmode']
+    anim_com_out = argsdic['anim_com_out']
     if exporttype == 'anim':
         isAnim = True
     else:
@@ -103,11 +105,25 @@ def back_starter(**kwargs):
             argsdic['animPath'] = (opc.publishcurrentpath + '/anim/' + animFile)
             argsdic['scene'] = (opc.publishcurrentpath + '/' + ns + '.ma')
             batch.animReplace(**argsdic)
+            
+        if anim_com_out:
+            for animFile in animFiles:
+                reconnect_dir = os.path.join(opc.publishcurrentpath, "anim", "reconnect")
+                if not os.path.exists(reconnect_dir):
+                    os.mkdir(reconnect_dir)
+                origin_anim = os.path.join(opc.publishcurrentpath, "anim", animFile)
+                reconnect_anim = os.path.join(opc.publishcurrentpath, "anim", "reconnect", animFile)
+                print reconnect_dir
+                shutil.copyfile(origin_anim, reconnect_anim)
+                import replace_tool.replace_output as replace_output
+                replace_output.ref_main(reconnect_anim) 
+                    
 
     elif exporttype == 'abc':
-        opc.createOutputDir(charaName)
+        # opc.createOutputDir(charaName)
         batch.abcExport(**argsdic)
         abcFiles = os.listdir(opc.publishfullabcpath)
+        print opc.publishfullabcpath
         if len(abcFiles) == 0:
             opc.removeDir()
             print 'abc not found'
@@ -168,6 +184,8 @@ def back_starter(**kwargs):
 
         batch.abcExport(**argsdic)
         abcFiles = os.listdir(opc.publishfullabcpath)
+        print abcFiles
+        print opc.publishfullabcpath
         if len(abcFiles) == 0:
             opc.removeDir()
             print 'abc not found'
@@ -206,10 +224,6 @@ def back_starter(**kwargs):
     print 'Output directry: {}'.format(opc.publishfullpath.replace('/','\\'))
     print '=================END==================='
 
-
-def test_submit():
-    x = deadline()
-    x.submit_to_deadline()
 
 if __name__ == '__main__':
     argslist = sys.argv[:]

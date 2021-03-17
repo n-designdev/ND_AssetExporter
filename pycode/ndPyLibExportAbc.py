@@ -140,8 +140,9 @@ def _exportAbc2(outputPath, _namespaceList, regexArgs, step_value, frameHundle, 
         strAbc = strAbc + '-file '
         strAbc = strAbc + outputPath_ns
 
-        print 'AbcExport -j ' + strAbc
-        mel.eval('AbcExport -verbose -j ' + '"' + strAbc + '"')
+        print 'AbcExport -j {}'.format(strAbc)
+        # mel.eval('AbcExport -verbose -j ' + '"' + strAbc + '"')
+        mel.eval('AbcExport -verbose -j \"{}\"'.format(strAbc))
 
 def ndPyLibExportAbc2 (args):
     argsdic = args
@@ -158,5 +159,6 @@ def ndPyLibExportAbc2 (args):
         outputPath, namespaceList,
         regexArgs, step_value,
         frameHundle, frameRange)
+    print "check point"
 
 

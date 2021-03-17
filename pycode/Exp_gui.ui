@@ -284,17 +284,14 @@ QScrollBar::handle::horizontal {background:  rgb(90, 90, 90);}
        </spacer>
       </item>
       <item>
-       <spacer name="horizontalSpacer_3">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+       <widget class="QCheckBox" name="anim_comment_checkbox">
+        <property name="layoutDirection">
+         <enum>Qt::RightToLeft</enum>
         </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
+        <property name="text">
+         <string>Anim Comp(in dev)</string>
         </property>
-       </spacer>
+       </widget>
       </item>
      </layout>
     </item>

@@ -46,8 +46,16 @@ def ndPyLibExportCam_searchCamera():
         return
     for i in range(len(cams)):
         if cmds.referenceQuery(cams[i], inr=True):
-            refFile = cmds.referenceQuery(cmds.referenceQuery("anguirus:asset", rfn=True, tr=True), f=True)
-            cmds.file(refFile, importReference=True)
+            # try:
+            #     refFile = cmds.referenceQuery(cmds.referenceQuery("anguirus:asset", rfn=True, tr=True), f=True)
+            #     cmds.file(refFile, importReference=True)
+            # except:
+            #     pass
+            try:
+                refFile = cmds.referenceQuery(cmds.referenceQuery(cams[i], rfn=True, tr=True), f=True)
+                cmds.file(refFile, importReference=True)
+            except:
+                pass
         camAll.append(cams[i])
         camAll.append(camShapes[i])
 
@@ -68,7 +76,6 @@ def ndPyLibExportCam_bakeCamera(sframe, eframe, CameraScale):
         toCam.extend(cmds.camera())
         fromCam.append(cams[i])
         fromCam.append(cams[i+1])
-
 
     for t in range(int(sframe),int(eframe+1)):
         for i in range(0, len(cams), 2):

@@ -77,12 +77,13 @@ class outputPathConf (object):
             os.mkdir(self._publishfullpath)
             if isCam == True:
                 os.mkdir(self._publishfullcampath)
-            if self.isAnim:
+            elif self.isAnim:
                 os.mkdir(self._publishfullanimpath)
             else:
                 os.mkdir(self._publishfullabcpath)
-        except:
-            pass
+        except Exception as e:
+            print( isCam, self.isAnim)
+            print e
 
     def makeCurrentDir (self):
         currentDir = os.path.join(self.publishpath, 'current')
@@ -90,8 +91,8 @@ class outputPathConf (object):
         distutils.dir_util.copy_tree(self._publishfullpath, currentDir)
 
     def removeDir (self):
-        if os.path.exists(self._publishpath+'/current'):
-            files = os.listdir(self._publishpath+'/current')
+        if os.path.exists(self._publishpath+'\\current'):
+            files = os.listdir(self._publishpath+'\\current')
             for f in files:
                 if '.ma' in f:
                     return
@@ -117,7 +118,7 @@ class outputPathConf (object):
         self._publishfullabcpath = os.path.join(self._publishfullpath, 'abc')
         self._publishfullanimpath = os.path.join(self._publishfullpath, 'anim')
         self._publishfullcampath = os.path.join(self._publishfullpath, 'cam')
-        self._publishcurrentpath = self._publishpath+'/current'
+        self._publishcurrentpath = self._publishpath+'\\current'
 
     @property
     def sequence (self):

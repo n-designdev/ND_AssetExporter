@@ -148,10 +148,8 @@ class GUI(QMainWindow):
         self.group = self.ui.grouplist.currentText()
 
     def drop_act(self, urldata):
-        self.tabledata = []
-
         self.inputpath = urldata[0].toString().replace("file:///", "")
-
+        self.tabledata = []
         self.ui.path_line.setText(self.inputpath)
         self.ui.Change_Area.setCurrentIndex(1)
 
@@ -169,33 +167,26 @@ class GUI(QMainWindow):
 
         # カメラタイプの取得
         self.camera_rig_export = ProjectInfoClass.get_camera_rig_info()
-        SGAssetClass = sg_mod.SGGen_Cate(pro_name, 'Asset', self.asset_fields)
-        SGShotClass = sg_mod.SGGen_Cate(pro_name, 'Shot', self.shot_fields)
+        SGAssetClass = sg_mod.SGProjectClass(pro_name, self.asset_fields)
+        SGAssetClass.get_dict("Asset")
+        SGShotClass = sg_mod.SGProjectClass(pro_name, self.shot_fields)
+        SGShotClass.get_dict("Shot")
 
         #target_assetの選定
-        target_asset_list = (
-            SGShotClass.make_nameddict('code')[shot_code]['assets']
-            )
-
-        all_asset_dics = (
-            SGAssetClass.make_nameddict('code')
-            )
+        target_asset_list = SGShotClass.get_keying_dict('code')[shot_code]['assets']
+        all_asset_dics = SGAssetClass.get_keying_dict('code')
 
         # target_asset_list内の名前をもとにAssetPageから取得
         target_asset_dics = []
         for target_asset_name in target_asset_list:
             target_asset_dics.append(
-                all_asset_dics[target_asset_name['name']]
-            )
-
+                all_asset_dics[target_asset_name['name']])
         if len(target_asset_list) == 0:  # ショットのアセット情報が存在しない場合、sequencesを見に行く
-            seq_list = SGAssetClass.get_topicitem('sequences', sequence)
+            seq_list = SGAssetClass.get_keying_list('sequences', sequence)
             for spseq in seq_list:
                 target_asset_list.append(spseq['code'])
-        tabledata = mu.tabledata_maker(
-            self.headers_item, self.convert_dic, target_asset_dics)
-        tabledata = mu.add_camera_row(
-            self.headers_item, tabledata, self.camera_rig_export)
+        tabledata = mu.tabledata_maker(self.headers_item, self.convert_dic, target_asset_dics)
+        tabledata = mu.add_camera_row(self.headers_item, tabledata, self.camera_rig_export)
 
         def _setComboBoxList(qtcombobox, itemlist):
             qtcombobox.clear()
@@ -208,7 +199,6 @@ class GUI(QMainWindow):
                 if combo_index == -1:
                     if subvalue != None:
                         combo_index = qtcombobox.findText(subvalue)
-            print combo_index
             qtcombobox.setCurrentIndex(combo_index)
 
         _groups = util_env.deadline_group #dictかも
@@ -222,17 +212,13 @@ class GUI(QMainWindow):
         _setComboBoxValue(self.ui.poollist, self.project, 'normal')
 
         model = mu.TableModelMaker(tabledata, self.headers)
-
         self.ui.main_table.setContextMenuPolicy(Qt.CustomContextMenu)
         self.ui.main_table.customContextMenuRequested.connect(self.main_table_rclicked)
-
         self.ui.main_table.setModel(model)
         self.ui.main_table.setColumnWidth(0, 25)
         self.ui.start_button.setEnabled(True)
         self.ui.start_submit_button.setEnabled(True)
-
         self.tabledata = tabledata
-
         return True
 
     def check_button_clicked(self):
@@ -361,7 +347,8 @@ class GUI(QMainWindow):
                     'framehundle': framehundle,
                     'Priority': self.ui.priority.text(),
                     'Pool': self.ui.poollist.currentText(),
-                    'Group': self.ui.grouplist.currentText()}
+                    'Group': self.ui.grouplist.currentText(),
+                    'anim_com_out': self.ui.anim_comment_checkbox.isChecked()}
 
                 for key, item in execargs_ls.items():
                     if type(item)==str:
@@ -389,7 +376,8 @@ class GUI(QMainWindow):
                         filename = "log_" + now.strftime('%Y%m%d_%H%M%S') + ".txt"
                         output_file = "E:\\temp\\exporter_log\\" + os.environ.get("USERNAME") + "\\" + filename
                         current_dir = "Y:\\tool\\ND_Tools\\DCC\\ND_AssetExporter\\pycode"
-                        print execargs_ls
+                        import pprint
+                        pprint.pprint(execargs_ls)
                         self.ui.Change_Area.setCurrentIndex(2)
                         if not os.path.exists("E:\\temp\\exporter_log\\" + os.environ.get("USERNAME")):
                             os.makedirs("E:\\temp\\exporter_log\\" + os.environ.get("USERNAME"))
@@ -436,13 +424,12 @@ class GUI(QMainWindow):
 
     def main_table_doubleclicked(self):  # ダブルクリックされたとき
         clicked_row = self.ui.main_table.selectedIndexes()[0].row()
-        z = self.check_row
-        if clicked_row in z:
-            z.remove(clicked_row)
+        check_rows = self.check_row
+        if clicked_row in check_rows[:]:
+            check_rows.remove(clicked_row)
         else:
-            z.append(clicked_row)
-
-        self.check_row = list(set(z))
+            check_rows.append(clicked_row)
+        self.check_row = list(set(check_rows))
         model = mu.TableModelMaker(
             self.tabledata, self.headers, self.check_row, self.executed_row)
         self.ui.main_table.setModel(model)
