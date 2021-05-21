@@ -79,7 +79,6 @@ def ndPyLibExportCam_bakeCamera(sframe, eframe, CameraScale):
 
     for t in range(int(sframe),int(eframe+1)):
         for i in range(0, len(cams), 2):
-            cam = cams[i]
             cmds.currentTime(t)
 
             attrsTrans = cmds.xform(fromCam[i],q=True,ws=True,t=True)
@@ -155,22 +154,20 @@ def ndPyLibPlatform(text):
 
 
 def ndPyLibExportCam(camOutput, CameraScale, frameHundle, _frameRange):
+    camOutput = camOutput.replace("\\", "/")
     isImagePlane = 1
     outputfiles = []
-
-    sframe = cmds.playbackOptions(q=True, min=True)
-    eframe = cmds.playbackOptions(q=True, max=True)
-
-    if _frameRange != 'None':
+    if _frameRange == 'None' or _frameRange == None:
+        sframe = cmds.playbackOptions(q=True, min=True)
+        eframe = cmds.playbackOptions(q=True, max=True)
+    else:
         _frameRange = _frameRange.lstrip('u')
         frameRange = _frameRange.split(',')
         sframe = float(frameRange[0])
         eframe = float(frameRange[1])
-
     sframe -= float(frameHundle)
     eframe += float(frameHundle)
-
-    if isImagePlane !=1: #カメラは通らない..?
+    if isImagePlane !=1: 
         if len(cmds.ls(type='imagePlane'))!=0:
             cmds.delete(cmds.ls(type='imagePlane'))
             cmds.warning('delete imagePlanes...')
@@ -182,15 +179,8 @@ def ndPyLibExportCam(camOutput, CameraScale, frameHundle, _frameRange):
     if cmds.objExists('cam_grp'):
         cmds.delete('cam_grp')
 
-    grp = cmds.group(em=True, n='cam_grp')
+    cmds.group(em=True, n='cam_grp')
     toCam = []
-
-    # if(len(cams)==3):#カメラが一つの場合
-    # if(len(cams)==None):#カメラが一つの場合
-    #     toCam.append(cams[0])
-    #     cmds.parent(toCam[0],'cam_grp')
-    #     cmds.rename(toCam[0],'rend_cam')
-    # else:#カメラが複数の場合
     for i in range(0, len(cams), 3):
         toCam.append(cams[i])
         toCam.append(cams[i+1])
@@ -203,8 +193,9 @@ def ndPyLibExportCam(camOutput, CameraScale, frameHundle, _frameRange):
 
     if not os.path.exists(publishdir):
         os.mkdir(publishdir)
+    camOutput_abc = camOutput.replace('.ma', '.abc')        
     camOutput_ma = camOutput.replace('.abc', '.ma').replace('/abc/', '/')
-    camOutput_fbx = camOutput.replace('.abc', 'fbx')
+    camOutput_fbx = camOutput_ma.replace('.ma', '.fbx')
 
     cmds.file(camOutput_ma, force=True, options='v=0', typ='mayaAscii', pr=True, es=True)
 
@@ -216,13 +207,10 @@ def ndPyLibExportCam(camOutput, CameraScale, frameHundle, _frameRange):
     # if isFbx == 1:
     if cmds.pluginInfo('fbxmaya', q=True, l=True) == 0:
         cmds.loadPlugin('fbxmaya')
-
     cmds.file(camOutput_fbx, force=True, options='v=0', typ='FBX export', pr=True, es=True)
-
     # if isABC == 1:
     if cmds.pluginInfo('AbcExport', q=True, l=True) == 0:
         cmds.loadPlugin('AbcExport')
-
     strAbc = ''
     strAbc = strAbc+'-frameRange '+str(sframe)+' '+str(eframe)+' '
     strAbc = strAbc+'-uvWrite '
@@ -230,28 +218,38 @@ def ndPyLibExportCam(camOutput, CameraScale, frameHundle, _frameRange):
     strAbc = strAbc+'-eulerFilter '
     strAbc = strAbc+'-dataFormat ogawa '
     strAbc = strAbc+ '-root cam_grp '
-    strAbc = strAbc+ '-file '+ camOutput #abc
+    strAbc = strAbc+ '-file '+ camOutput_abc #abc
     print ('AbcExport -j ' + strAbc)
     mel.eval('AbcExport -verbose -j ' + '"' + strAbc + '"')
-
     cmds.file(camOutput_ma, force=True, options='v=0', typ='mayaAscii', pr=True, es=True)
-
     return outputfiles
-
-    #end of ndPythonLibExportCam_exportCamera
 
 
 def ndPyLibExportCam2(args):
     argsdic = args
     camOutput = argsdic['camOutput'] #ファイル名込み ..Cam/cam/ver**/**_cam.abc
     CameraScale = argsdic['camScale']
-
     frameHundle = argsdic['framehundle']
     frameRange = argsdic['framerange']
-
     ndPyLibExportCam(camOutput, CameraScale, frameHundle, frameRange)
-
-# if __name__ == '__main__':
-#     args = {'output':None, 'oFilename':None, 'camScale':None}
-#     ndPyLibExportCam2(args)
-
+  
+    
+def ndPyLibExportCam3(outputPath, cameraScale=-1, frameHundle=5, frameRange="None"):
+    animFiles = ndPyLibExportCam(outputPath, cameraScale, frameHundle, frameRange)
+    for animFile in animFiles:
+        ns = animFile.replace('anim_', '').replace('.ma', '')
+        animOutput = opc.publishfullanimpath + '/' + animFile
+        charaOutput = opc.publishfullpath + '/' + ns + '.ma'
+        argsdic['animOutput'] = animOutput
+        argsdic['charaOutput'] = charaOutput
+        argsdic['ns'] = ns
+        batch.animAttach(**argsdic)
+if __name__ == '__main__':
+    import sys
+    sys.path.append("Y:\\tool\\ND_Tools\\DCC\\ND_AssetExporter\\pycode")
+    import ndPyLibExportCam;reload(ndPyLibExportCam)
+    outputpath = "C:/Users/k_ueda/Desktop/work/test1.ma"
+    cameraScale = -1
+    frameHundle = 5
+    frameRange = None
+    ndPyLibExportCam.ndPyLibExportCam3(outputpath, cameraScale, frameHundle, frameRange)

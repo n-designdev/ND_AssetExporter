@@ -347,8 +347,7 @@ class GUI(QMainWindow):
                     'framehundle': framehundle,
                     'Priority': self.ui.priority.text(),
                     'Pool': self.ui.poollist.currentText(),
-                    'Group': self.ui.grouplist.currentText(),
-                    'anim_com_out': self.ui.anim_comment_checkbox.isChecked()}
+                    'Group': self.ui.grouplist.currentText()}
 
                 for key, item in execargs_ls.items():
                     if type(item)==str:
@@ -374,13 +373,16 @@ class GUI(QMainWindow):
                         # output_file = "Y:\\tool\\ND_Tools\\DCC\\ND_AssetExporter\\log\\result_text.txt"
                         now = datetime.datetime.now()
                         filename = "log_" + now.strftime('%Y%m%d_%H%M%S') + ".txt"
-                        output_file = "E:\\temp\\exporter_log\\" + os.environ.get("USERNAME") + "\\" + filename
+                        output_dir = "Y:\\users\\"+os.environ.get("USERNAME")+"\\DCC_log\\ND_AssetExporter"
+                        output_file = output_dir + "\\" + filename
                         current_dir = "Y:\\tool\\ND_Tools\\DCC\\ND_AssetExporter\\pycode"
+                        print "##execargs_ls##"
                         import pprint
                         pprint.pprint(execargs_ls)
+                        print "##execargs_ls##"
                         self.ui.Change_Area.setCurrentIndex(2)
-                        if not os.path.exists("E:\\temp\\exporter_log\\" + os.environ.get("USERNAME")):
-                            os.makedirs("E:\\temp\\exporter_log\\" + os.environ.get("USERNAME"))
+                        if not os.path.exists(output_dir):
+                            os.makedirs(output_dir)
                         thread1 = threading.Thread(target=thread_main, args=(str(execargs_ls), output_file, current_dir))
                         thread1.start()
                         count = 0

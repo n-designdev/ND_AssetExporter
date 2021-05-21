@@ -46,7 +46,11 @@ def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName,
         if cmds.objExists(retNodes[i*2+1]) == 1:
             buf = retNodes[i*2+1].split(':')
             if len(buf) == 2:
-                rn = cmds.rename(retNodes[i*2+1], buf[1])
+                print retNodes[i*2], buf[1]
+                try:
+                    rn = cmds.rename(retNodes[i*2+1], buf[1])
+                except:
+                    rn = retNodes[i*2+1]
                 retNodes[i*2+1] = rn
             cmds.select(retNodes[i*2+1], add=True)
 
@@ -69,7 +73,8 @@ def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName,
     else:
         print '[nd] Not use filterCurve\n'
 
-    inFileName = inFileName.replace(":","_")
+    # inFileName = inFileName.replace(":","_")
+    inFileName = inFileName.split(":")[-1]
     fileName = inFileName + '.ma'
     filePathName = inDirPath + '/' + fileName
     filePathNamex = os.path.dirname(filePathName)
@@ -92,7 +97,13 @@ def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName,
     for i in range(len(retNodes)/2):
         node = retNodes[i*2].split('|')[-1]
         # cmd = 'connectAttr \"' + retNodes[i*2+1] + '.output\" \":' + inPfxInfo[1] + NS[pfxSw] + retNodes[i*2] + '\";\n'
-        cmd = 'connectAttr \"' + retNodes[i*2+1] + '.output\" \":' + inPfxInfo[1] + NS[pfxSw] + node + '\";\n'
+        print "#inPfxInfo"
+        print inPfxInfo
+        print "#NS"
+        print NS
+        print "#node"
+        print node #vernierND_Rig_RH_v001:vernierNml:root.translateX
+        cmd = 'connectAttr \"' + retNodes[i*2+1] + '.output\" \":' + inPfxInfo[1] + NS[pfxSw] + ":".join(node.split(":")[-2:]) + '\";\n'
         addCmd.append(cmd)
 
     try:

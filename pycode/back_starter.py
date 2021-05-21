@@ -20,10 +20,13 @@ import ND_lib.deadline.common as common
 import ND_lib.env as util_env
 
 def spsymbol_remover(litteral, sp_check=None):
-    listitem = ["exportitem", "framerange", "namespace"]
+    listitem = ["exportitem", "framerange"]
     if sp_check in listitem:
         litteral = re.sub(':|\'|{|}', '', litteral)
         litteral = litteral.rstrip(',')
+    elif sp_check == "namespace":
+        litteral = re.sub('\'|{|}', '', litteral)
+        litteral = litteral.rstrip(',')    
     else:
         litteral = re.sub(':|\'|,|{|}', '', litteral)
     url_list = ['inputpath', 'assetpath']
@@ -54,7 +57,6 @@ def back_starter(**kwargs):
     stepValue = argsdic['stepValue']
     env_load = argsdic['env_load']
     testmode = argsdic['testmode']
-    anim_com_out = argsdic['anim_com_out']
     if exporttype == 'anim':
         isAnim = True
     else:
@@ -83,6 +85,9 @@ def back_starter(**kwargs):
                     os.rmdir(os.path.dirname(os.path.dirname(output)))
             opc.makeCurrentDir()
             return
+        print "##animFiles"
+        import pprint
+        pprint.pprint(animFiles)
         if len(animFiles)==0:
             opc.removeDir()
             return
@@ -92,6 +97,7 @@ def back_starter(**kwargs):
             charaOutput = opc.publishfullpath + '/' + ns + '.ma'
             argsdic['animOutput'] = animOutput
             argsdic['charaOutput'] = charaOutput
+            # argsdic['ns'] = ns.replace("__", ":")
             argsdic['ns'] = ns
             batch.animAttach(**argsdic)
 
@@ -102,22 +108,10 @@ def back_starter(**kwargs):
             if animFile[-3:] != '.ma':continue
             ns = animFile.replace('anim_', '').replace('.ma', '')
             argsdic['ns'] = ns
+            # argsdic['ns'] = ns.replace("_", ":")
             argsdic['animPath'] = (opc.publishcurrentpath + '/anim/' + animFile)
             argsdic['scene'] = (opc.publishcurrentpath + '/' + ns + '.ma')
-            batch.animReplace(**argsdic)
-            
-        if anim_com_out:
-            for animFile in animFiles:
-                reconnect_dir = os.path.join(opc.publishcurrentpath, "anim", "reconnect")
-                if not os.path.exists(reconnect_dir):
-                    os.mkdir(reconnect_dir)
-                origin_anim = os.path.join(opc.publishcurrentpath, "anim", animFile)
-                reconnect_anim = os.path.join(opc.publishcurrentpath, "anim", "reconnect", animFile)
-                print reconnect_dir
-                shutil.copyfile(origin_anim, reconnect_anim)
-                import replace_tool.replace_output as replace_output
-                replace_output.ref_main(reconnect_anim) 
-                    
+            batch.animReplace(**argsdic)             
 
     elif exporttype == 'abc':
         # opc.createOutputDir(charaName)
@@ -149,7 +143,7 @@ def back_starter(**kwargs):
 
     elif exporttype == 'camera':
         argsdic['publishPath'] = opc.publishfullpath #ディレクトリ名
-        oFilename = opc.sequence + opc.shot + opc.shot + '_cam'
+        oFilename = opc.sequence + opc.shot + '_cam'
         argsdic['camOutput'] = '{}/{}.abc'.format(opc.publishfullcampath, oFilename) #フルパスとファイル名
         batch.camExport(**argsdic)
         camFiles = os.listdir(opc.publishfullcampath)
@@ -181,11 +175,8 @@ def back_starter(**kwargs):
         if len(animFiles)==0:
             opc.removeDir()
             return
-
         batch.abcExport(**argsdic)
         abcFiles = os.listdir(opc.publishfullabcpath)
-        print abcFiles
-        print opc.publishfullabcpath
         if len(abcFiles) == 0:
             opc.removeDir()
             print 'abc not found'

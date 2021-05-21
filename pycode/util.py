@@ -60,7 +60,7 @@ class outputPathConf (object):
 
     def verInc (self, isCam=False):
         vers = os.listdir(self._publishpath)
-        if len(vers) == 0 or isCam:
+        if len(vers) == 0:
             self._currentVer = 'v001'
         else:
             vers.sort()

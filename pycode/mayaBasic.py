@@ -39,12 +39,17 @@ def replaceAsset (assetPath, namespace):
             tgtRN = r
             break
         else:
-            print r+' can not replace'
+            if len(refs) == 2:
+                if "_animRN" in refs[0]:
+                    tgtRN = r
+                    break 
+            else:
+                print r+' can not replace'
     try:
         mc.file(assetPath, loadReference=tgtRN)
     except:
-        pass
-
+        print "replace not done..." 
+        return
     mc.warning('replace end')
 
 

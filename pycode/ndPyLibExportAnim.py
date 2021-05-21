@@ -6,14 +6,15 @@ import re, glob
 import maya.cmds as cmds
 import maya.mel as mel
 
-from ndPyLibAnimIOExportContain import *
-
+# from ndPyLibAnimIOExportContain import *
+from ndPyLibAnimIOExportContain import ndPyLibAnimIOExportContain 
+# reload(ndPyLibAnimIOExportContain)
 def spsymbol_remover(litteral, sp_check=None):
     listitem = ['exportitem']
     if sp_check in listitem:
-        litteral = re.sub(':|\'|{|}', '', litteral)
+        litteral = re.sub('\'|{|}', '', litteral)
     else:
-        litteral = re.sub(':|\'|,|{|}', '', litteral)
+        litteral = re.sub('\'|,|{|}', '', litteral)
     url_list = ['inputpath', 'assetpath']
     if sp_check in url_list:
         litteral = litteral.replace('/', ':/')
@@ -225,17 +226,18 @@ def _exportAnim (publishpath, oFilename, strnamespaceList, strregexArgs, isFilte
     print "getting allNodes..."
     print "nanespaceList: {}".format(namespaceList)
     print "namespaces: {}".format(namespaces)
-    for ns in namespaces:
-        for _nsList in namespaceList:
-            match = re.match(_nsList, ns)
+    for a_ns in namespaces:
+        for input_ns in namespaceList:
+            match = re.match(input_ns, a_ns)
+            print input_ns, a_ns
+            print match
             if match != None:
-                print ns, regexArgsN
-                allNodes += _getAllNodes(ns, regexArgsN)
+                allNodes += _getAllNodes(a_ns, regexArgsN)
     print "getting nodeAndAttrs"
     print "regexArgsAttrs:{}".format(regexArgsAttrs)
-    for ns in namespaceList:
+    for a_ns in namespaceList:
         for regexArgsAttr in regexArgsAttrs:
-            regexAttr = ns+':'+regexArgsAttr
+            regexAttr = a_ns+':'+regexArgsAttr
             if cmds.objExists(regexAttr):
                 nodeAndAttrs.append(regexAttr)
 
@@ -291,7 +293,6 @@ def _exportAnim (publishpath, oFilename, strnamespaceList, strregexArgs, isFilte
                 pickNodesAttr.append(n)
         if len(pickNodes) != 0:
             outputfiles.append(publishpath+oFilename+'_'+ns+'.ma')
-            # ndPyLibAnimIOExportContain(isFilter, ['3', ''], publishpath, x+'_'+ns, pickNodes, 0, 0)
             ndPyLibAnimIOExportContain(isFilter, ['3', ''], publishpath, oFilename+'_'+ns, pickNodes, pickNodesAttr, 0, 0, frameRange, bakeAnim)
 
     return outputfiles
@@ -335,6 +336,10 @@ def ndPyLibExportAnim2(args):
     namespaceList = argsdic['namespace']
     regexArgs = argsdic['exportitem']
     bakeAnim = argsdic['bakeAnim']
+    print "##bakeAnim##"
+    print bakeAnim
+    if bakeAnim == "False":
+        bakeAnim=False
     # extradic = argsdic['extra_dic']
     try:
         frameHundle = argsdic['framehundle']
@@ -346,6 +351,21 @@ def ndPyLibExportAnim2(args):
         frameRange = None
     extra_dic = None
     isFilter = 1
+    
     _exportAnim(outputPath, oFilename, namespaceList, regexArgs, isFilter, bakeAnim, extra_dic, frameHundle, frameRange)
     print "ndPylibExportAnim End"
     return
+    
+if __name__ == '__main__':
+    sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter\pycode")
+    import ndPyLibExportAnim
+    outputPath = r"P:\Project\RAM1\shots\ep003\s325\c002\publish\test_charSet\gutsFalconNml"
+    oFilename = "test"
+    namespaceList = "gutsFalconNml"
+    regexArgs = "ctrl_set,root"
+    isFilter = 1
+    bakeAnim = False
+    extra_dic = None
+    frameHundle = 0
+    frameRange = None
+    ndPyLibExportAnim._exportAnim(outputPath, oFilename, namespaceList, regexArgs, isFilter, bakeAnim, extra_dic, frameHundle, frameRange)

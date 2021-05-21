@@ -120,6 +120,11 @@ def animAttach(**kwargs):
     assetPath = argsdic['assetpath'].replace("\\","/")
     animPath = argsdic['animOutput']
     namespace = argsdic['ns']
+    
+    print ##animPath##
+    print animPath
+    print ##namespace##
+    print namespace
 
     original_litte = (
         'from mayaBasic import *;'
@@ -142,6 +147,10 @@ def animReplace(**kwargs):
     animPath = argsdic['animPath'].replace("\\","/")
     namespace = argsdic['ns']
     scene = argsdic['scene']
+    print "##namespace##"
+    print namespace
+    print "##scene"
+    print scene
     original_litte = (
         'from mayaBasic import *;'
         'replaceAsset(\'{}\', \'{}_anim\');'.format(animPath, namespace) +
