@@ -13,7 +13,7 @@ for path in ND_TOOL_PATH.split(';'):
 #------------------------------------
 import ND_lib.util.path as util_path
 
-class outputPathConf (object):
+class outputPathConf(object):
     def __init__(self, inputPath, isAnim=False, test=False):
         self.inputPath = inputPath.replace('\\', '/')
         self.isAnim = isAnim
@@ -22,9 +22,7 @@ class outputPathConf (object):
         if test == 'True':
             self.outputRootDir = 'test_charSet'
             self.outputCamRootDir = 'test_Cam'
-
         dic = util_path.get_path_dic(self.inputPath)
-
         self._pro_name = dic['project_name']
         self._shot = dic['shot']
         self._sequence = dic['sequence']
@@ -34,7 +32,7 @@ class outputPathConf (object):
             if path_parts == self._shot:
                 break
 
-    def createOutputDir (self, char):
+    def createOutputDir(self, char):
         self._publishpath = os.path.join(self._shotpath+'publish', self.outputRootDir, char)
         print self._publishpath
         print 'createOutputDir'
@@ -47,7 +45,7 @@ class outputPathConf (object):
             except:
                 pass
 
-    def createCamOutputDir (self):
+    def createCamOutputDir(self):
         self._publishpath = os.path.join(self._shotpath, 'publish', self.outputCamRootDir)
         if os.path.exists(self._publishpath):
             self.verInc(True)
@@ -58,7 +56,7 @@ class outputPathConf (object):
             except:
                 pass
 
-    def verInc (self, isCam=False):
+    def verInc(self, isCam=False):
         vers = os.listdir(self._publishpath)
         if len(vers) == 0:
             self._currentVer = 'v001'
@@ -85,12 +83,15 @@ class outputPathConf (object):
             print( isCam, self.isAnim)
             print e
 
-    def makeCurrentDir (self):
+    def makeCurrentDir(self):
         currentDir = os.path.join(self.publishpath, 'current')
         self._publishcurrentpath = currentDir
         distutils.dir_util.copy_tree(self._publishfullpath, currentDir)
+        current_info = os.path.join(currentDir, 'current_info.txt')
+        with open(current_info, 'w') as f:
+            f.write("current ver:"+ str(self._currentVer)+"\n")
 
-    def removeDir (self):
+    def removeDir(self):
         if os.path.exists(self._publishpath+'\\current'):
             files = os.listdir(self._publishpath+'\\current')
             for f in files:
@@ -98,7 +99,7 @@ class outputPathConf (object):
                     return
         shutil.rmtree(self._publishpath)
 
-    def setChar (self, char):
+    def setChar(self, char):
         if char == 'Cam' or char == 'Camera':
             self._publishpath = os.path.join(self._shotpath, 'publish', self.outputCamRootDir, char).replace(os.path.sep, '/')
         else:
@@ -151,6 +152,10 @@ class outputPathConf (object):
     @property
     def publishfullcampath(self):
         return self._publishfullcampath.replace(os.path.sep, '/')
+    
+    @property
+    def publishshotpath(self):
+        return self._shotpath.replace(os.path.sep, '/')
 
     @property
     def currentVer (self):

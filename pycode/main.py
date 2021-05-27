@@ -56,9 +56,9 @@ class GUI(QMainWindow):
         self.ui.group_box.installEventFilter(self)
         self.setCentralWidget(self.ui)
         self.setGeometry(500, 200, 1000, 800)
-        self.test = False
+        self.debug = False
         debug = ''
-        if self.test:debug = '__debug__'
+        if self.debug:debug = '__debug__'
         self.setWindowTitle('%s %s %s' % (self.WINDOW, __version__, debug))
         # self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
 
@@ -117,6 +117,8 @@ class GUI(QMainWindow):
         self.ui.framerangecustom_checkbox.clicked.connect(self.framerangecustom_checkbox)
         self.ui.framehundle_checkbox.clicked.connect(self.framehundle_checkbox_clicked)
         self.ui.open_log_button.clicked.connect(self.open_log_button_clicked)
+        self.ui.current_refresh_button.clicked.connect(self.current_refresh_button_clicked)
+        self.ui.open_publish_dir_button.clicked.connect(self.open_publish_dir_button_clicked)
 
     def contextMenu(self, point):
         print point
@@ -131,7 +133,7 @@ class GUI(QMainWindow):
         return True
 
     def debug_clicked(self):
-        self.test = self.ui.debug_CheckBox.isChecked()
+        self.debug = self.ui.debug_CheckBox.isChecked()
 
     def stepValue_LineEdit_stateChange(self):
         currentState = self.ui.stepValue_CheckBox.isChecked()
@@ -334,7 +336,7 @@ class GUI(QMainWindow):
                     'exportitem': exportitem,
                     'topnode': topnode,
                     'assetpath': assetpath,
-                    'testmode': self.test,
+                    'testmode': self.debug,
                     'env_load': self.yeti,
                     'stepValue': abcstep_override,
                     'framerange_output': True,  # 常時オンでも良いかも
@@ -372,7 +374,7 @@ class GUI(QMainWindow):
                         order_str = "Y:\\tool\\MISC\\Python2710_amd64_vs2010\\python.exe Y:\\tool\\ND_Tools\\DCC\\ND_AssetExporter\\pycode\\main_util.execExporter.py"
                         # output_file = "Y:\\tool\\ND_Tools\\DCC\\ND_AssetExporter\\log\\result_text.txt"
                         now = datetime.datetime.now()
-                        filename = "log_" + now.strftime('%Y%m%d_%H%M%S') + ".txt"
+                        filename = "log_" + now.strftime('%Y%m%d_%H%M%S') + chara+ ".txt"
                         output_dir = "Y:\\users\\"+os.environ.get("USERNAME")+"\\DCC_log\\ND_AssetExporter"
                         output_file = output_dir + "\\" + filename
                         current_dir = "Y:\\tool\\ND_Tools\\DCC\\ND_AssetExporter\\pycode"
@@ -403,7 +405,7 @@ class GUI(QMainWindow):
                         self.output_file = output_file
                         self.ui.open_log_button.setEnabled(True)
                         # mu.execExporter(**execargs_ls)
-                    util.addTimeLog(chara, self.inputpath, test=self.test)
+                    util.addTimeLog(chara, self.inputpath, test=self.debug)
             else:
                 pass
 
@@ -444,6 +446,24 @@ class GUI(QMainWindow):
         self.ui.main_table.openPersistentEditor(self.selected_item)
         # self.ui.main_table.closePersistentEditor(selected_item)
         
+    def current_refresh_button_clicked(self):
+        import copy_tool.copy_main as copy_main
+        opc = util.outputPathConf(self.inputpath)
+        shot_path = opc.publishshotpath
+        if self.debug:
+            current_path = os.path.join(shot_path, "publish", "test_charSet")
+        else:
+            current_path = os.path.join(shot_path, "publish", "charSet")
+        copy_main.copy_main(current_path)
+    
+    def open_publish_dir_button_clicked(self):
+        import util
+        opc = util.outputPathConf(self.inputpath)
+        shot_path = opc.publishshotpath
+        publish_path = os.path.join(shot_path, "publish")
+        subprocess.call("explorer {}".format(publish_path.replace("/", "\\")))
+        
+                
 def thread_main(execargs_ls, output_path, current_dir):
     python = "Y:\\tool\\MISC\\Python2710_amd64_vs2010\\python.exe"
     py_path = "Y:\\tool\\ND_Tools\\DCC\\ND_AssetExporter\\pycode\\main_util.py"

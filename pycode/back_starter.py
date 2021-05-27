@@ -85,9 +85,6 @@ def back_starter(**kwargs):
                     os.rmdir(os.path.dirname(os.path.dirname(output)))
             opc.makeCurrentDir()
             return
-        print "##animFiles"
-        import pprint
-        pprint.pprint(animFiles)
         if len(animFiles)==0:
             opc.removeDir()
             return

@@ -31,18 +31,28 @@ def strdict_parse(original_string):
     return parsed_dic
     
 
-def Euler_filter(obj_list):
-    xyz = ['.rotateX', '.rotateY', '.rotateZ']
-    for obj in obj_list:
-        anim_cv = map(lambda x: cmds.connectionInfo(obj+x, sfd=True), xyz)
-        anim_cv = map(lambda x: x.rstrip('.output'), anim_cv)
+def Euler_filter(attr_list):
+    # xyz = ['.rotateX', '.rotateY', '.rotateZ']
+    # for obj in obj_list:
+    #     anim_cv = map(lambda x: cmds.connectionInfo(obj+x, sfd=True), xyz)
+    #     anim_cv = map(lambda x: x.rstrip('.output'), anim_cv)
+    #     try:
+    #         anim_cv = filter(lambda x: cmds.nodeType(x) in ['animCurveTL', 'animCurveTU', 'animCurveTA', 'animCurveTT'], anim_cv)
+    #         cmds.filterCurve(anim_cv, f='euler')
+    #     except:
+    #         print '# Euler FilterFailed: '+obj+' #'
+    #         continue
+    #     print '# Euler Filter Success: '+obj+' #'
+    for attr in attr_list:
+        # anim_cv = map(lambda x: cmds.connectionInfo(obj+x, sfd=True), xyz)
+        anim_cv = map(lambda x: x.rstrip('.output'), attr)
         try:
             anim_cv = filter(lambda x: cmds.nodeType(x) in ['animCurveTL', 'animCurveTU', 'animCurveTA', 'animCurveTT'], anim_cv)
             cmds.filterCurve(anim_cv, f='euler')
         except:
-            print '# Euler FilterFailed: '+obj+' #'
+            print '# Euler FilterFailed: '+attr+' #'
             continue
-        print '# Euler Filter Success: '+obj+' #'
+        print '# Euler Filter Success: '+attr+' #'
 
 
 def _getNamespace():
@@ -59,7 +69,7 @@ def _getNamespace():
     return namespaces
 
 
-def _getAllNodes (namespace, regexArgs):
+def _getAllNodes(namespace, regexArgs):
     if len(regexArgs) == 0:
         regexArgs = ['*']
     print regexArgs
@@ -105,7 +115,7 @@ def _getAllNodes (namespace, regexArgs):
     return nodeShort
 
 
-def _getConstraintAttributes (nodes):
+def _getConstraintAttributes(nodes):
     attrs = []
     for n in nodes:
         const = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='constraint')
@@ -115,7 +125,7 @@ def _getConstraintAttributes (nodes):
     return attrs
 
 
-def _getPairBlendAttributes (nodes):
+def _getPairBlendAttributes(nodes):
     attrs = []
     for n in nodes:
         pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='pairBlend')
@@ -123,8 +133,28 @@ def _getPairBlendAttributes (nodes):
         for i in range(0, len(pairblend), 2):
             attrs.append(pairblend[i])
     return attrs
+    
 
+def _getMotionPathAttributes(nodes):
+    attrs = []
+    for n in nodes:
+        pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='motionPath')
+        if pairblend is None: continue
+        for i in range(0, len(pairblend), 2):
+            attrs.append(pairblend[i])
+    return attrs
 
+    
+def _getAddDoubleLinearAttributes(nodes):
+    attrs = []
+    for n in nodes:
+        pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='addDoubleLinear')
+        if pairblend is None: continue
+        for i in range(0, len(pairblend), 2):
+            attrs.append(pairblend[i])
+    return attrs
+    
+    
 def _getNoKeyAttributes (nodes):
     attrs = []
     for n in nodes:
@@ -252,7 +282,6 @@ def _exportAnim (publishpath, oFilename, strnamespaceList, strregexArgs, isFilte
         animLayers = cmds.ls(type='animLayer')
         for al in animLayers:
             cmds.animLayer(al, e=True, sel=False)
-
         cmds.animLayer(baseAnimationLayer, e=True, sel=True)
         cmds.bakeResults(t=(sframe, eframe), sb=True, ral=True)
         print 'merge animation layers'
@@ -266,20 +295,26 @@ def _exportAnim (publishpath, oFilename, strnamespaceList, strregexArgs, isFilte
                 _ns = ns.split('*')[1].rstrip('$')
                 cmds.setAttr(_ns + ':' + _key, int(item)) # 整数限定
                 cmds.setKeyframe(_ns + ':' + _key, t=1)
-
+    print "###"
+    print allNodes
+    print "###"
     attrs = _getNoKeyAttributes(allNodes)
 
     if len(nodeAndAttrs) !=0:
         attrs += _getNoKeyAttributes(nodeAndAttrs)
     if len(attrs) != 0:
         cmds.setKeyframe(attrs, t=sframe, insertBlend=False)
-    
     attrs = _getConstraintAttributes(allNodes)
     attrs += _getPairBlendAttributes(allNodes)
+    attrs += _getMotionPathAttributes(allNodes)
+    attrs += _getAddDoubleLinearAttributes(allNodes)
+    if bakeAnim is True:
+        attrs += _getNoKeyAttributes(nodeAndAttrs)
     if len(attrs)!=0:
-        cmds.bakeResults(attrs, t=(sframe, eframe), sb=True)
-
-    Euler_filter(allNodes)
+        cmds.bakeResults(attrs, t=(sframe, eframe), dic=True, sb=True, sm=True)
+        print "bake finished."
+        
+    Euler_filter(attrs)
 
     for ns in namespaces:
         pickNodes = []
@@ -359,6 +394,7 @@ def ndPyLibExportAnim2(args):
 if __name__ == '__main__':
     sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter\pycode")
     import ndPyLibExportAnim
+    reload(ndPyLibExportAnim)
     outputPath = r"P:\Project\RAM1\shots\ep003\s325\c002\publish\test_charSet\gutsFalconNml"
     oFilename = "test"
     namespaceList = "gutsFalconNml"
