@@ -345,6 +345,7 @@ class GUI(QMainWindow):
                     'shot': self.ui.shot_line.text().encode(),
                     'sequence': self.ui.cut_line.text().encode(),
                     'bakeAnim': self.ui.bake_anim.isChecked(),
+                    'sceneTimeworp': self.ui.scene_timeworp_check.isChecked(),
                     'framerange': framerange,
                     'framehundle': framehundle,
                     'Priority': self.ui.priority.text(),

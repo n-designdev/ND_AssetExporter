@@ -154,8 +154,20 @@ def _getAddDoubleLinearAttributes(nodes):
             attrs.append(pairblend[i])
     return attrs
     
+
+def _getTransformConnectionAttributes(nodes):
+    attrs = []
+    for n in nodes:
+        pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='transform')
+        if pairblend is None: continue
+        for i in range(0, len(pairblend), 2):
+            attrs.append(pairblend[i])
+    return attrs
     
+
+
 def _getNoKeyAttributes (nodes):
+    print "#getNoKeyAttributes#"
     attrs = []
     for n in nodes:
         if '.' in n:
@@ -170,8 +182,35 @@ def _getNoKeyAttributes (nodes):
                     print 'find no key attribute : ' + n + '.' + attr
     return attrs
 
+def _getKeyAttributes (nodes):
+    print "#getKeyAttributes#"
+    attrs = []
+    for n in nodes:
+        if '.' in n:
+            n = n.split('.')[0]
+        gAttrs = cmds.listAttr(n, keyable=True)
+        print n, gAttrs
+        if gAttrs is None: continue
+        for attr in gAttrs:
+            if '.' not in attr:
+                if cmds.listConnections(n+'.'+attr, s=True, d=False) is None:
+                    pass
+                else:
+                    attrs.append(n+'.'+attr)
+    return attrs
+    
+def _unlockAttributes(nodes):
+    for node in nodes:
+        if cmds.getAttr(node, lock=True):
+            try:
+                print "try unlock: {}".format(node)
+                print cmds.setAttr(node, lock=False)
+            except Exception as e:
+                print e
+                print "failed."
 
-def _exportAnim (publishpath, oFilename, strnamespaceList, strregexArgs, isFilter, bakeAnim, strextra_dic, framehundle, framerange):
+
+def _exportAnim (publishpath, oFilename, strnamespaceList, strregexArgs, isFilter, bakeAnim, strextra_dic, framehundle, framerange, sceneTimeworp):
     regexArgsN = [] #regexArgs Normal
     regexArgsAttrs = [] #regexArgs Attribute用
     regexArgs = strregexArgs.split(',')
@@ -308,10 +347,18 @@ def _exportAnim (publishpath, oFilename, strnamespaceList, strregexArgs, isFilte
     attrs += _getPairBlendAttributes(allNodes)
     attrs += _getMotionPathAttributes(allNodes)
     attrs += _getAddDoubleLinearAttributes(allNodes)
+    attrs += _getTransformConnectionAttributes(allNodes)
     if bakeAnim is True:
-        attrs += _getNoKeyAttributes(nodeAndAttrs)
+        attrs += _getNoKeyAttributes(allNodes)
+        attrs += _getKeyAttributes(allNodes)
+    _unlockAttributes(attrs)
     if len(attrs)!=0:
-        cmds.bakeResults(attrs, t=(sframe, eframe), dic=True, sb=True, sm=True)
+        for x in attrs:
+            print x
+        print attrs, sframe, eframe
+        cmds.select(attrs, r=True)
+        # cmds.bakeResults(attrs, t=(sframe, eframe), dic=True, sb=True, sm=True)
+        cmds.bakeResults(t=(sframe, eframe), dic=True, sb=True, sm=True)
         print "bake finished."
         
     Euler_filter(attrs)
@@ -328,7 +375,7 @@ def _exportAnim (publishpath, oFilename, strnamespaceList, strregexArgs, isFilte
                 pickNodesAttr.append(n)
         if len(pickNodes) != 0:
             outputfiles.append(publishpath+oFilename+'_'+ns+'.ma')
-            ndPyLibAnimIOExportContain(isFilter, ['3', ''], publishpath, oFilename+'_'+ns, pickNodes, pickNodesAttr, 0, 0, frameRange, bakeAnim)
+            ndPyLibAnimIOExportContain(isFilter, ['3', ''], publishpath, oFilename+'_'+ns, pickNodes, pickNodesAttr, 0, 0, frameRange, bakeAnim, sceneTimeworp)
 
     return outputfiles
 
@@ -371,10 +418,17 @@ def ndPyLibExportAnim2(args):
     namespaceList = argsdic['namespace']
     regexArgs = argsdic['exportitem']
     bakeAnim = argsdic['bakeAnim']
-    print "##bakeAnim##"
-    print bakeAnim
-    if bakeAnim == "False":
+    sceneTimeworp = argsdic['sceneTimeworp']
+    print "##sceneTimeworp##"
+    print sceneTimeworp
+    if bakeAnim == "False" or bakeAnim == False:
         bakeAnim=False
+    elif bakeAnim == "True" or bakeAnim == True:
+        bakeAnim=True
+    if sceneTimeworp == "False" or sceneTimeworp == False:
+        sceneTimeworp=False
+    elif sceneTimeworp == "True" or sceneTimeworp == True:
+        sceneTimeworp=True
     # extradic = argsdic['extra_dic']
     try:
         frameHundle = argsdic['framehundle']
@@ -387,7 +441,7 @@ def ndPyLibExportAnim2(args):
     extra_dic = None
     isFilter = 1
     
-    _exportAnim(outputPath, oFilename, namespaceList, regexArgs, isFilter, bakeAnim, extra_dic, frameHundle, frameRange)
+    _exportAnim(outputPath, oFilename, namespaceList, regexArgs, isFilter, bakeAnim, extra_dic, frameHundle, frameRange, sceneTimeworp)
     print "ndPylibExportAnim End"
     return
     
@@ -405,3 +459,4 @@ if __name__ == '__main__':
     frameHundle = 0
     frameRange = None
     ndPyLibExportAnim._exportAnim(outputPath, oFilename, namespaceList, regexArgs, isFilter, bakeAnim, extra_dic, frameHundle, frameRange)
+
