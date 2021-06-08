@@ -35,14 +35,10 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-        <a class="navbar-brand" href="index.html">Help</a>
+        <a class="navbar-brand" href="index.html">ND_AssetExporter Help</a>
       </div>
       <div class="navbar-collapse collapse">
         <ul class="nav navbar-nav navbar-right">
-          <!-- <li><a href="work.html">Work</a></li>
-          <li><a href="about.html">About</a></li>
-          <li><a href="blog.html">Blog</a></li>
-          <li><a href="contact.html">Contact</a></li> -->
         </ul>
       </div>
       <!--/.nav-collapse -->
@@ -56,30 +52,35 @@
       <div class="row">
         <div class="col-lg-8 col-lg-offset-2">
           <p>
-            <bd>September 16, 2020</bd>
+            <bd> 2021, 0608</bd>
           </p>
-          <h3>ND_Asset Exporter</h3>
-          <ol type="1">
-            <li>ツールUIの説明</li>
+          <h3>ツールUIの説明</h3>
               <img src="img/body.png">
+
               <ul type="1">
-                <li>1.1 オプション</li>
+                <li>オプション</li>
                   <ul>
                     <li>project environment load</li>
-                    <p>環境設定を読み込んだmaya batchを使用します。よほどのことがなければチェックを入れください。</p>
+                    <p>環境設定を読み込んだmaya batchを使用します。</p>
                     <li>camera scale override</li>
+                    <p>カメラスケールをオーバーライドします。オフの場合シーン内の値をそのまま使います。</p>
                     <li>abc step override</li>
+                    <p>abcステップをオーバーライドします。</p>
                     <li>debug</li>
+                    <p>出力先がpublish/test_charにエクスポートされます。テストしたいときにお使いください。</p>
                     <li>bake animation</li>
+                    <p>キーフレームが打たれたオブジェクトをベイクします。</p>
                     <li>frameRangeCustom</li>
+                    <p>フレームレンジを上書きします。</p>
                     <li>FrameHundle</li>
+                    <p>フレームハンドルを設定します。オフの場合±5フレームが自動で設定されます。</p>
                   </ul>
-                <li>1.2 D&Dエリア</li>
+                <li>D&Dエリア</li>
                   <p>ここにファイルをドラッグ・アンド・ドロップすることでプロジェクトやショット、シーケンス情報を解析し、それを元にshotgunから情報を取得します。</p>
                   <p>正しく取得された場合、shotgun上のアセット情報がテーブル化され表示されます。</p>
-                <li>1.3 パス</li>
+                <li>パス</li>
                   <p>D&Dエリアにドロップしたファイルのパスが表示されます。</p>
-                <li>1.4 Exportボタン</li>
+                <li>Exportボタン</li>
                   <ul>
                     <li>Local Export</li>
                     <p>そのままエクスポートを実行します。</p>
@@ -87,35 +88,39 @@
                     <p>deadlineで実行します(試験中)。</p>
                   </ul>
               </ul>
-            <li>Shotgunの説明</li>
+              <h3>ShotGridの説明</h3>
               <img src="img/sg_assets1.png">
               <br>
               <img src="img/sg_assets2.png">
               <ul type="1">
-                <li>2.1 Category List</li>
+                <li>1 Category List</li>
                 <p>chara, bg, prop, cameraのアセットがリストアップされます。</p>
-                <li>2.2 Asset Name</li>
+                <li>2 Asset Name</li>
                 <p>ここで登録された名前がリストアップされます。アセットの名前は出力ファイルの名前にもなります</p>
-                <li>2.3 Asset Path</li>
+                <li>3 Asset Path</li>
                 <p>アセットのパスを登録してください。</p>
-                <li>2.4 Namespcae</li>
+                <li>4 Namespcae</li>
                 <p>ネームスペースを登録してください。プロップなどで後ろに数字が付く場合は正規表現を用いてください。</p>
-                <li>2.5 TopNode</li>
+                <li>5 TopNode</li>
                 <p>トップノードを登録してください。</p>
-                <li>2.6 Export type</li>
+                <li>6 Export type</li>
                 <p>エクスポートタイプを選択してください。anim, abcのどちらかを選択できます。</p>
-                <li>2.7 ABC Export</li>
+                <li>7 ABC Export</li>
                 <p>abcで出力する場合にはここにエクスポート対象を登録しください。複数登録する場合は「,」で区切ってください。</p>
-                <li>2.8 Animation Export List</li>
+                <li>8 Animation Export List</li>
                 <p>animで出力する場合にはここにエクスポート対象を登録してください。複数登録する場合は「,」で区切ってください。</p>
-                <li>2.9 Sequence</li>
+                <li>9 Sequence</li>
                 <p>登録されたシーケンスのシーンでは、Assetをシーケンス単位で出力したい場合に登録してください。対象のシーケンスでは、shot側で設定されているAssetに加えここで登録したアセットも追加でリストアップされます。</p>
                 <li>shotページでは、以下のReferenced Assetsを設定してください。設定されたアセットがND_AssetExporterにリストアップされます。</li>
                 <div id="center-img">
                   <img src="img/sg_shot1.png">
                 </div>
               </ul>
-
+              <h3>Tips</h3>
+                <p>Chara Importerで設定されるフレーム設定はCameraを書き出した際にシーン内のminFrame, maxFrameを出力します。</p>
+                <p>Current Refresh Toolボタンを押すことで、パブリッシュディレクトリのcurrentが最新かチェックします。最新でない場合は出力された最新のバージョンをコピーします。</p>
+                <p>リストアップされるCamera はAssetとして登録されたものでは無く、デフォルトで入っているものです。シーン内のカメラを検索し、authographicsではないカメラを簡易的にコピーします。複雑なカメラを使う場合はアセットとして登録してください。</p>
+                <p>Shotgunでは少なくとも、shot, Asset Path, Namespace, Top Node, Export Type Anim Export Listを登録してください。
           </ol>
 
         </div>
