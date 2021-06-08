@@ -103,8 +103,8 @@ def animExport(**kwargs):
         mayaBatch = None
     original_litte = (
         'from mayaBasic import *;'
-        'from ndPyLibExportAnim import ndPyLibExportAnim2;'
-        'ndPyLibExportAnim2({})'.format(str(argsdic))
+        'from ndPyLibExportAnim import ndPyLibExportAnim_caller;'
+        'ndPyLibExportAnim_caller({})'.format(str(argsdic))
     )
     cmd = mayacmd_maker(original_litte, argsdic['inputpath'], mayaBatch)
     cmd[2] = str(cmd[2]).replace('\\\\','\\')

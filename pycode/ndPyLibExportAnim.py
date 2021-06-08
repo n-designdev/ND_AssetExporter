@@ -1,14 +1,10 @@
 # -*- coding: utf-8 -*-
-
 import os, sys
 import re, glob
-
 import maya.cmds as cmds
 import maya.mel as mel
 
-# from ndPyLibAnimIOExportContain import *
 from ndPyLibAnimIOExportContain import ndPyLibAnimIOExportContain 
-# reload(ndPyLibAnimIOExportContain)
 def spsymbol_remover(litteral, sp_check=None):
     listitem = ['exportitem']
     if sp_check in listitem:
@@ -19,16 +15,6 @@ def spsymbol_remover(litteral, sp_check=None):
     if sp_check in url_list:
         litteral = litteral.replace('/', ':/')
     return litteral
-
-
-def strdict_parse(original_string):
-    parsed_dic = {}
-    original_string_iter = iter(original_string)
-    for key, item in zip(original_string_iter, original_string_iter):
-        key = spsymbol_remover(key)
-        item = spsymbol_remover(item, key)
-        parsed_dic[key] = item
-    return parsed_dic
     
 
 def Euler_filter(attr_list):
@@ -210,7 +196,7 @@ def _unlockAttributes(nodes):
                 print "failed."
 
 
-def _exportAnim (publishpath, oFilename, strnamespaceList, strregexArgs, isFilter, bakeAnim, strextra_dic, framehundle, framerange, sceneTimeworp):
+def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFilter, bakeAnim, strextra_dic, framehundle, framerange, sceneTimeworp):
     regexArgsN = [] #regexArgs Normal
     regexArgsAttrs = [] #regexArgs Attribute用
     regexArgs = strregexArgs.split(',')
@@ -241,10 +227,8 @@ def _exportAnim (publishpath, oFilename, strnamespaceList, strregexArgs, isFilte
 
     if 'camera_base' in _namespaceList:
         root_list = cmds.ls("root", r=True)
-        print root_list
         for root in root_list:
             if 'camera_base' in root:
-                # for x in cmds.ls(root.split(":")[0]+":*"):
                 try:
                     cam_objs = cmds.listRelatives(root, ad=True)
                     camera_name = root.split(":")[0]
@@ -267,7 +251,6 @@ def _exportAnim (publishpath, oFilename, strnamespaceList, strregexArgs, isFilte
         for root in root_list:
             if 'camera_simple' in root:
                 try:
-                    # for x in cmds.ls(root.split(":")[0]+":*"):
                     cam_objs = cmds.listRelatives(root, ad=True)
                     camera_name = root.split(":")[0]
                     cmds.bakeResults(cam_objs, hi='below', t=(sframe, eframe), simulation=True)
@@ -286,24 +269,15 @@ def _exportAnim (publishpath, oFilename, strnamespaceList, strregexArgs, isFilte
         frameRange = [sframe, eframe]
     else:
         frameRange = framerange
-
-    ### フレームレンジ書き込み ###
     with open(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(publishpath))), 'sceneConf.txt').replace('\\', '/'), 'w') as f:
         f.write(str(sframe)+'\n')
         f.write(str(eframe)+'\n')
 
-    print "getting allNodes..."
-    print "nanespaceList: {}".format(namespaceList)
-    print "namespaces: {}".format(namespaces)
     for a_ns in namespaces:
         for input_ns in namespaceList:
             match = re.match(input_ns, a_ns)
-            print input_ns, a_ns
-            print match
             if match != None:
                 allNodes += _getAllNodes(a_ns, regexArgsN)
-    print "getting nodeAndAttrs"
-    print "regexArgsAttrs:{}".format(regexArgsAttrs)
     for a_ns in namespaceList:
         for regexArgsAttr in regexArgsAttrs:
             regexAttr = a_ns+':'+regexArgsAttr
@@ -332,11 +306,8 @@ def _exportAnim (publishpath, oFilename, strnamespaceList, strregexArgs, isFilte
         for ns in namespaceList:
             for _nsList in namespaceList:
                 _ns = ns.split('*')[1].rstrip('$')
-                cmds.setAttr(_ns + ':' + _key, int(item)) # 整数限定
+                cmds.setAttr(_ns + ':' + _key, int(item))
                 cmds.setKeyframe(_ns + ':' + _key, t=1)
-    print "###"
-    print allNodes
-    print "###"
     attrs = _getNoKeyAttributes(allNodes)
 
     if len(nodeAndAttrs) !=0:
@@ -376,42 +347,10 @@ def _exportAnim (publishpath, oFilename, strnamespaceList, strregexArgs, isFilte
         if len(pickNodes) != 0:
             outputfiles.append(publishpath+oFilename+'_'+ns+'.ma')
             ndPyLibAnimIOExportContain(isFilter, ['3', ''], publishpath, oFilename+'_'+ns, pickNodes, pickNodesAttr, 0, 0, frameRange, bakeAnim, sceneTimeworp)
-
     return outputfiles
 
 
-def ndPyLibExportAnim (regexArgs, isFilter):
-    if cmds.file(q=True, modified=True):
-        cmds.warning('please save scene file...')
-    return
-
-    filepath = cmds.file(q=True, sceneName=True)
-    filename = os.path.basename(filepath)
-
-    match = re.match('(P:/Project/[a-zA-Z0-9]+)/([a-zA-Z0-9]+)/([a-zA-Z0-9]+)/([a-zA-Z0-9]+)/([a-zA-Z0-9]+)', filepath)
-    if match is None:
-        cmds.warning('directory structure is not n-design format')
-        return
-
-    project  = match.group(1)
-    roll     = match.group(3)
-    sequence = match.group(4)
-    shot     = match.group(5)
-
-    shotpath = os.path.join(project, 'shots', roll, sequence, shot)
-
-    animOutDir = 'Anim'
-    publishpath = os.path.join(shotpath, 'publish', animOutDir, filename)
-
-    oFilename = sequence + shot + '_anim'
-
-    if not os.path.exists(shotpath):
-        cmds.warning('no exist folder...')
-        return
-
-def ndPyLibExportAnim2(args):
-    # argsdic = strdict_parse(args)
-    # strdict_parse(args)
+def ndPyLibExportAnim_caller(args):
     argsdic = args
     outputPath = argsdic['output']
     oFilename = argsdic['exporttype']
@@ -419,8 +358,6 @@ def ndPyLibExportAnim2(args):
     regexArgs = argsdic['exportitem']
     bakeAnim = argsdic['bakeAnim']
     sceneTimeworp = argsdic['sceneTimeworp']
-    print "##sceneTimeworp##"
-    print sceneTimeworp
     if bakeAnim == "False" or bakeAnim == False:
         bakeAnim=False
     elif bakeAnim == "True" or bakeAnim == True:
@@ -440,8 +377,7 @@ def ndPyLibExportAnim2(args):
         frameRange = None
     extra_dic = None
     isFilter = 1
-    
-    _exportAnim(outputPath, oFilename, namespaceList, regexArgs, isFilter, bakeAnim, extra_dic, frameHundle, frameRange, sceneTimeworp)
+    ExportAnim_body(outputPath, oFilename, namespaceList, regexArgs, isFilter, bakeAnim, extra_dic, frameHundle, frameRange, sceneTimeworp)
     print "ndPylibExportAnim End"
     return
     
@@ -458,5 +394,5 @@ if __name__ == '__main__':
     extra_dic = None
     frameHundle = 0
     frameRange = None
-    ndPyLibExportAnim._exportAnim(outputPath, oFilename, namespaceList, regexArgs, isFilter, bakeAnim, extra_dic, frameHundle, frameRange)
+    ExportAnim_body.xportAnim(outputPath, oFilename, namespaceList, regexArgs, isFilter, bakeAnim, extra_dic, frameHundle, frameRange)
 

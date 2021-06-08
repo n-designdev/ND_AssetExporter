@@ -98,12 +98,6 @@ def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName,
     for i in range(len(retNodes)/2):
         node = retNodes[i*2].split('|')[-1]
         # cmd = 'connectAttr \"' + retNodes[i*2+1] + '.output\" \":' + inPfxInfo[1] + NS[pfxSw] + retNodes[i*2] + '\";\n'
-        print "#inPfxInfo"
-        print inPfxInfo
-        print "#NS"
-        print NS
-        print "#node"
-        print node #vernierND_Rig_RH_v001:vernierNml:root.translateX
         cmd = 'connectAttr \"' + retNodes[i*2+1] + '.output\" \":' + inPfxInfo[1] + NS[pfxSw] + ":".join(node.split(":")[-2:]) + '\";\n'
         addCmd.append(cmd)
 

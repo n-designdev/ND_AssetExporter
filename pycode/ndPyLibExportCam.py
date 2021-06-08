@@ -159,7 +159,7 @@ def ndPyLibExportCam(camOutput, CameraScale, frameHundle, _frameRange):
     isImagePlane = 1
     outputfiles = []
     if _frameRange == 'None' or _frameRange == None:
-        sframe = cmds.playbackOptions(q=True, min=True)
+        sframe = cmds.playbackOptions(q=True, min=True)#innner frame
         eframe = cmds.playbackOptions(q=True, max=True)
     else:
         _frameRange = _frameRange.lstrip('u')
