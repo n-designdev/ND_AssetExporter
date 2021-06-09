@@ -352,6 +352,8 @@ def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFi
 
 def ndPyLibExportAnim_caller(args):
     argsdic = args
+    print "###args###"
+    print args
     outputPath = argsdic['output']
     oFilename = argsdic['exporttype']
     namespaceList = argsdic['namespace']
@@ -379,20 +381,9 @@ def ndPyLibExportAnim_caller(args):
     isFilter = 1
     ExportAnim_body(outputPath, oFilename, namespaceList, regexArgs, isFilter, bakeAnim, extra_dic, frameHundle, frameRange, sceneTimeworp)
     print "ndPylibExportAnim End"
-    return
     
 if __name__ == '__main__':
     sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter\pycode")
     import ndPyLibExportAnim
     reload(ndPyLibExportAnim)
-    outputPath = r"P:\Project\RAM1\shots\ep003\s325\c002\publish\test_charSet\gutsFalconNml"
-    oFilename = "test"
-    namespaceList = "gutsFalconNml"
-    regexArgs = "ctrl_set,root"
-    isFilter = 1
-    bakeAnim = False
-    extra_dic = None
-    frameHundle = 0
-    frameRange = None
-    ExportAnim_body.xportAnim(outputPath, oFilename, namespaceList, regexArgs, isFilter, bakeAnim, extra_dic, frameHundle, frameRange)
-
+    argsdic = {'shot': 'c001', 'sequence': 's646', 'exporttype': 'anim', 'env_load': 'True', 'Priority': 'u50', 'Group': 'u128gb', 'stepValue': '1.0', 'namespace': 'NursedesseiShip', 'bakeAnim': 'True', 'sceneTimeworp': 'False', 'abcOutput': 'P:/Project/RAM1/shots/ep006/s646/c001/publish/test_charSet/NursedesseiShip/v003/abc/NursedesseiShip.abc', 'framerange_output': 'True', 'inputpath': 'P:/Project/RAM1/shots/ep006/s646/c001/work/k_ueda/test.ma', 'Pool': 'uram1', 'assetpath': 'P:/Project/RAM1/assets/chara/Nursedessei/NursedesseiShip/publish/Setup/RH/maya/current/NursedesseiShip_Rig_RH.mb', 'framerange': 'None', 'chara': 'NursedesseiShip', 'topnode': 'root', 'framehundle': '0', 'project': 'RAM1', 'testmode': 'True', 'output': 'P:/Project/RAM1/shots/ep006/s646/c001/publish/test_charSet/NursedesseiShip/v003/anim', 'exportitem': 'ctrl_set,root'}

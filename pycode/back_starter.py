@@ -4,8 +4,6 @@ import os,sys
 import re
 import shutil
 import util
-import shutil
-
 import batch
 
 env_key = 'ND_TOOL_PATH_PYTHON'
@@ -94,7 +92,6 @@ def back_starter(**kwargs):
             charaOutput = opc.publishfullpath + '/' + ns + '.ma'
             argsdic['animOutput'] = animOutput
             argsdic['charaOutput'] = charaOutput
-            # argsdic['ns'] = ns.replace("__", ":")
             argsdic['ns'] = ns
             batch.animAttach(**argsdic)
 
@@ -105,16 +102,13 @@ def back_starter(**kwargs):
             if animFile[-3:] != '.ma':continue
             ns = animFile.replace('anim_', '').replace('.ma', '')
             argsdic['ns'] = ns
-            # argsdic['ns'] = ns.replace("_", ":")
             argsdic['animPath'] = (opc.publishcurrentpath + '/anim/' + animFile)
             argsdic['scene'] = (opc.publishcurrentpath + '/' + ns + '.ma')
             batch.animReplace(**argsdic)             
 
     elif exporttype == 'abc':
-        # opc.createOutputDir(charaName)
         batch.abcExport(**argsdic)
         abcFiles = os.listdir(opc.publishfullabcpath)
-        print opc.publishfullabcpath
         if len(abcFiles) == 0:
             opc.removeDir()
             print 'abc not found'
@@ -139,7 +133,7 @@ def back_starter(**kwargs):
             batch.repABC(**argsdic)
 
     elif exporttype == 'camera':
-        argsdic['publishPath'] = opc.publishfullpath #ディレクトリ名
+        argsdic['publishPath'] = opc.publishfullpath
         oFilename = opc.sequence + opc.shot + '_cam'
         argsdic['camOutput'] = '{}/{}.abc'.format(opc.publishfullcampath, oFilename) #フルパスとファイル名
         batch.camExport(**argsdic)
@@ -207,7 +201,6 @@ def back_starter(**kwargs):
             argsdic['charaOutput'] = opc.publishcurrentpath + '/' + output[0]
             argsdic['abcOutput'] = opc.publishcurrentpath + '/abc/' + output[1]
             batch.repABC(**argsdic)
-
 
     print 'Output directry: {}'.format(opc.publishfullpath.replace('/','\\'))
     print '=================END==================='

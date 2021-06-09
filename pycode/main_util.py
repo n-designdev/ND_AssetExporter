@@ -50,10 +50,6 @@ class ProjectInfo():
 
 
 class TableModelMaker(QAbstractTableModel):
-    '''
-        GUI.settableに入れるデータを作成するクラス
-        テーブルデータ(二次元リスト),ヘッダー(list),
-    '''
     def __init__(
             self, table_data, headers=[],
             check_row=[], executed_row=[],
@@ -129,7 +125,6 @@ class TableModelMaker(QAbstractTableModel):
                     return "not implemented"
             else:
                 return "%d" % (section + 1)
-# ここまでTableModel用 ###
 
 
 def tabledata_maker(headers, convert_dic, target_assets):
@@ -194,8 +189,6 @@ def argsmaker(new_arg, args=None):
 
 
 def execExporter(**kwargs):
-    progress = 5
-    print("Progress: {}%".format(progress))
     args = argsmaker(pythonBatch)
     args = argsmaker('back_starter.py', args)
     args = argsmaker(str(kwargs), args)
@@ -216,29 +209,23 @@ def dictlist_parse(dictlist):
     受け取ったdictだったリストを再度dictに変換
     '''
     argsdict = {}
-    print dictlist
     for dictparts in dictlist:
-        print dictparts
         if dictparts[-1] == ':':
             key = spsymbol_remover(dictparts, 'key')
         else:
             value = spsymbol_remover(dictparts, 'value')
             argsdict[key] = value
-            print key, value
     return argsdict
 
 class DeadlineMod():
     def __init__(self, **kwargs):
         #jobFile
         self.target_py = "Y:/tool/ND_Tools/DCC/ND_AssetExporter/pycode/main_util.py"
-
         #infoFile
         self.argsdict = kwargs
-
         self.executer = "Y:/tool/MISC/Python2710_amd64_vs2010/python.exe"
         self.stg_dir = "Y:/tool/ND_Tools/DCC/ND_AssetExporter/pycode"
         self.tmp_dir = os.environ.get('TEMP', 'E:/TEMP')
-
         self.job_dict = self.job_content()
         self.info_dict = self.info_content()
 
@@ -256,7 +243,6 @@ class DeadlineMod():
         job_dict["UserName"] = os.environ.get("USERNAME")
         # job_dict["Whitelist"] = "ws023"
         job_dict["BatchName"] = "Exporter_{Pool}_{shot}{sequence}".format(**self.argsdict)
-
         return job_dict
 
     def info_content(self):
@@ -278,18 +264,11 @@ class DeadlineMod():
             target_dict = self.job_dict
         elif file_type == 'info':
             target_dict = self.info_dict
-
         for key,value in target_dict.items():
             file_txt += '{}={}\r'.format(key, value)
-
         deadline_tmpfile = r'{}\ND_AssetExporter_deadline_{}_{}.job'.format(self.tmp_dir, file_type, file_number)
-
-        #numberを取得する必要がある？
-        #numberは文字列
-
         with codecs.open(deadline_tmpfile, 'w', 'utf-8') as output_file:
             output_file.write(file_txt)
-
         return deadline_tmpfile
 
     def make_submit_files(self, file_number, farm="Deadline", version="10"):
@@ -301,17 +280,11 @@ class DeadlineMod():
         return tmp_dict
 
     def submit_to_deadlineJob(self, farm="Deadline", version="10", file_number=1):
-        '''
-        使わない...?
-        '''
         import subprocess
-
         job_file = self.file_maker('job', file_number)
         info_file = self.file_maker('info', file_number)
-
         if farm == "Deadline":
             deadline_cmd = r"{}\bin\deadlinecommand.exe".format(util_env.deadline_path)
-
         jobid = ""
         command = '{deadline_cmd} "{job_file}" "{info_file}"'.format(**vars())
         process = subprocess.Popen(command, stdout=subprocess.PIPE)
@@ -327,17 +300,13 @@ class DeadlineMod():
 def submit_to_deadlineJobs(jobs, farm="Deadline", version="10"):
     arg_file_path = '{}/args.txt'.format(util_env.env_temp)
     submit_text = "-SubmitMultipleJobs"
-
     for job in jobs:
         submit_text = "{}\n-job\n{}\n{}".format(submit_text, job["job"], job["info"])
-
     f = open(arg_file_path, "w")
     f.write(submit_text)
     f.close()
-
     deadline_cmd = r"{}\bin\deadlinecommand.exe".format(util_env.deadline_path)
     command = '{deadline_cmd} {arg_file_path}'.format(**vars())
-
     devnull = open(os.devnull, "wb")
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=devnull)
     lines_iterator = iter(process.stdout.readline, b"")

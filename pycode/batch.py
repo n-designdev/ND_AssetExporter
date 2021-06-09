@@ -90,7 +90,6 @@ def repABC(**kwargs):
     )
 
     cmd = mayacmd_maker(original_litte, scenepath, mayaBatch)
-    print cmd
     subprocess.call(cmd)
 
 
@@ -147,10 +146,6 @@ def animReplace(**kwargs):
     animPath = argsdic['animPath'].replace("\\","/")
     namespace = argsdic['ns']
     scene = argsdic['scene']
-    print "##namespace##"
-    print namespace
-    print "##scene"
-    print scene
     original_litte = (
         'from mayaBasic import *;'
         'replaceAsset(\'{}\', \'{}_anim\');'.format(animPath, namespace) +

@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
-
-# ------------------------------
-__version__ = '1.0'
-__author__ = "Yoshihisa Okano, Kei Ueda"
-
 import os,sys
 import time
 # ------------------------------
+__version__ = '2.0'
+__author__ = "Kei Ueda"
+# ------------------------------
 env_key = 'ND_TOOL_PATH_PYTHON'
-
 ND_TOOL_PATH = os.environ.get(env_key, 'Y:/tool/ND_Tools/python')
 
 for path in ND_TOOL_PATH.split(';'):
@@ -52,8 +49,8 @@ class GUI(QMainWindow):
         super(self.__class__, self).__init__(parent)
         self.ui_path = '.\\Exp_gui.ui'
         self.ui = QUiLoader().load(self.ui_path)
-        self.ui.groupBox.installEventFilter(self)
-        self.ui.group_box.installEventFilter(self)
+        self.ui.DD_area.installEventFilter(self)
+        # self.ui.group_box.installEventFilter(self)
         self.setCentralWidget(self.ui)
         self.setGeometry(500, 200, 1000, 800)
         self.debug = False
@@ -61,44 +58,44 @@ class GUI(QMainWindow):
         if self.debug:debug = '__debug__'
         self.setWindowTitle('%s %s %s' % (self.WINDOW, __version__, debug))
         # self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
-
         self.headers_item = [
             "Asset name", "Name space",
             "Export Type", "Export Item",
             "Top Node", "Asset Path"]
         self.asset_fields = [
-            "code", "sg_namespace", "sg_export_type", "sg_top_node",
-            "sg_abc_export_list", "sg_anim_export_list", "sg_asset_path",
+            "code", "sg_namespace", "sg_export_type",
+            "sg_top_node", "sg_abc_export_list", 
+            "sg_anim_export_list", "sg_asset_path",
             "sequences"]
         self.shot_fields = ["code", "assets"]
+        self.base_fields = [
+            "code", "assets", 
+            "sg_namespace", "sg_export_type",
+            "sg_top_node", "sg_abc_export_list", 
+            "sg_anim_export_list", "sg_asset_path",
+            "sequences"]
         self.convert_dic = {
-            "Asset name": "code", "Name space": "sg_namespace",
-            "Export Type": "sg_export_type", "Top Node": "sg_top_node",
+            "Asset name": "code",
+            "Name space": "sg_namespace",
+            "Export Type": "sg_export_type",
+            "Top Node": "sg_top_node",
             "Asset Path": "sg_asset_path"}
         self.headers = [""] + (self.headers_item)
 
         self.inputpath = ''
+        self.camera_rig_export = False
         self.export_type_list = []
         self.project = '' 
-        self.camera_rig_export = False  # シーン内にあるカメラを使うか
-        self.yeti = True  # shotgun環境を読むか
+        self.project_load = True
         self.process_list = []
-        self.priority = 50
-        self.group = '16gb'
-
-        self.executed_row = []
-        self.quantity = 0  # 行数
         self.tabledata = []
-        self.exportTgtList = []
         self.check_row = []
         self.executed_row = []
+        self.priority = 50
+        self.group = '16gb'
         self.selected_item = None
 
-        #-----------------------------------------
-        #UIと関数のコネクト
-        #-----------------------------------------
         self.ui.overrideValue_LineEdit.setEnabled(False)
-        self.ui.yeti_CheckBox.stateChanged.connect(self.yeti_checker)
         self.ui.Change_Area.setCurrentIndex(0)
 
         self.ui.cameraScaleOverride_CheckBox.stateChanged.connect(self.overrideValue_LineEdit_stateChange)
@@ -119,6 +116,7 @@ class GUI(QMainWindow):
         self.ui.open_log_button.clicked.connect(self.open_log_button_clicked)
         self.ui.current_refresh_button.clicked.connect(self.current_refresh_button_clicked)
         self.ui.open_publish_dir_button.clicked.connect(self.open_publish_dir_button_clicked)
+        self.ui.help_button.clicked.connect(self.help_button_clicked)
 
     def contextMenu(self, point):
         print point
@@ -143,25 +141,18 @@ class GUI(QMainWindow):
         currentState = self.ui.stepValue_CheckBox.isChecked()
         self.ui.stepValue_lineEdit.setEnabled(currentState)
 
-    def pool_comboBox_stateChanged(self):
-        self.pool = self.ui.poollist.currentText()
-
-    def group_comboBox_stateChanged(self):
-        self.group = self.ui.grouplist.currentText()
-
     def drop_act(self, urldata):
-        self.inputpath = urldata[0].toString().replace("file:///", "")
+        self.check_row = []
+        self.executed_row = []
         self.tabledata = []
+        self.inputpath = urldata[0].toString().replace("file:///", "")
         self.ui.path_line.setText(self.inputpath)
         self.ui.Change_Area.setCurrentIndex(1)
-
-        # プロジェクト名等を取得
         ProjectInfoClass = mu.ProjectInfo(self.inputpath)
         pro_name = ProjectInfoClass.project_name
         shot = ProjectInfoClass.shot
         sequence = ProjectInfoClass.sequence
         shot_code = ProjectInfoClass.shot_code
-
         self.ui.shot_line.setText(shot)
         self.ui.cut_line.setText(sequence)
         self.ui.proj_line.setText(pro_name)
@@ -169,22 +160,18 @@ class GUI(QMainWindow):
 
         # カメラタイプの取得
         self.camera_rig_export = ProjectInfoClass.get_camera_rig_info()
-        SGAssetClass = sg_mod.SGProjectClass(pro_name, self.asset_fields)
-        SGAssetClass.get_dict("Asset")
-        SGShotClass = sg_mod.SGProjectClass(pro_name, self.shot_fields)
-        SGShotClass.get_dict("Shot")
+        SGBaseClass = sg_mod.SGProjectClass(pro_name, self.base_fields)
+        SGBaseClass.get_dict("Asset")
+        SGBaseClass.get_dict("Shot")
+        target_asset_list = SGBaseClass.get_keying_dict("Shot", "code")[shot_code]['assets']
+        all_asset_dics = SGBaseClass.get_keying_dict("Asset", "code")
 
-        #target_assetの選定
-        target_asset_list = SGShotClass.get_keying_dict('code')[shot_code]['assets']
-        all_asset_dics = SGAssetClass.get_keying_dict('code')
-
-        # target_asset_list内の名前をもとにAssetPageから取得
         target_asset_dics = []
         for target_asset_name in target_asset_list:
             target_asset_dics.append(
                 all_asset_dics[target_asset_name['name']])
         if len(target_asset_list) == 0:  # ショットのアセット情報が存在しない場合、sequencesを見に行く
-            seq_list = SGAssetClass.get_keying_list('sequences', sequence)
+            seq_list = SGAssetClass.get_keying_list("Asset", "sequences", "sequence")
             for spseq in seq_list:
                 target_asset_list.append(spseq['code'])
         tabledata = mu.tabledata_maker(self.headers_item, self.convert_dic, target_asset_dics)
@@ -203,16 +190,14 @@ class GUI(QMainWindow):
                         combo_index = qtcombobox.findText(subvalue)
             qtcombobox.setCurrentIndex(combo_index)
 
-        _groups = util_env.deadline_group #dictかも
-        _groups.sort()
-        _setComboBoxList(self.ui.grouplist, _groups)
-        _setComboBoxValue(self.ui.grouplist, self.group)
-
-        _pools = util_env.deadline_pool
-        _pools.sort()
-        _setComboBoxList(self.ui.poollist, _pools)
+        groups = util_env.deadline_group
+        groups.sort()
+        pools = util_env.deadline_pool
+        pools.sort()
+        _setComboBoxList(self.ui.grouplist, groups)
+        _setComboBoxValue(self.ui.grouplist, "128gb")
+        _setComboBoxList(self.ui.poollist, pools)
         _setComboBoxValue(self.ui.poollist, self.project, 'normal')
-
         model = mu.TableModelMaker(tabledata, self.headers)
         self.ui.main_table.setContextMenuPolicy(Qt.CustomContextMenu)
         self.ui.main_table.customContextMenuRequested.connect(self.main_table_rclicked)
@@ -224,42 +209,41 @@ class GUI(QMainWindow):
         return True
 
     def check_button_clicked(self):
-        y = self.ui.main_table.selectedIndexes()
-        z = self.check_row
-        for x in y:
-            z.append(x.row())
-        self.check_row = list(set(z))
+        for selected_row in self.ui.main_table.selectedIndexes():
+            self.check_row.append(selected_row.row())
+        self.check_row = list(set(self.check_row))
         model = mu.TableModelMaker(
-            self.tabledata, self.headers, self.check_row, self.executed_row)
+            self.tabledata, self.headers, 
+            self.check_row, self.executed_row)
         self.ui.main_table.setModel(model)
 
     def uncheck_button_clicked(self):
-        y = self.ui.main_table.selectedIndexes()
-        z = []
-        for x in self.ui.main_table.selectedIndexes():
-            z.append(x.row())
-        z = list(set(z))
-        for x in z:
+        selected_index = []
+        for selected_row in self.ui.main_table.selectedIndexes():
+            selected_index.append(selected_row.row())
+        selected_index = list(set(selected_index))
+        for _index in selected_index:
             try:
-                self.check_row.remove(x)
+                self.check_row.remove(_index)
             except:
                 pass
-        model = mu.TableModelMaker(self.tabledata, self.headers, self.check_row)
+        model = mu.TableModelMaker(
+            self.tabledata, self.headers,
+            self.check_row)
         self.ui.main_table.setModel(model)
 
     def allcheck_button_clicked(self):
-        z = []
-        for x in range(len(self.tabledata)):
-            z.append(x)
-        self.check_row = list(set(z))
+        self.check_row = range(len(self.tabledata))
         model = mu.TableModelMaker(
-            self.tabledata, self.headers, self.check_row, self.executed_row)
+            self.tabledata, self.headers,
+            self.check_row, self.executed_row)
         self.ui.main_table.setModel(model)
         
     def alluncheck_button_clicked(self):
         self.check_row = []
         model = mu.TableModelMaker(
-            self.tabledata, self.headers, self.check_row, self.executed_row)
+            self.tabledata, self.headers,
+            self.check_row, self.executed_row)
         self.ui.main_table.setModel(model)
 
     def framehundle_checkbox_clicked(self):
@@ -274,9 +258,6 @@ class GUI(QMainWindow):
     def overrideValue_LineEdit_stateChange(self):
         currentState = self.ui.cameraScaleOverride_CheckBox.isChecked()
         self.ui.overrideValue_LineEdit.setEnabled(currentState)
-
-    def yeti_checker(self):
-        self.yeti = self.ui.yeti_CheckBox.isChecked()
 
     def start_button_clicked(self):
         print 'Local'
@@ -313,7 +294,6 @@ class GUI(QMainWindow):
             jobFileslist = []
         self.ui.Change_Area.setCurrentIndex(2)
         self.ui.repaint()
-        
         for count in range(len(self.tabledata)):
             if count in self.executed_row:
                 pass
@@ -322,32 +302,32 @@ class GUI(QMainWindow):
                 self.executed_row.append(count)
                 if len(tableItem)<7:
                     continue
-                assetname = tableItem[1]  # assetname
-                namespace = tableItem[2]  # namespace
-                exporttype = tableItem[3]  # exporttype
-                exportitem = tableItem[4]  #exportitem
-                topnode = tableItem[5]  # top_node
-                assetpath = tableItem[6].replace("\\","/")  # Asset Path
+                assetname = tableItem[1]  
+                namespace = tableItem[2]  
+                exporttype = tableItem[3]  
+                exportitem = tableItem[4]  
+                topnode = tableItem[5]  
+                assetpath = tableItem[6].replace("\\","/")
                 chara = assetname
                 execargs_ls = {
                     'chara': chara,
-                    'inputpath': self.inputpath.encode('utf-8'),
                     'namespace': namespace,
                     'exportitem': exportitem,
                     'topnode': topnode,
                     'assetpath': assetpath,
                     'testmode': self.debug,
-                    'env_load': self.yeti,
                     'stepValue': abcstep_override,
-                    'framerange_output': True,  # 常時オンでも良いかも
+                    'framerange_output': True, 
                     'exporttype': exporttype,
                     'project': self.project,
-                    'shot': self.ui.shot_line.text().encode(),
-                    'sequence': self.ui.cut_line.text().encode(),
-                    'bakeAnim': self.ui.bake_anim.isChecked(),
-                    'sceneTimeworp': self.ui.scene_timeworp_check.isChecked(),
                     'framerange': framerange,
                     'framehundle': framehundle,
+                    'inputpath': self.inputpath.encode('utf-8'),
+                    'shot': self.ui.shot_line.text().encode(),
+                    'sequence': self.ui.cut_line.text().encode(),
+                    'env_load': self.ui.project_loader_checkbox.isChecked(),
+                    'bakeAnim': self.ui.bake_anim.isChecked(),
+                    'sceneTimeworp': self.ui.scene_timeworp_check.isChecked(),
                     'Priority': self.ui.priority.text(),
                     'Pool': self.ui.poollist.currentText(),
                     'Group': self.ui.grouplist.currentText()}
@@ -379,10 +359,6 @@ class GUI(QMainWindow):
                         output_dir = "Y:\\users\\"+os.environ.get("USERNAME")+"\\DCC_log\\ND_AssetExporter"
                         output_file = output_dir + "\\" + filename
                         current_dir = "Y:\\tool\\ND_Tools\\DCC\\ND_AssetExporter\\pycode"
-                        print "##execargs_ls##"
-                        import pprint
-                        pprint.pprint(execargs_ls)
-                        print "##execargs_ls##"
                         self.ui.Change_Area.setCurrentIndex(2)
                         if not os.path.exists(output_dir):
                             os.makedirs(output_dir)
@@ -409,16 +385,13 @@ class GUI(QMainWindow):
                     util.addTimeLog(chara, self.inputpath, test=self.debug)
             else:
                 pass
-
         if mode == 'Submit':
             mu.submit_to_deadlineJobs(jobFileslist)
         self.ui.Change_Area.setCurrentIndex(1)
-
         self.executed_row = list(set(self.executed_row))
         mu.TableModelMaker(
             self.tabledata, self.headers,
             self.check_row, self.executed_row)
-
         print "===============Export End=================="
 
     def main_table_clicked(self):
@@ -426,8 +399,7 @@ class GUI(QMainWindow):
             self.ui.main_table.closePersistentEditor(self.selected_item)
             self.selected_item = None
 
-
-    def main_table_doubleclicked(self):  # ダブルクリックされたとき
+    def main_table_doubleclicked(self): 
         clicked_row = self.ui.main_table.selectedIndexes()[0].row()
         check_rows = self.check_row
         if clicked_row in check_rows[:]:
@@ -464,6 +436,11 @@ class GUI(QMainWindow):
         publish_path = os.path.join(shot_path, "publish")
         subprocess.call("explorer {}".format(publish_path.replace("/", "\\")))
         
+    def help_button_clicked(self):
+        import webbrowser
+        url = "Y:/tool/ND_Tools/DCC/ND_AssetExporter/pycode/help/help.html"
+        webbrowser.open_new_tab(url)
+        
                 
 def thread_main(execargs_ls, output_path, current_dir):
     python = "Y:\\tool\\MISC\\Python2710_amd64_vs2010\\python.exe"
@@ -484,16 +461,10 @@ def runs(*argv):
     tx_o.close()
     app.setStyleSheet(tx_r)
     ui = GUI(None, app)
-    # if argv[0][0] == '':
-    #     ui = GUI()
-    # else:
-    #     ui = GUI(mode=argv[0][0])
     ui.show()
     app.exec_()
-
-    return True
+    sys.exit()
 
 if __name__ == '__main__':
     print QtGui.__file__
-
     runs(sys.argv[1:])
