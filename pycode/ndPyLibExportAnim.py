@@ -19,16 +19,6 @@ def spsymbol_remover(litteral, sp_check=None):
 
 def Euler_filter(attr_list):
     # xyz = ['.rotateX', '.rotateY', '.rotateZ']
-    # for obj in obj_list:
-    #     anim_cv = map(lambda x: cmds.connectionInfo(obj+x, sfd=True), xyz)
-    #     anim_cv = map(lambda x: x.rstrip('.output'), anim_cv)
-    #     try:
-    #         anim_cv = filter(lambda x: cmds.nodeType(x) in ['animCurveTL', 'animCurveTU', 'animCurveTA', 'animCurveTT'], anim_cv)
-    #         cmds.filterCurve(anim_cv, f='euler')
-    #     except:
-    #         print '# Euler FilterFailed: '+obj+' #'
-    #         continue
-    #     print '# Euler Filter Success: '+obj+' #'
     for attr in attr_list:
         # anim_cv = map(lambda x: cmds.connectionInfo(obj+x, sfd=True), xyz)
         anim_cv = map(lambda x: x.rstrip('.output'), attr)
@@ -58,7 +48,6 @@ def _getNamespace():
 def _getAllNodes(namespace, regexArgs):
     if len(regexArgs) == 0:
         regexArgs = ['*']
-    print regexArgs
     nodes = []
     for regex in regexArgs:
         if "*" in regex:
@@ -91,13 +80,10 @@ def _getAllNodes(namespace, regexArgs):
                 nodes += objs
             if len(objSets) != 0:
                 nodes += objSets
-
     nodes = list(set(nodes))
     nodeShort = []
-
     for node in nodes:
         nodeShort.append(node.split('|')[-1])
-    print "allNodes:", nodeShort
     return nodeShort
 
 
@@ -150,7 +136,16 @@ def _getTransformConnectionAttributes(nodes):
             attrs.append(pairblend[i])
     return attrs
     
-
+    
+def _getAnimLayerConnectionAttributes(nodes):
+    attrs = []
+    for n in nodes:
+        pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='animLayer')
+        if pairblend is None: continue
+        for i in range(0, len(pairblend), 2):
+            attrs.append(pairblend[i])
+    return attrs
+    
 
 def _getNoKeyAttributes (nodes):
     print "#getNoKeyAttributes#"
@@ -322,6 +317,7 @@ def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFi
     if bakeAnim is True:
         attrs += _getNoKeyAttributes(allNodes)
         attrs += _getKeyAttributes(allNodes)
+        # attrs += _getAnimLayerConnectionAttributes(allNodes)
     _unlockAttributes(attrs)
     if len(attrs)!=0:
         for x in attrs:

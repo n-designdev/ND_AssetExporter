@@ -161,7 +161,6 @@ def tabledata_maker(headers, convert_dic, target_assets):
                 else:
                     td_row.append(target_asset[sg_code].replace("\n", ""))
         tabledata.append(td_row)
-
     return tabledata
 
 
@@ -194,6 +193,7 @@ def execExporter(**kwargs):
     args = argsmaker(str(kwargs), args)
     subprocess.call(args)
 
+
 def spsymbol_remover(litteral, itemtype):
     import re
     if itemtype == 'key':
@@ -203,6 +203,7 @@ def spsymbol_remover(litteral, itemtype):
         litteral = litteral.rstrip(',')
         litteral = re.sub(' |\'|{|}', '', litteral)
     return litteral
+
 
 def dictlist_parse(dictlist):
     '''
@@ -216,6 +217,21 @@ def dictlist_parse(dictlist):
             value = spsymbol_remover(dictparts, 'value')
             argsdict[key] = value
     return argsdict
+
+
+def check_arnold(project):
+    import yaml
+    project_name = "RAM1"
+    toolkit_path = "Y:\\tool\\ND_Tools\\shotgun"
+    app_launcher_path = "config\\env\\includes\\app_launchers.yml"
+    project_app_launcher = "%s\\ND_sgtoolkit_%s\\%s" % (toolkit_path, project_name, app_launcher_path)
+    f = open(project_app_launcher, "r")
+    data = yaml.load(f)
+    f.close()
+    for version in data["launch_maya"]["versions"]:
+        if "(_MtoA_)" in version:
+            return True
+    return False
 
 class DeadlineMod():
     def __init__(self, **kwargs):

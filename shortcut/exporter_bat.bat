@@ -6,4 +6,4 @@ set USE_OPENGL_VIEWPORT=1
 
 popd
 
-pause
+

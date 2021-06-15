@@ -195,7 +195,9 @@ class GUI(QMainWindow):
         pools = util_env.deadline_pool
         pools.sort()
         _setComboBoxList(self.ui.grouplist, groups)
-        _setComboBoxValue(self.ui.grouplist, "128gb")
+        _setComboBoxValue(self.ui.grouplist, "mem032")
+        if mu.check_arnold(self.project) is True:
+            _setComboBoxValue(self.ui.grouplist, "mem064")            
         _setComboBoxList(self.ui.poollist, pools)
         _setComboBoxValue(self.ui.poollist, self.project, 'normal')
         model = mu.TableModelMaker(tabledata, self.headers)
