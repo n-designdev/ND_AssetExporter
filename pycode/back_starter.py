@@ -46,15 +46,13 @@ def strdict_parse(original_string):
 def back_starter(**kwargs):
     argsdic = kwargs
     inputpath = argsdic['inputpath']
-    project = argsdic['project']
     charaName = argsdic['chara']
     exporttype = argsdic['exporttype']
-    exportitem = argsdic['exportitem']
-    topnode = argsdic['topnode']
-    assetpath = argsdic['assetpath']
-    stepValue = argsdic['stepValue']
-    env_load = argsdic['env_load']
     testmode = argsdic['testmode']
+    abcCheck = argsdic['abcCheck']
+    if exporttype != 'camera':
+        anim_item = argsdic["exportitem"].split("anim", 1)[1:][0].split("abc", 1)[0].rstrip(",")
+        abc_item = argsdic["exportitem"].split("anim", 1)[1:][0].split("abc", 1)[1].rstrip(")")
     if exporttype == 'anim':
         isAnim = True
     else:
@@ -72,6 +70,7 @@ def back_starter(**kwargs):
     argsdic['output'] = opc.publishfullanimpath
 
     if exporttype == 'anim':
+        argsdic["exportitem"]=anim_item
         batch.animExport(**argsdic)
         animFiles = os.listdir(opc.publishfullanimpath)
         if charaName == "camera_base" or charaName == "camera_simple":
@@ -94,9 +93,7 @@ def back_starter(**kwargs):
             argsdic['charaOutput'] = charaOutput
             argsdic['ns'] = ns
             batch.animAttach(**argsdic)
-
         opc.makeCurrentDir()
-
         for animFile in animFiles:
             if animFile[:5] != 'anim_':continue
             if animFile[-3:] != '.ma':continue
@@ -105,32 +102,57 @@ def back_starter(**kwargs):
             argsdic['animPath'] = (opc.publishcurrentpath + '/anim/' + animFile)
             argsdic['scene'] = (opc.publishcurrentpath + '/' + ns + '.ma')
             batch.animReplace(**argsdic)             
-
-    elif exporttype == 'abc':
+    if exporttype == 'abc' or abcCheck == 'True':
+        argsdic["exportitem"]=abc_item
+        if abcCheck == 'True':
+            opc._publishpath = opc._publishpath + '/cache'
+            if testmode == "True":
+                opc._publishfullpath = opc._publishfullpath.replace("test_charSet", "cache")
+                opc._publishfullabcpath = opc._publishfullabcpath.replace("test_charSet", "cache") 
+            else:
+                opc._publishfullpath = opc._publishfullpath.replace("charSet", "cache")
+                opc._publishfullabcpath = opc._publishfullabcpath.replace("charSet", "cache")     
+            argsdic['abcOutput'] = opc._publishfullabcpath + "/" + charaName + '.abc'
+            argsdic['abcOutput'] = argsdic['abcOutput'].replace("\\", "/")
+            try:
+                os.makedirs(opc._publishfullabcpath.replace("\\", "/"))
+            except:
+                pass
         batch.abcExport(**argsdic)
-        abcFiles = os.listdir(opc.publishfullabcpath)
+        abcFiles = os.listdir(opc._publishfullabcpath)
         if len(abcFiles) == 0:
             opc.removeDir()
             print 'abc not found'
             return
         allOutput = []
         for abc in abcFiles:
-            ns = abc.replace(charaName + '_', '').replace('.abc', '')
-            if '___' in ns:
-                ns = ns.replace('___', ':')
+            print "##abc##"
+            for x in abc:
+                print x
+            ns = abc.replace('_abc.abc', '')
+            print "ns:", ns
+            print "abc:", abc
+            print "publishfullabcpath", opc.publishfullabcpath
             abcOutput = opc.publishfullabcpath + '/' + abc
             charaOutput = opc.publishfullpath + '/' + abc.replace('abc', 'ma')
+            if abcCheck == "True":
+                if testmode == "True":
+                    charaOutput = charaOutput.replace("test_charSet", "cache")
+                else:
+                    charaOutput = charaOutput.replace("charSet", "cache")
             argsdic['Ntopnode'] = ns + ':' + argsdic['topnode']
             argsdic['ns'] = ns
             argsdic['attachPath'] = charaOutput
             argsdic['abcOutput'] = abcOutput
             batch.abcAttach(**argsdic)
             allOutput.append([abc.replace('abc', 'ma'), abc])
-        opc.makeCurrentDir()
+        opc._publishcurrentpath = opc._publishpath + '/current'  
         for output in allOutput:
-            argsdic['charaOutput'] = opc.publishcurrentpath + '/' + output[0]
+            argsdic['charaOutput'] = opc._publishcurrentpath + '/' + output[0]
             argsdic['abcOutput'] = opc.publishcurrentpath + '/abc/' + output[1]
             batch.repABC(**argsdic)
+        import pprint
+        pprint.pprint(argsdic)
 
     elif exporttype == 'camera':
         argsdic['publishPath'] = opc.publishfullpath
@@ -151,56 +173,60 @@ def back_starter(**kwargs):
                     pass
         opc.makeCurrentDir()
 
-    elif exporttype == 'abc_anim':
-        batch.animExport(**argsdic)
-        animFiles = os.listdir(opc.publishfullanimpath)
-        if charaName == "camera_base" or charaName == "camera_simple":
-            os.rmdir(output)
-            if len(os.listdir(os.path.dirname(output)))==0:
-                os.rmdir(output)
-                os.rmdir(os.path.dirname(output))
-                if os.path.dirname(output).split("/")[-1]=="v001":
-                    os.rmdir(os.path.dirname(os.path.dirname(output)))
-            opc.makeCurrentDir()
-            return
-        if len(animFiles)==0:
-            opc.removeDir()
-            return
-        batch.abcExport(**argsdic)
-        abcFiles = os.listdir(opc.publishfullabcpath)
-        if len(abcFiles) == 0:
-            opc.removeDir()
-            print 'abc not found'
-            return
-        allOutput = []
-        for abc in abcFiles:
-            ns = abc.replace(charaName + '_', '').replace('.abc', '')
-            if '___' in ns:
-                ns = ns.replace('___', ':')
-            abcOutput = opc.publishfullabcpath + '/' + abc
-            charaOutput = opc.publishfullpath + '/' + abc.replace('abc', 'ma')
-            argsdic['Ntopnode'] = ns + ':' + argsdic['topnode']
-            argsdic['ns'] = ns
-            argsdic['attachPath'] = charaOutput
-            argsdic['abcOutput'] = abcOutput
-            batch.abcAttach(**argsdic)
-            allOutput.append([abc.replace('abc', 'ma'), abc])
+    # elif exporttype == 'abc_anim':
+    #     anim_item = argsdic["exportitem"].split("anim", 1)[1:][0].split("abc", 1)[0].rstrip(",")
+    #     abc_item = argsdic["exportitem"].split("anim", 1)[1:][0].split("abc", 1)[1].rstrip(")")
+    #     argsdic["exportitem"] = anim_item
+    #     batch.animExport(**argsdic)
+    #     animFiles = os.listdir(opc.publishfullanimpath)
+    #     if charaName == "camera_base" or charaName == "camera_simple":
+    #         os.rmdir(output)
+    #         if len(os.listdir(os.path.dirname(output)))==0:
+    #             os.rmdir(output)
+    #             os.rmdir(os.path.dirname(output))
+    #             if os.path.dirname(output).split("/")[-1]=="v001":
+    #                 os.rmdir(os.path.dirname(os.path.dirname(output)))
+    #         opc.makeCurrentDir()
+    #         return
+    #     if len(animFiles)==0:
+    #         opc.removeDir()
+    #         return
+    #     argsdic["exportitem"] = abc_item
+    #     batch.abcExport(**argsdic)
+    #     abcFiles = os.listdir(opc.publishfullabcpath)
+    #     if len(abcFiles) == 0:
+    #         opc.removeDir()
+    #         print 'abc not found'
+    #         return
+    #     allOutput = []
+    #     for abc in abcFiles:
+    #         ns = abc.replace(charaName + '_', '').replace('.abc', '')
+    #         if '___' in ns:
+    #             ns = ns.replace('___', ':')
+    #         abcOutput = opc.publishfullabcpath + '/' + abc
+    #         charaOutput = opc.publishfullpath + '/' + abc.replace('abc', 'ma')
+    #         argsdic['Ntopnode'] = ns + ':' + argsdic['topnode']
+    #         argsdic['ns'] = ns
+    #         argsdic['attachPath'] = charaOutput
+    #         argsdic['abcOutput'] = abcOutput
+    #         batch.abcAttach(**argsdic)
+    #         allOutput.append([abc.replace('abc', 'ma'), abc])
 
-        opc.makeCurrentDir()
+    #     opc.makeCurrentDir()
 
-        for animFile in animFiles:
-            ns = animFile.replace('anim_', '').replace('.ma', '')
-            animOutput = opc.publishfullanimpath + '/' + animFile
-            charaOutput = opc.publishfullpath + '/' + ns + '.ma'
-            argsdic['animOutput'] = animOutput
-            argsdic['charaOutput'] = charaOutput
-            argsdic['ns'] = ns
-            batch.animAttach(**argsdic)
+    #     for animFile in animFiles:
+    #         ns = animFile.replace('anim_', '').replace('.ma', '')
+    #         animOutput = opc.publishfullanimpath + '/' + animFile
+    #         charaOutput = opc.publishfullpath + '/' + ns + '.ma'
+    #         argsdic['animOutput'] = animOutput
+    #         argsdic['charaOutput'] = charaOutput
+    #         argsdic['ns'] = ns
+    #         batch.animAttach(**argsdic)
 
-        for output in allOutput:
-            argsdic['charaOutput'] = opc.publishcurrentpath + '/' + output[0]
-            argsdic['abcOutput'] = opc.publishcurrentpath + '/abc/' + output[1]
-            batch.repABC(**argsdic)
+    #     for output in allOutput:
+    #         argsdic['charaOutput'] = opc.publishcurrentpath + '/' + output[0]
+    #         argsdic['abcOutput'] = opc.publishcurrentpath + '/abc/' + output[1]
+    #         batch.repABC(**argsdic)
 
     print 'Output directry: {}'.format(opc.publishfullpath.replace('/','\\'))
     print '=================END==================='

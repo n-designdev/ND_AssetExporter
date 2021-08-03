@@ -2,7 +2,7 @@
 import os,sys
 import time
 # ------------------------------
-__version__ = '2.0'
+__version__ = '2.1'
 __author__ = "Kei Ueda"
 # ------------------------------
 env_key = 'ND_TOOL_PATH_PYTHON'
@@ -30,7 +30,13 @@ from importlib import import_module
 
 import main_util as mu
 import shotgun_mod as sg_mod
-import ND_Submitter.env as util_env
+try:
+    import ND_Submitter.env as util_env
+    # import ND_Submitter2.env as util_env
+except Exception as e:
+    DeadlineMode = False
+else:
+    DeadlineMode = True    
 
 sg = sg_scriptkey.scriptKey()
 
@@ -189,17 +195,24 @@ class GUI(QMainWindow):
                     if subvalue != None:
                         combo_index = qtcombobox.findText(subvalue)
             qtcombobox.setCurrentIndex(combo_index)
-
-        groups = util_env.deadline_group
-        groups.sort()
-        pools = util_env.deadline_pool
-        pools.sort()
-        _setComboBoxList(self.ui.grouplist, groups)
-        _setComboBoxValue(self.ui.grouplist, "mem032")
-        if mu.check_arnold(self.project) is True:
-            _setComboBoxValue(self.ui.grouplist, "mem064")            
-        _setComboBoxList(self.ui.poollist, pools)
-        _setComboBoxValue(self.ui.poollist, self.project, 'normal')
+        if DeadlineMode is True:
+            groups = util_env.deadline_group
+            if type(groups) is str:
+                groups = []
+            groups.sort()
+            pools = util_env.deadline_pool
+            if type(pools) is str:
+                pools = []
+            pools.sort()
+            _setComboBoxList(self.ui.grouplist, groups)
+            _setComboBoxValue(self.ui.grouplist, "mem032")
+            if mu.check_arnold(self.project) is True:
+                _setComboBoxValue(self.ui.grouplist, "mem064")            
+            _setComboBoxList(self.ui.poollist, pools)
+            _setComboBoxValue(self.ui.poollist, self.project, 'normal')
+        else:
+            self.ui.start_submit_button.setDisabled(True)
+            self.ui.start_submit_button.setHidden(True)
         model = mu.TableModelMaker(tabledata, self.headers)
         self.ui.main_table.setContextMenuPolicy(Qt.CustomContextMenu)
         self.ui.main_table.customContextMenuRequested.connect(self.main_table_rclicked)
@@ -330,6 +343,7 @@ class GUI(QMainWindow):
                     'env_load': self.ui.project_loader_checkbox.isChecked(),
                     'bakeAnim': self.ui.bake_anim.isChecked(),
                     'sceneTimeworp': self.ui.scene_timeworp_check.isChecked(),
+                    'abcCheck': self.ui.abc_cache_check.isChecked(),
                     'Priority': self.ui.priority.text(),
                     'Pool': self.ui.poollist.currentText(),
                     'Group': self.ui.grouplist.currentText()}

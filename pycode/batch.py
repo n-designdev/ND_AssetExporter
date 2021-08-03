@@ -33,16 +33,13 @@ def abcExport(**kwargs):
     if argsdic['env_load']:
         env_load(argsdic['project'])
         mayaBatch = maya_version(argsdic['project'])
-    namespace = argsdic['namespace']
-    outputPath = argsdic['abcOutput'] + '/' + namespace +'/'+ 'abc'
-    assetPath = argsdic['assetpath'].replace("\\","/")
-    exportitem = argsdic['exportitem']
 
     original_litte = (
         'from ndPyLibExportAbc import ndPyLibExportAbc2;'
         'ndPyLibExportAbc2({})'.format(argsdic)
     )
-
+    for key, value in kwargs.items():
+        print key, value
     cmd = mayacmd_maker(original_litte, argsdic['inputpath'], mayaBatch)
     cmd[2] = str(cmd[2]).replace('\\\\', '\\')
     subprocess.call(cmd)
@@ -54,7 +51,6 @@ def abcAttach(**kwargs):
         env_load(argsdic['project'])
         mayaBatch = maya_version(argsdic['project'])
     assetPath = argsdic['assetpath'].replace("\\","/")
-    exportitem = argsdic['exportitem']
     namespace = argsdic['ns']
     topNode = argsdic['Ntopnode']
     outputPath = argsdic['attachPath']

@@ -155,11 +155,15 @@ def tabledata_maker(headers, convert_dic, target_assets):
                     else:
                         td_row.append('{Empty!}')
                         td_row.append('{Empty!}')
-                        break
+                    anim_item = target_asset["sg_anim_export_list"]
+                    abc_item = target_asset["sg_abc_export_list"]
+                    td_row.append("{{anim:{}, abc:{}}})".format(anim_item, abc_item))
+                    continue
                 if target_asset[sg_code] is None:
                     td_row.append("{Empty!}")
                 else:
                     td_row.append(target_asset[sg_code].replace("\n", ""))
+
         tabledata.append(td_row)
     return tabledata
 

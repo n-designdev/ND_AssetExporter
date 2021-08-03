@@ -289,12 +289,6 @@ QScrollBar::handle::horizontal {background:  rgb(90, 90, 90);}
     </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_7">
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>1</number>
-      </property>
       <item>
        <widget class="QCheckBox" name="scene_timeworp_check">
         <property name="layoutDirection">
@@ -302,6 +296,19 @@ QScrollBar::handle::horizontal {background:  rgb(90, 90, 90);}
         </property>
         <property name="text">
          <string>scene timeworp</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="abc_cache_check">
+        <property name="layoutDirection">
+         <enum>Qt::RightToLeft</enum>
+        </property>
+        <property name="text">
+         <string>abc cache</string>
         </property>
         <property name="checked">
          <bool>false</bool>

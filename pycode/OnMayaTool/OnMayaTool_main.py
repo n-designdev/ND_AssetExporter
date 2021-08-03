@@ -1,6 +1,12 @@
 import sys,os
 # import maya.cmds as cmds
 import ND_lib.maya.basic as basic
+
+def ls_asset_code(AssetClass_list):
+    result_list = []
+    for asset_ins in AssetClass_list:
+        result_list.append(asset_ins.regular_asset_name)
+    return result_list
 class AssetClass():
     def __init__(self, scene_asset_name_list, regular_asset_name=None, sg_aaset=None):
         self.scene_asset_name_list = scene_asset_name_list
@@ -23,7 +29,7 @@ class AssetClass():
                     'chara': self.regular_asset_name,
                     'namespace': self.sg_asset["sg_namespace"],
                     'exportitem': self.sg_asset["sg_anim_export_list"],
-                    'topnode': self.sg_asset["sg_top_node"]
+                    'topnode': self.sg_asset["sg_top_node"],
                     'assetpath': self.sg_asset["sg_asset_path"],
                     'testmode': debug,
                     # 'stepValue': abcstep_override,
@@ -36,7 +42,7 @@ class AssetClass():
                     'shot': shot,
                     'sequence': sequence,
                     'env_load': True,
-                    'bakeAnim': True,
+                    'bakeAnim': True}
 
 
 def ls_asset_class():
@@ -72,13 +78,6 @@ def ls_asset_class():
             # for ProSG_dict in ProSG_list:
             class_list.append(AssetClass(found_namespaces, sg_asset["code"], sg_asset))
     return class_list
-
-
-def ls_asset_code(AssetClass_list):
-    result_list = []
-    for asset_ins in AssetClass_list:
-        result_list.append(asset_ins.regular_asset_name)
-    return result_list
 
 
 if __name__ == "__main__":

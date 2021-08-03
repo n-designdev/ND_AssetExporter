@@ -121,7 +121,7 @@ def _exportAbc2(outputPath, _namespaceList, regexArgs, step_value, frameHundle, 
 
         if ':' in ns:
             ns = ns.replace(':', '___')
-        outputPath_ns = outputPath.replace('.abc', '_'+ns+'.abc')
+        outputPath_ns = outputPath.replace('.abc', '_abc'+'.abc')
 
         strAbc = ''
         strAbc = strAbc + '-frameRange '
@@ -144,7 +144,7 @@ def _exportAbc2(outputPath, _namespaceList, regexArgs, step_value, frameHundle, 
         # mel.eval('AbcExport -verbose -j ' + '"' + strAbc + '"')
         mel.eval('AbcExport -verbose -j \"{}\"'.format(strAbc))
 
-def ndPyLibExportAbc2 (args):
+def ndPyLibExportAbc2(args):
     argsdic = args
     outputPath = argsdic['abcOutput']
     namespaceList = argsdic['namespace']
@@ -159,6 +159,5 @@ def ndPyLibExportAbc2 (args):
         outputPath, namespaceList,
         regexArgs, step_value,
         frameHundle, frameRange)
-    print "check point"
 
 

@@ -101,14 +101,17 @@ class outputPathConf(object):
 
     def setChar(self, char):
         if char == 'Cam' or char == 'Camera':
-            self._publishpath = os.path.join(self._shotpath, 'publish', self.outputCamRootDir, char).replace(os.path.sep, '/')
+            # self._publishpath = os.path.join(self._shotpath, 'publish', self.outputCamRootDir).replace(os.path.sep, '/')
+            self._publishpath = os.path.join(self._shotpath, 'publish', self.outputCamRootDir).replace('/', '\\')
         else:
-            self._publishpath = os.path.join(self._shotpath, 'publish', self.outputRootDir, char).replace(os.path.sep, '/')
-            vers = []
+            # self._publishpath = os.path.join(self._shotpath, 'publish', self.outputRootDir, char).replace(os.path.sep, '/')
+            self._publishpath = os.path.join(self._shotpath, 'publish', self.outputRootDir, char).replace('/', '\\')
         try:
             vers = os.listdir(self._publishpath)
-        except WindowsError:
+        except WindowsError as e:
+            print e
             raise ValueError
+        print len(vers)
         if len(vers) == 0:
             raise ValueError
         vers.sort()
@@ -165,14 +168,19 @@ class outputPathConf(object):
 def addTimeLog (char, inputpath, test):
     from datetime import datetime
     opc = outputPathConf(inputpath, char, test)
+    print "#####addTimeLog#####"
+    print "chara: {}".format(char)
+    print "inputpath: {}".format(inputpath)
+    print "test: {}".format(test)
     try:
         opc.setChar(char)
     except ValueError:
+        print "AddTimeLog Error!!"
         return
     publishpath = opc.publishpath
     if test is True:
-        publishpath.replace("char", "test_char")
-        publishpath.replace("Cam", "test_Cam")
+        publishpath = publishpath.replace("char", "test_char")
+        publishpath = publishpath.replace("Cam", "test_Cam")
     with open(os.path.join(publishpath, 'timelog.txt').replace(os.path.sep, '/'), 'a') as f:
         f.write(datetime.now().strftime('%Y/%m/%d %H:%M:%S'))
         f.write(' ' + opc.currentVer)
