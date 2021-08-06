@@ -14,11 +14,15 @@ for path in ND_TOOL_PATH.split(';'):
 import ND_lib.shotgun.sg_util as sg_util
 import ND_lib.util.path as util_path
 import ND_lib.env as util_env
-import shotgun_mod as sg_mod
-import PySide.QtGui as QtGui
-import PySide.QtCore as QtCore
-from PySide.QtCore import Qt as Qt
-from PySide.QtCore import QAbstractTableModel as QAbstractTableModel
+try:
+    from PySide2.QtGui import *
+    from PySide2.QtCore import *
+    from PySide2.QtUiTools import QUiLoader
+    from PySide2.QtWidgets import *
+except:
+    from PySide.QtGui import *
+    from PySide.QtCore import *
+    from PySide.QtUiTools import QUiLoader
 import subprocess
 
 pythonBatch = 'Y:\\tool\\MISC\\Python2710_amd64_vs2010\\python.exe'
@@ -45,7 +49,6 @@ class ProjectInfo():
             )
         except AttributeError:
             self.camera_rig_export = False
-        
         return self.camera_rig_export
 
 
@@ -70,7 +73,7 @@ class TableModelMaker(QAbstractTableModel):
     def flags(self, index):
         return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
-    def data(self, index, role=QtCore.Qt.BackgroundRole):
+    def data(self, index, role=Qt.BackgroundRole):
         row = index.row()
         column = index.column()
 
@@ -96,18 +99,18 @@ class TableModelMaker(QAbstractTableModel):
                     value = ""
             return value
 
-        elif role == QtCore.Qt.BackgroundRole:
+        elif role == Qt.BackgroundRole:
             if "{Empty!}" in self.table_data[row]:
-                return QtGui.QColor("#AA0000")
+                return QColor("#AA0000")
             if row in self.executed_row:
-                return QtGui.QColor("#BBBBBB")
+                return QColor("#BBBBBB")
             else:
                 if row in self.check_row:
-                    return QtGui.QColor("#226666")
+                    return QColor("#226666")
                 else:
-                    return QtGui.QColor("#888888")
+                    return QColor("#888888")
 
-    def setData(self, index, value, role=QtCore.Qt.DisplayRole):
+    def setData(self, index, value, role=Qt.DisplayRole):
         row = index.row()
         column = index.column()
         if role == Qt.EditRole:
@@ -195,7 +198,12 @@ def execExporter(**kwargs):
     args = argsmaker(pythonBatch)
     args = argsmaker('back_starter.py', args)
     args = argsmaker(str(kwargs), args)
-    subprocess.call(args)
+    subprocess.call(args, shell=True)
+    
+def execExporter_maya(**kwargs):
+    import back_starter
+    reload(back_starter)
+    back_starter.back_starter(kwargs=kwargs["kwargs"])
 
 
 def spsymbol_remover(litteral, itemtype):

@@ -25,11 +25,9 @@ import util
 import subprocess
 import datetime
 import threading
-from multiprocessing import Pool
-from importlib import import_module
 
-import main_util as mu
-import shotgun_mod as sg_mod
+import main_util
+import shotgun_mod 
 try:
     import ND_Submitter.env as util_env
     # import ND_Submitter2.env as util_env
@@ -154,7 +152,7 @@ class GUI(QMainWindow):
         self.inputpath = urldata[0].toString().replace("file:///", "")
         self.ui.path_line.setText(self.inputpath)
         self.ui.Change_Area.setCurrentIndex(1)
-        ProjectInfoClass = mu.ProjectInfo(self.inputpath)
+        ProjectInfoClass = main_util.ProjectInfo(self.inputpath)
         pro_name = ProjectInfoClass.project_name
         shot = ProjectInfoClass.shot
         sequence = ProjectInfoClass.sequence
@@ -166,7 +164,7 @@ class GUI(QMainWindow):
 
         # カメラタイプの取得
         self.camera_rig_export = ProjectInfoClass.get_camera_rig_info()
-        SGBaseClass = sg_mod.SGProjectClass(pro_name, self.base_fields)
+        SGBaseClass = shotgun_mod.SGProjectClass(pro_name, self.base_fields)
         SGBaseClass.get_dict("Asset")
         SGBaseClass.get_dict("Shot")
         target_asset_list = SGBaseClass.get_keying_dict("Shot", "code")[shot_code]['assets']
@@ -180,8 +178,8 @@ class GUI(QMainWindow):
             seq_list = SGAssetClass.get_keying_list("Asset", "sequences", "sequence")
             for spseq in seq_list:
                 target_asset_list.append(spseq['code'])
-        tabledata = mu.tabledata_maker(self.headers_item, self.convert_dic, target_asset_dics)
-        tabledata = mu.add_camera_row(self.headers_item, tabledata, self.camera_rig_export)
+        tabledata = main_util.tabledata_maker(self.headers_item, self.convert_dic, target_asset_dics)
+        tabledata = main_util.add_camera_row(self.headers_item, tabledata, self.camera_rig_export)
 
         def _setComboBoxList(qtcombobox, itemlist):
             qtcombobox.clear()
@@ -206,14 +204,14 @@ class GUI(QMainWindow):
             pools.sort()
             _setComboBoxList(self.ui.grouplist, groups)
             _setComboBoxValue(self.ui.grouplist, "mem032")
-            if mu.check_arnold(self.project) is True:
+            if main_util.check_arnold(self.project) is True:
                 _setComboBoxValue(self.ui.grouplist, "mem064")            
             _setComboBoxList(self.ui.poollist, pools)
             _setComboBoxValue(self.ui.poollist, self.project, 'normal')
         else:
             self.ui.start_submit_button.setDisabled(True)
             self.ui.start_submit_button.setHidden(True)
-        model = mu.TableModelMaker(tabledata, self.headers)
+        model = main_util.TableModelMaker(tabledata, self.headers)
         self.ui.main_table.setContextMenuPolicy(Qt.CustomContextMenu)
         self.ui.main_table.customContextMenuRequested.connect(self.main_table_rclicked)
         self.ui.main_table.setModel(model)
@@ -227,7 +225,7 @@ class GUI(QMainWindow):
         for selected_row in self.ui.main_table.selectedIndexes():
             self.check_row.append(selected_row.row())
         self.check_row = list(set(self.check_row))
-        model = mu.TableModelMaker(
+        model = main_util.TableModelMaker(
             self.tabledata, self.headers, 
             self.check_row, self.executed_row)
         self.ui.main_table.setModel(model)
@@ -242,21 +240,21 @@ class GUI(QMainWindow):
                 self.check_row.remove(_index)
             except:
                 pass
-        model = mu.TableModelMaker(
+        model = main_util.TableModelMaker(
             self.tabledata, self.headers,
             self.check_row)
         self.ui.main_table.setModel(model)
 
     def allcheck_button_clicked(self):
         self.check_row = range(len(self.tabledata))
-        model = mu.TableModelMaker(
+        model = main_util.TableModelMaker(
             self.tabledata, self.headers,
             self.check_row, self.executed_row)
         self.ui.main_table.setModel(model)
         
     def alluncheck_button_clicked(self):
         self.check_row = []
-        model = mu.TableModelMaker(
+        model = main_util.TableModelMaker(
             self.tabledata, self.headers,
             self.check_row, self.executed_row)
         self.ui.main_table.setModel(model)
@@ -362,14 +360,10 @@ class GUI(QMainWindow):
                     pass
                 if "{Empty!}" not in execargs_ls.values():
                     if mode == 'Submit':
-                        DLclass = mu.DeadlineMod(**execargs_ls)
+                        DLclass = main_util.DeadlineMod(**execargs_ls)
                         jobFileslist.append(DLclass.make_submit_files(file_number))
                         file_number += 1
                     else:
-                        python = "Y:\\tool\\MISC\\Python2710_amd64_vs2010\\python.exe"
-                        py_path = "Y:\\tool\\ND_Tools\\DCC\\ND_AssetExporter\\pycode\\main_util.py"
-                        order_str = "Y:\\tool\\MISC\\Python2710_amd64_vs2010\\python.exe Y:\\tool\\ND_Tools\\DCC\\ND_AssetExporter\\pycode\\main_util.execExporter.py"
-                        # output_file = "Y:\\tool\\ND_Tools\\DCC\\ND_AssetExporter\\log\\result_text.txt"
                         now = datetime.datetime.now()
                         filename = "log_" + now.strftime('%Y%m%d_%H%M%S') + chara+ ".txt"
                         output_dir = "Y:\\users\\"+os.environ.get("USERNAME")+"\\DCC_log\\ND_AssetExporter"
@@ -397,15 +391,15 @@ class GUI(QMainWindow):
                             qApp.processEvents()
                         self.output_file = output_file
                         self.ui.open_log_button.setEnabled(True)
-                        # mu.execExporter(**execargs_ls)
+                        # main_util.execExporter(**execargs_ls)
                     util.addTimeLog(chara, self.inputpath, test=self.debug)
             else:
                 pass
         if mode == 'Submit':
-            mu.submit_to_deadlineJobs(jobFileslist)
+            main_util.submit_to_deadlineJobs(jobFileslist)
         self.ui.Change_Area.setCurrentIndex(1)
         self.executed_row = list(set(self.executed_row))
-        mu.TableModelMaker(
+        main_util.TableModelMaker(
             self.tabledata, self.headers,
             self.check_row, self.executed_row)
         print "===============Export End=================="
@@ -423,7 +417,7 @@ class GUI(QMainWindow):
         else:
             check_rows.append(clicked_row)
         self.check_row = list(set(check_rows))
-        model = mu.TableModelMaker(
+        model = main_util.TableModelMaker(
             self.tabledata, self.headers, self.check_row, self.executed_row)
         self.ui.main_table.setModel(model)
 
@@ -446,8 +440,8 @@ class GUI(QMainWindow):
         copy_main.copy_main(current_path)
     
     def open_publish_dir_button_clicked(self):
-        import util
-        opc = util.outputPathConf(self.inputpath)
+        import exporter_util
+        opc = exporter_util.outputPathConf(self.inputpath)
         shot_path = opc.publishshotpath
         publish_path = os.path.join(shot_path, "publish")
         subprocess.call("explorer {}".format(publish_path.replace("/", "\\")))

@@ -3,7 +3,7 @@
 import os,sys
 import re
 import shutil
-import util
+import exporter_util
 import batch
 
 env_key = 'ND_TOOL_PATH_PYTHON'
@@ -44,21 +44,26 @@ def strdict_parse(original_string):
 
 
 def back_starter(**kwargs):
-    argsdic = kwargs
+    import pprint
+    pprint.pprint(kwargs)
+    if "kwargs" in kwargs.keys():
+        argsdic = kwargs["kwargs"]
+    else:
+        argsdic = kwargs
     inputpath = argsdic['inputpath']
     charaName = argsdic['chara']
     exporttype = argsdic['exporttype']
     testmode = argsdic['testmode']
     abcCheck = argsdic['abcCheck']
     if exporttype != 'camera':
+        print argsdic["exportitem"]
         anim_item = argsdic["exportitem"].split("anim", 1)[1:][0].split("abc", 1)[0].rstrip(",")
         abc_item = argsdic["exportitem"].split("anim", 1)[1:][0].split("abc", 1)[1].rstrip(")")
     if exporttype == 'anim':
         isAnim = True
     else:
         isAnim = False
-
-    opc = util.outputPathConf(inputpath, isAnim=isAnim, test=testmode)
+    opc = exporter_util.outputPathConf(inputpath, isAnim=isAnim, test=testmode)
 
     if exporttype == 'camera':
         opc.createCamOutputDir()
@@ -106,7 +111,7 @@ def back_starter(**kwargs):
         argsdic["exportitem"]=abc_item
         if abcCheck == 'True':
             opc._publishpath = opc._publishpath + '/cache'
-            if testmode == "True":
+            if testmode == "True" or testmode == True:
                 opc._publishfullpath = opc._publishfullpath.replace("test_charSet", "cache")
                 opc._publishfullabcpath = opc._publishfullabcpath.replace("test_charSet", "cache") 
             else:
