@@ -50,6 +50,7 @@ def _getAllNodes(namespace, regexArgs):
         regexArgs = ['*']
     nodes = []
     for regex in regexArgs:
+        regex = regex.lstrip(":")
         if "*" in regex:
             ns_objs = cmds.ls(str(namespace)+":*")
             objs = []
@@ -145,6 +146,32 @@ def _getAnimLayerConnectionAttributes(nodes):
         for i in range(0, len(pairblend), 2):
             attrs.append(pairblend[i])
     return attrs
+
+def _getAnimCurveAttributes(nodes):
+    attrs = []
+    for n in nodes:
+        pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='animCurveTL')
+        if pairblend is not None: 
+            for i in range(0, len(pairblend), 2):
+                attrs.append(pairblend[i])
+                continue
+        pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='animCurveTU')
+        if pairblend is not None: 
+            for i in range(0, len(pairblend), 2):
+                attrs.append(pairblend[i])
+                continue 
+        pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='animCurveTA')
+        if pairblend is not None: 
+            for i in range(0, len(pairblend), 2):
+                attrs.append(pairblend[i])
+                continue
+        pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='animCurveTT')
+        if pairblend is not None: 
+            for i in range(0, len(pairblend), 2):
+                attrs.append(pairblend[i])
+                continue
+    return attrs
+        
     
 
 def _getNoKeyAttributes (nodes):
@@ -180,7 +207,8 @@ def _getKeyAttributes (nodes):
                     attrs.append(n+'.'+attr)
     return attrs
     
-def _unlockAttributes(nodes):
+def unlockAttributes(nodes):
+    print cmds.optionVar(iv=["refLockEditable", True])    
     for node in nodes:
         if cmds.getAttr(node, lock=True):
             try:
@@ -199,6 +227,7 @@ def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFi
     _namespaceList = namespaceList[:]
 
     for regexArg in regexArgs:
+        regexArg = regexArg.lstrip(":")
         if '.' in regexArg:
             regexArgsAttrs.append(regexArg)
         else:
@@ -282,7 +311,8 @@ def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFi
     characterSet = cmds.ls(type='character')
     if len(characterSet) == 0:
         cmds.delete(characterSet)
-
+    print "##allNodes##"
+    print allNodes
     cmds.select(allNodes)
     baseAnimationLayer = cmds.animLayer(q=True, r=True)
 
@@ -314,11 +344,12 @@ def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFi
     attrs += _getMotionPathAttributes(allNodes)
     attrs += _getAddDoubleLinearAttributes(allNodes)
     attrs += _getTransformConnectionAttributes(allNodes)
+    # attrs += _getAnimCurveAttributes(allNodes)
     if bakeAnim is True:
         attrs += _getNoKeyAttributes(allNodes)
         attrs += _getKeyAttributes(allNodes)
         # attrs += _getAnimLayerConnectionAttributes(allNodes)
-    _unlockAttributes(attrs)
+    unlockAttributes(attrs)
     if len(attrs)!=0:
         for x in attrs:
             print x

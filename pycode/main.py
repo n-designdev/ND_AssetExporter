@@ -392,7 +392,7 @@ class GUI(QMainWindow):
                         self.output_file = output_file
                         self.ui.open_log_button.setEnabled(True)
                         # main_util.execExporter(**execargs_ls)
-                    util.addTimeLog(chara, self.inputpath, test=self.debug)
+                    # util.addTimeLog(chara, self.inputpath, test=self.debug)
             else:
                 pass
         if mode == 'Submit':

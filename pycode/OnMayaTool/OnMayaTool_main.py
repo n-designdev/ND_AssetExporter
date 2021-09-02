@@ -10,7 +10,7 @@ class AssetClass():
     def __init__(self, scene_asset_name_list, regular_asset_name=None, sg_aaset=None):
         self.scene_asset_name_list = scene_asset_name_list
         self.regular_asset_name = regular_asset_name
-        self.sg_asset = sg_aaset 
+        self.sg_asset = sg_aaset
 
     def get_project_path(self):
         self.project_path = basic.get_project_path_fullName()
@@ -18,7 +18,6 @@ class AssetClass():
     def export_asset(self, mode="Submit", debug="True"):
         import maya.cmds as cmds
         from main_util import ProjectInfo
-        import threading
         scene_path = cmds.file(q=True, sn=True)
         ProjectInfoClass = ProjectInfo(scene_path)
         pro_name = ProjectInfoClass.project_name
@@ -62,7 +61,7 @@ class AssetClass():
             DLclass = DeadlineMod(**execargs_ls)
             jobFileslist = [(DLclass.make_submit_files(0))]
             from main_util import submit_to_deadlineJobs
-            submit_to_deadlineJobs(jobFileslist) 
+            submit_to_deadlineJobs(jobFileslist)
         else:
             import datetime
             now = datetime.datetime.now()
@@ -88,8 +87,8 @@ class AssetClass():
             import pprint
             pprint.pprint(execargs_ls)
             argsdict = ast.literal_eval(str(execargs_ls))
-            execExporter_maya(kwargs=argsdict)            
-                
+            execExporter_maya(kwargs=argsdict)
+
 def thread_main(execargs_ls, output_path, current_dir):
     import subprocess
     python = "Y:\\tool\\MISC\\Python2710_amd64_vs2010\\python.exe"
@@ -99,7 +98,7 @@ def thread_main(execargs_ls, output_path, current_dir):
         proc.wait()
     return
 
-    
+
 def ls_asset_class():
     sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter\pycode")
     sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter\pycode\OnMayaTool")

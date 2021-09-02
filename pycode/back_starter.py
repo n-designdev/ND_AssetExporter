@@ -20,7 +20,7 @@ import ND_lib.env as util_env
 def spsymbol_remover(litteral, sp_check=None):
     listitem = ["exportitem", "framerange"]
     if sp_check in listitem:
-        litteral = re.sub(':|\'|{|}', '', litteral)
+        litteral = re.sub('\'|{|}', '', litteral)
         litteral = litteral.rstrip(',')
     elif sp_check == "namespace":
         litteral = re.sub('\'|{|}', '', litteral)
@@ -232,6 +232,7 @@ def back_starter(**kwargs):
     #         argsdic['charaOutput'] = opc.publishcurrentpath + '/' + output[0]
     #         argsdic['abcOutput'] = opc.publishcurrentpath + '/abc/' + output[1]
     #         batch.repABC(**argsdic)
+    exporter_util.addTimeLog(charaName, inputpath, test=testmode)
 
     print 'Output directry: {}'.format(opc.publishfullpath.replace('/','\\'))
     print '=================END==================='

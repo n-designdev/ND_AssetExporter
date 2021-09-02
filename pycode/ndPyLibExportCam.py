@@ -113,7 +113,10 @@ def ndPyLibExportCam_bakeCamera(sframe, eframe, CameraScale):
     for i in range(0, len(cams), 2):
 
         for thisAttr in shapeAttrs:
-            cmds.setAttr(fromCam[i]+'.'+thisAttr, lock=False)
+            try:
+                cmds.setAttr(fromCam[i]+'.'+thisAttr, lock=False)
+            except:
+                pass
 
         cmds.setAttr(toCam[i+1]+'.renderable', True)
         cmds.setAttr(toCam[i+1]+'.renderable', lock=False)

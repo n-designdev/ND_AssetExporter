@@ -13,6 +13,20 @@ for path in ND_TOOL_PATH.split(';'):
 #------------------------------------
 import ND_lib.util.path as util_path
 
+def symlink(source, link_name):
+    import os
+    os_symlink = getattr(os, "symlink", None)
+    if callable(os_symlink):
+        os_symlink(source, link_name)
+    else:
+        import ctypes
+        csl = ctypes.windll.kernel32.CreateSymbolicLinkW
+        csl.argtypes = (ctypes.c_wchar_p, ctypes.c_wchar_p, ctypes.c_uint32)
+        csl.restype = ctypes.c_ubyte
+        flags = 1 if os.path.isdir(source) else 0
+        if csl(link_name, source, flags) == 0:
+            raise ctypes.WinError()
+
 class outputPathConf(object):
     def __init__(self, inputPath, isAnim=False, test=False):
         self.inputPath = inputPath.replace('\\', '/')
@@ -86,12 +100,20 @@ class outputPathConf(object):
     def makeCurrentDir(self):
         currentDir = os.path.join(self.publishpath, 'current')
         self._publishcurrentpath = currentDir
-        distutils.dir_util.copy_tree(self._publishfullpath, currentDir)
+        # distutils.dir_util.copy_tree(self._publishfullpath, currentDir)
+        if os.path.exists(currentDir):
+            sys.path.append("Y:/tool/ND_Tools/DCC/lib")
+            import pathlib
+            file_to_rem = pathlib.Path(currentDir)
+            file_to_rem.rmdir()        
+        symlink(self._publishfullpath, currentDir)
         current_info = os.path.join(currentDir, 'current_info.txt')
         with open(current_info, 'w') as f:
             f.write("current ver:"+ str(self._currentVer)+"\n")
 
     def removeDir(self):
+        print "##removeDir##"
+        print self._publishpath
         if os.path.exists(self._publishpath+'\\current'):
             files = os.listdir(self._publishpath+'\\current')
             for f in files:
@@ -165,7 +187,7 @@ class outputPathConf(object):
         return self._currentVer
 
 
-def addTimeLog (char, inputpath, test):
+def addTimeLog(char, inputpath, test):
     from datetime import datetime
     opc = outputPathConf(inputpath, char, test)
     print "#####addTimeLog#####"
