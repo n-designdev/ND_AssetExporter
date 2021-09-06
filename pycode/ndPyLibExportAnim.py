@@ -344,6 +344,13 @@ def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFi
     attrs += _getMotionPathAttributes(allNodes)
     attrs += _getAddDoubleLinearAttributes(allNodes)
     attrs += _getTransformConnectionAttributes(allNodes)
+    
+    #ConstraintがあってBakeできないものの対応のテスト
+    sub_attrs = []
+    for node in allNodes:
+        if cmds.listConnections(node, s=True, type="constraint") is not None:
+            sub_attrs.extend(list(set(cmds.listConnections(node, s=True, type="constraint"))))
+    
     # attrs += _getAnimCurveAttributes(allNodes)
     if bakeAnim is True:
         attrs += _getNoKeyAttributes(allNodes)
@@ -353,8 +360,8 @@ def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFi
     if len(attrs)!=0:
         for x in attrs:
             print x
-        print attrs, sframe, eframe
         cmds.select(attrs, r=True)
+        cmds.select(sub_attrs, add=True)
         # cmds.bakeResults(attrs, t=(sframe, eframe), dic=True, sb=True, sm=True)
         cmds.bakeResults(t=(sframe, eframe), dic=True, sb=True, sm=True)
         print "bake finished."
