@@ -28,28 +28,26 @@ def symlink(source, link_name):
             raise ctypes.WinError()
 
 class outputPathConf(object):
-    def __init__(self, inputPath, isAnim=False, test=False):
-        self.inputPath = inputPath.replace('\\', '/')
+    def __init__(self, input_path, isAnim=False, test=False):
+        self.input_path = input_path.replace('\\', '/')
         self.isAnim = isAnim
         self.outputRootDir = 'charSet'
         self.outputCamRootDir = 'Cam'
         if test == 'True' or test == True:
             self.outputRootDir = 'test_charSet'
             self.outputCamRootDir = 'test_Cam'
-        dic = util_path.get_path_dic(self.inputPath)
+        dic = util_path.get_path_dic(self.input_path)
         self._pro_name = dic['project_name']
         self._shot = dic['shot']
         self._sequence = dic['sequence']
         self._shotpath = ''
-        for path_parts in self.inputPath.split('/'):
+        for path_parts in self.input_path.split('/'):
             self._shotpath = self._shotpath + path_parts+'/'
             if path_parts == self._shot:
                 break
 
     def createOutputDir(self, char):
         self._publishpath = os.path.join(self._shotpath+'publish', self.outputRootDir, char)
-        print self._publishpath
-        print 'createOutputDir'
         if os.path.exists(self._publishpath):
             self.verInc()
         else:
@@ -94,7 +92,7 @@ class outputPathConf(object):
             else:
                 os.mkdir(self._publishfullabcpath)
         except Exception as e:
-            print( isCam, self.isAnim)
+            print(isCam, self.isAnim)
             print e
 
     def makeCurrentDir(self):
@@ -105,15 +103,13 @@ class outputPathConf(object):
             sys.path.append("Y:/tool/ND_Tools/DCC/lib")
             import pathlib
             file_to_rem = pathlib.Path(currentDir)
-            file_to_rem.rmdir()        
+            file_to_rem.rmdir()
         symlink(self._publishfullpath, currentDir)
         current_info = os.path.join(currentDir, 'current_info.txt')
         with open(current_info, 'w') as f:
             f.write("current ver:"+ str(self._currentVer)+"\n")
 
     def removeDir(self):
-        print "##removeDir##"
-        print self._publishpath
         if os.path.exists(self._publishpath+'\\current'):
             files = os.listdir(self._publishpath+'\\current')
             for f in files:
@@ -146,6 +142,9 @@ class outputPathConf(object):
         self._publishfullcampath = os.path.join(self._publishfullpath, 'cam')
         self._publishcurrentpath = self._publishpath+'\\current'
 
+    def overrideShotpath(self, shotpath):
+        self._shotpath = shotpath.replace('\\', '/')
+
     @property
     def sequence (self):
         return self._sequence
@@ -177,7 +176,7 @@ class outputPathConf(object):
     @property
     def publishfullcampath(self):
         return self._publishfullcampath.replace(os.path.sep, '/')
-    
+
     @property
     def publishshotpath(self):
         return self._shotpath.replace(os.path.sep, '/')
@@ -187,12 +186,12 @@ class outputPathConf(object):
         return self._currentVer
 
 
-def addTimeLog(char, inputpath, test):
+def addTimeLog(char, input_path, test):
     from datetime import datetime
-    opc = outputPathConf(inputpath, char, test)
+    opc = outputPathConf(input_path, char, test)
     print "#####addTimeLog#####"
     print "chara: {}".format(char)
-    print "inputpath: {}".format(inputpath)
+    print "input_path: {}".format(input_path)
     print "test: {}".format(test)
     try:
         opc.setChar(char)
@@ -206,6 +205,6 @@ def addTimeLog(char, inputpath, test):
     with open(os.path.join(publishpath, 'timelog.txt').replace(os.path.sep, '/'), 'a') as f:
         f.write(datetime.now().strftime('%Y/%m/%d %H:%M:%S'))
         f.write(' ' + opc.currentVer)
-        f.write(' ' + inputpath)
+        f.write(' ' + input_path)
         f.write(' ' + os.environ['USERNAME'])
         f.write('\n')

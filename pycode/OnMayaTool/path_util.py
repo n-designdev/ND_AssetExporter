@@ -69,9 +69,9 @@ def open_folder(path):
 
 
 class CharSetDirConf(object):
-    def __init__ (self, inputPath):
-        self.inputPath = inputPath
-        path_dic = util_path.get_path_dic(inputPath)
+    def __init__ (self, input_path):
+        self.input_path = input_path
+        path_dic = util_path.get_path_dic(input_path)
 
         for k, v in path_dic.items():
             if k == 'project_name':
@@ -85,7 +85,7 @@ class CharSetDirConf(object):
         # shot_name = path_dic["shot_code"]
 
         shotpath = ''
-        for x in inputPath.split('/'):
+        for x in input_path.split('/'):
             if x == shot:
                 shotpath = shotpath + '/' + x
                 break

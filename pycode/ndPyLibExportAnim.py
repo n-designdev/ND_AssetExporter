@@ -2,23 +2,21 @@
 import os, sys
 import re, glob
 import maya.cmds as cmds
-import maya.mel as mel
 
-from ndPyLibAnimIOExportContain import ndPyLibAnimIOExportContain 
+from ndPyLibAnimIOExportContain import ndPyLibAnimIOExportContain
 def spsymbol_remover(litteral, sp_check=None):
-    listitem = ['exportitem']
+    listitem = ['export_item']
     if sp_check in listitem:
         litteral = re.sub('\'|{|}', '', litteral)
     else:
         litteral = re.sub('\'|,|{|}', '', litteral)
-    url_list = ['inputpath', 'assetpath']
+    url_list = ['input_path', 'assetpath']
     if sp_check in url_list:
         litteral = litteral.replace('/', ':/')
     return litteral
-    
+
 
 def Euler_filter(attr_list):
-    # xyz = ['.rotateX', '.rotateY', '.rotateZ']
     for attr in attr_list:
         # anim_cv = map(lambda x: cmds.connectionInfo(obj+x, sfd=True), xyz)
         anim_cv = map(lambda x: x.rstrip('.output'), attr)
@@ -33,7 +31,6 @@ def Euler_filter(attr_list):
 
 def _getNamespace():
     namespaces = cmds.namespaceInfo(lon=True)
-    print namespaces
     _nestedNS = []
     for ns in namespaces:
         nestedNS = cmds.namespaceInfo(ns, lon=True)
@@ -52,7 +49,7 @@ def _getAllNodes(namespace, regexArgs):
     for regex in regexArgs:
         if "[None]:" in regex:
             objs.extend(regex.split("[None]:")[-1])
-            continue    
+            continue
         regex = regex.lstrip(":")
         if "*" in regex:
             ns_objs = cmds.ls(str(namespace)+":*")
@@ -111,7 +108,7 @@ def _getPairBlendAttributes(nodes):
         for i in range(0, len(pairblend), 2):
             attrs.append(pairblend[i])
     return attrs
-    
+
 
 def _getMotionPathAttributes(nodes):
     attrs = []
@@ -122,7 +119,7 @@ def _getMotionPathAttributes(nodes):
             attrs.append(pairblend[i])
     return attrs
 
-    
+
 def _getAddDoubleLinearAttributes(nodes):
     attrs = []
     for n in nodes:
@@ -131,7 +128,7 @@ def _getAddDoubleLinearAttributes(nodes):
         for i in range(0, len(pairblend), 2):
             attrs.append(pairblend[i])
     return attrs
-    
+
 
 def _getTransformConnectionAttributes(nodes):
     attrs = []
@@ -141,8 +138,8 @@ def _getTransformConnectionAttributes(nodes):
         for i in range(0, len(pairblend), 2):
             attrs.append(pairblend[i])
     return attrs
-    
-    
+
+
 def _getAnimLayerConnectionAttributes(nodes):
     attrs = []
     for n in nodes:
@@ -156,22 +153,22 @@ def _getAnimCurveAttributes(nodes):
     attrs = []
     for n in nodes:
         pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='animCurveTL')
-        if pairblend is not None: 
+        if pairblend is not None:
             for i in range(0, len(pairblend), 2):
                 attrs.append(pairblend[i])
                 continue
         pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='animCurveTU')
-        if pairblend is not None: 
+        if pairblend is not None:
             for i in range(0, len(pairblend), 2):
                 attrs.append(pairblend[i])
-                continue 
+                continue
         pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='animCurveTA')
-        if pairblend is not None: 
+        if pairblend is not None:
             for i in range(0, len(pairblend), 2):
                 attrs.append(pairblend[i])
                 continue
         pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='animCurveTT')
-        if pairblend is not None: 
+        if pairblend is not None:
             for i in range(0, len(pairblend), 2):
                 attrs.append(pairblend[i])
                 continue
@@ -209,9 +206,9 @@ def _getKeyAttributes (nodes):
                 else:
                     attrs.append(n+'.'+attr)
     return attrs
-    
+
 def unlockAttributes(nodes):
-    print cmds.optionVar(iv=["refLockEditable", True])    
+    print cmds.optionVar(iv=["refLockEditable", True])
     for node in nodes:
         if cmds.getAttr(node, lock=True):
             try:
@@ -222,7 +219,7 @@ def unlockAttributes(nodes):
                 print "failed."
 
 
-def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFilter, bakeAnim, strextra_dic, framehundle, framerange, sceneTimeworp):
+def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFilter, bake_anim, strextra_dic, framehundle, framerange, scene_timeworp):
     regexArgsN = [] #regexArgs Normal
     regexArgsAttrs = [] #regexArgs Attribute用
     regexArgs = strregexArgs.split(',')
@@ -347,15 +344,15 @@ def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFi
     attrs += _getMotionPathAttributes(allNodes)
     attrs += _getAddDoubleLinearAttributes(allNodes)
     attrs += _getTransformConnectionAttributes(allNodes)
-    
+
     #ConstraintがあってBakeできないものの対応のテスト
     sub_attrs = []
     for node in allNodes:
         if cmds.listConnections(node, s=True, type="constraint") is not None:
             sub_attrs.extend(list(set(cmds.listConnections(node, s=True, type="constraint"))))
-    
+
     # attrs += _getAnimCurveAttributes(allNodes)
-    if bakeAnim is True:
+    if bake_anim is True:
         attrs += _getNoKeyAttributes(allNodes)
         attrs += _getKeyAttributes(allNodes)
         # attrs += _getAnimLayerConnectionAttributes(allNodes)
@@ -366,18 +363,15 @@ def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFi
         bake_tg = attrs
         bake_tg.extend(sub_attrs)
         cmds.select(bake_tg, r=True)
-        # cmds.select(sub_attrs, add=True)
-        # cmds.bakeResults(attrs, t=(sframe, eframe), dic=True, sb=True, sm=True)
         cmds.bakeResults(t=(sframe, eframe), dic=True, sb=True, sm=True)
         print "bake finished."
-        
+
     Euler_filter(attrs)
 
     for ns in namespaces:
         pickNodes = []
         pickNodesAttr = []
         for n in allNodes:
-            # print ns, n
             if ns+':' in n:
                 pickNodes.append(n)
         for n in nodeAndAttrs:
@@ -385,7 +379,7 @@ def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFi
                 pickNodesAttr.append(n)
         if len(pickNodes) != 0:
             outputfiles.append(publishpath+oFilename+'_'+ns+'.ma')
-            ndPyLibAnimIOExportContain(isFilter, ['3', ''], publishpath, oFilename+'_'+ns, pickNodes, pickNodesAttr, 0, 0, frameRange, bakeAnim, sceneTimeworp)
+            ndPyLibAnimIOExportContain(isFilter, ['3', ''], publishpath, oFilename+'_'+ns, pickNodes, pickNodesAttr, 0, 0, frameRange, bake_anim, scene_timeworp)
     return outputfiles
 
 
@@ -394,19 +388,19 @@ def ndPyLibExportAnim_caller(args):
     print "###args###"
     print args
     outputPath = argsdic['output']
-    oFilename = argsdic['exporttype']
+    oFilename = argsdic['export_type']
     namespaceList = argsdic['namespace']
-    regexArgs = argsdic['exportitem']
-    bakeAnim = argsdic['bakeAnim']
-    sceneTimeworp = argsdic['sceneTimeworp']
-    if bakeAnim == "False" or bakeAnim == False:
-        bakeAnim=False
-    elif bakeAnim == "True" or bakeAnim == True:
-        bakeAnim=True
-    if sceneTimeworp == "False" or sceneTimeworp == False:
-        sceneTimeworp=False
-    elif sceneTimeworp == "True" or sceneTimeworp == True:
-        sceneTimeworp=True
+    regexArgs = argsdic['export_item']
+    bake_anim = argsdic['bake_anim']
+    scene_timeworp = argsdic['scene_timeworp']
+    if bake_anim == "False" or bake_anim == False:
+        bake_anim=False
+    elif bake_anim == "True" or bake_anim == True:
+        bake_anim=True
+    if scene_timeworp == "False" or scene_timeworp == False:
+        scene_timeworp=False
+    elif scene_timeworp == "True" or scene_timeworp == True:
+        scene_timeworp=True
     # extradic = argsdic['extra_dic']
     try:
         frameHundle = argsdic['framehundle']
@@ -418,11 +412,11 @@ def ndPyLibExportAnim_caller(args):
         frameRange = None
     extra_dic = None
     isFilter = 1
-    ExportAnim_body(outputPath, oFilename, namespaceList, regexArgs, isFilter, bakeAnim, extra_dic, frameHundle, frameRange, sceneTimeworp)
+    ExportAnim_body(outputPath, oFilename, namespaceList, regexArgs, isFilter, bake_anim, extra_dic, frameHundle, frameRange, scene_timeworp)
     print "ndPylibExportAnim End"
-    
+
 if __name__ == '__main__':
     sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter\pycode")
     import ndPyLibExportAnim
     reload(ndPyLibExportAnim)
-    argsdic = {'shot': 'c001', 'sequence': 's646', 'exporttype': 'anim', 'env_load': 'True', 'Priority': 'u50', 'Group': 'u128gb', 'stepValue': '1.0', 'namespace': 'NursedesseiShip', 'bakeAnim': 'True', 'sceneTimeworp': 'False', 'abcOutput': 'P:/Project/RAM1/shots/ep006/s646/c001/publish/test_charSet/NursedesseiShip/v003/abc/NursedesseiShip.abc', 'framerange_output': 'True', 'inputpath': 'P:/Project/RAM1/shots/ep006/s646/c001/work/k_ueda/test.ma', 'Pool': 'uram1', 'assetpath': 'P:/Project/RAM1/assets/chara/Nursedessei/NursedesseiShip/publish/Setup/RH/maya/current/NursedesseiShip_Rig_RH.mb', 'framerange': 'None', 'chara': 'NursedesseiShip', 'topnode': 'root', 'framehundle': '0', 'project': 'RAM1', 'testmode': 'True', 'output': 'P:/Project/RAM1/shots/ep006/s646/c001/publish/test_charSet/NursedesseiShip/v003/anim', 'exportitem': 'ctrl_set,root'}
+    argsdic = {'shot': 'c001', 'sequence': 's646', 'export_type': 'anim', 'env_load': 'True', 'Priority': 'u50', 'Group': 'u128gb', 'stepValue': '1.0', 'namespace': 'NursedesseiShip', 'bake_anim': 'True', 'scene_timeworp': 'False', 'abcOutput': 'P:/Project/RAM1/shots/ep006/s646/c001/publish/test_charSet/NursedesseiShip/v003/abc/NursedesseiShip.abc', 'framerange_output': 'True', 'input_path': 'P:/Project/RAM1/shots/ep006/s646/c001/work/k_ueda/test.ma', 'Pool': 'uram1', 'assetpath': 'P:/Project/RAM1/assets/chara/Nursedessei/NursedesseiShip/publish/Setup/RH/maya/current/NursedesseiShip_Rig_RH.mb', 'framerange': 'None', 'chara': 'NursedesseiShip', 'topnode': 'root', 'framehundle': '0', 'project': 'RAM1', 'testmode': 'True', 'output': 'P:/Project/RAM1/shots/ep006/s646/c001/publish/test_charSet/NursedesseiShip/v003/anim', 'export_item': 'ctrl_set,root'}

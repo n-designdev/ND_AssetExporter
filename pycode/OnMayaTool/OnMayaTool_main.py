@@ -15,7 +15,7 @@ class AssetClass():
     def get_project_path(self):
         self.project_path = basic.get_project_path_fullName()
 
-    def export_asset(self, mode="Submit", debug="True", override_exptype=None, add_attr=None):
+    def export_asset(self, mode="Submit", debug="True", override_shotpath=None, override_exptype=None, add_attr=None):
         import maya.cmds as cmds
         import main_util; reload(main_util)
         scene_path = cmds.file(q=True, sn=True)
@@ -23,38 +23,37 @@ class AssetClass():
         pro_name = ProjectInfoClass.project_name
         shot = ProjectInfoClass.shot
         sequence = ProjectInfoClass.sequence
-        shot_code = ProjectInfoClass.shot_code
         execargs_ls = {
                     'chara': self.regular_asset_name,
                     'namespace': self.sg_asset["sg_namespace"],
-                    'exportitem': "anim: "+self.sg_asset["sg_anim_export_list"]+", abc: "+self.sg_asset["sg_abc_export_list"],
+                    'export_item': "anim: "+self.sg_asset["sg_anim_export_list"]+", abc: "+self.sg_asset["sg_abc_export_list"],
                     'topnode': self.sg_asset["sg_top_node"],
                     'assetpath': self.sg_asset["sg_asset_path"],
                     'testmode': debug,
-                    # 'stepValue': abcstep_override,
                     'framerange_output': "True",
-                    'exporttype': self.sg_asset["sg_export_type"],
+                    'export_type': self.sg_asset["sg_export_type"],
                     'project': pro_name,
                     'framerange': "None",
                     'framehundle': '0',
                     'framerange_output': 'True',
-                    'inputpath': scene_path,
+                    'input_path': scene_path,
                     'shot': shot,
                     'sequence': sequence,
-                    'sceneTimeworp': "False",
+                    'scene_timeworp': "False",
                     'env_load': "True",
-                    'bakeAnim': "True",
+                    'bake_anim': "True",
                     'abcCheck': "False",
                     'Priority': '50',
                     'Pool': 'ram1',
                     'Group': 'mem064',
+                    'override_shotpath', override_shotpath,
                     'add_attr': add_attr}
-       
+
         for key, value in execargs_ls.items():
             print key, value
-                    
+
         if override_exptype is not None:
-            execargs_ls["exporttype"] = override_exptype
+            execargs_ls["export_type"] = override_exptype
         for key, item in execargs_ls.items():
             if type(item)==str:
                 new_item = item.rstrip(',')
@@ -146,6 +145,6 @@ if __name__ == "__main__":
     import OnMayaTool_main; reload(OnMayaTool_main)
     AssetClass_list = OnMayaTool_main.ls_asset_class()
     asset_code_list = OnMayaTool_main.ls_asset_code(AssetClass_list)
-    AssetClass_list[0].export_asset(mode="Local", override_exptype="abc", add_attr="shop_materialpath")
+    AssetClass_list[0].export_asset(mode="Local", override_shotpath=None, override_exptype="abc", add_attr="shop_materialpath")
 
     # print AssetClass.get_asset_list() ->['gutsFalconFighter', 'vernierNml', 'vulcanNml', 'vulcanDual']

@@ -4,7 +4,7 @@ from ndPyLibAnimGetAnimNodeAndAttr import *
 import maya.cmds as cmds
 import os
 
-def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName, inForNodes, inForNodesAttr, isCheckAnimCurve, isCheckConstraint, frameRange, bakeAnim, sceneTimeworp):
+def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName, inForNodes, inForNodesAttr, isCheckAnimCurve, isCheckConstraint, frameRange, bake_anim, scene_timeworp):
     print '================================================'
     print "isFilterCurve: {}".format(isFilterCurve)
     print "inPfxInfo: {}".format(inPfxInfo)
@@ -55,7 +55,7 @@ def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName,
             cmds.select(retNodes[i*2+1], add=True)
 
     # sceneTime warp
-    if sceneTimeworp:
+    if scene_timeworp:
         animNodes = retNodes[1:len(retNodes):2]
         bakeList = []
         for animNode in animNodes:

@@ -31,8 +31,6 @@ class ProjectInfo():
     def __init__(self, url):
         import ND_lib.util.path as util_path
         url_parsedict = util_path.get_path_dic(url)
-        import pprint
-        pprint.pprint(url_parsedict.items())
         self.path = url_parsedict['path']
         self.path_type = url_parsedict['path_type']
         self.project_name = url_parsedict['project_name']
@@ -198,7 +196,8 @@ def execExporter(**kwargs):
     args = argsmaker('back_starter.py', args)
     args = argsmaker(str(kwargs), args)
     subprocess.call(args, shell=True)
-    
+
+
 def execExporter_maya(**kwargs):
     import back_starter
     reload(back_starter)
@@ -338,7 +337,7 @@ def submit_to_deadlineJobs(jobs, farm="Deadline", version="10"):
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=devnull)
     lines_iterator = iter(process.stdout.readline, b"")
     return lines_iterator
-    
+
 
 if __name__ == '__main__':
     import sys

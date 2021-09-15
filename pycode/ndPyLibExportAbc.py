@@ -22,7 +22,7 @@ def _getNamespace():
     namespaces.remove('UI')
     namespaces.remove('shared')
     return namespaces
-    
+
 def Euler_filter(obj_list):
     xyz = ['.rotateX', '.rotateY', '.rotateZ']
     for obj in obj_list:
@@ -147,7 +147,7 @@ def _exportAbc2(outputPath, _namespaceList, regexArgs, step_value, frameHundle, 
         # mel.eval('AbcExport -verbose -j ' + '"' + strAbc + '"')
         mel.eval('AbcExport -verbose -j \"{}\"'.format(strAbc))
         return
-        
+
         # AbcExport -j "-frameRange 995 1078 -attr shop_materialpath -attrPrefix shop_materialpath -dataFormat ogawa -root |NursedesseiShip:root -file P:/Project/RAM1/shots/ep015/s1540/c003/work/k_ueda/cache/alembic/test.abc";
 
 def ndPyLibExportAbc2(args):
@@ -160,7 +160,7 @@ def ndPyLibExportAbc2(args):
         step_value = 1.0
     frameHundle = argsdic['framehundle']
     frameRange = argsdic['framerange']
-    regexArgs = argsdic['exportitem']
+    regexArgs = argsdic['export_item']
     add_attr = argsdic['add_attr']
     _exportAbc2(
         outputPath, namespaceList,
