@@ -36,7 +36,6 @@ class ProjectInfo():
         self.path = url_parsedict['path']
         self.path_type = url_parsedict['path_type']
         self.project_name = url_parsedict['project_name']
-
         self.shot = url_parsedict['shot']
         self.sequence = url_parsedict['sequence']
         self.shot_code = url_parsedict['shot_code']

@@ -50,14 +50,19 @@ def _getAllNodes(namespace, regexArgs):
         regexArgs = ['*']
     nodes = []
     for regex in regexArgs:
+        if "[None]:" in regex:
+            objs.extend(regex.split("[None]:")[-1])
+            continue    
         regex = regex.lstrip(":")
         if "*" in regex:
             ns_objs = cmds.ls(str(namespace)+":*")
             objs = []
             if regex[0]=="*":
-                objs.extend([i for i in ns_objs[:] if re.search(r"[a-zA-Z0-9_:]{}".format(regex), i) != None])
+                _regex = regex.replace("*", "")
+                objs.extend([i for i in ns_objs[:] if re.search(r"[a-zA-Z0-9_:]{}".format(_regex), i) != None])
             elif regex[-1]=="*":
-                objs.extend([i for i in ns_objs[:] if re.search(r"{}:{}[a-zA-Z0-9_:]*".format(namespace, regex), i)!= None])
+                _regex = regex.replace("*", "")
+                objs.extend([i for i in ns_objs[:] if re.search(r"{}:{}[a-zA-Z0-9_:]".format(namespace, regex), i)!= None])
             nodes += objs
         else:
             regexN = ''
@@ -171,8 +176,6 @@ def _getAnimCurveAttributes(nodes):
                 attrs.append(pairblend[i])
                 continue
     return attrs
-        
-    
 
 def _getNoKeyAttributes (nodes):
     print "#getNoKeyAttributes#"
@@ -360,8 +363,10 @@ def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFi
     if len(attrs)!=0:
         for x in attrs:
             print x
-        cmds.select(attrs, r=True)
-        cmds.select(sub_attrs, add=True)
+        bake_tg = attrs
+        bake_tg.extend(sub_attrs)
+        cmds.select(bake_tg, r=True)
+        # cmds.select(sub_attrs, add=True)
         # cmds.bakeResults(attrs, t=(sframe, eframe), dic=True, sb=True, sm=True)
         cmds.bakeResults(t=(sframe, eframe), dic=True, sb=True, sm=True)
         print "bake finished."

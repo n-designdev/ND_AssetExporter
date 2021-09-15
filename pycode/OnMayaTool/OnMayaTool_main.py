@@ -15,11 +15,11 @@ class AssetClass():
     def get_project_path(self):
         self.project_path = basic.get_project_path_fullName()
 
-    def export_asset(self, mode="Submit", debug="True"):
+    def export_asset(self, mode="Submit", debug="True", override_exptype=None, add_attr=None):
         import maya.cmds as cmds
-        from main_util import ProjectInfo
+        import main_util; reload(main_util)
         scene_path = cmds.file(q=True, sn=True)
-        ProjectInfoClass = ProjectInfo(scene_path)
+        ProjectInfoClass = main_util.ProjectInfo(scene_path)
         pro_name = ProjectInfoClass.project_name
         shot = ProjectInfoClass.shot
         sequence = ProjectInfoClass.sequence
@@ -47,7 +47,14 @@ class AssetClass():
                     'abcCheck': "False",
                     'Priority': '50',
                     'Pool': 'ram1',
-                    'Group': 'mem064'}
+                    'Group': 'mem064',
+                    'add_attr': add_attr}
+       
+        for key, value in execargs_ls.items():
+            print key, value
+                    
+        if override_exptype is not None:
+            execargs_ls["exporttype"] = override_exptype
         for key, item in execargs_ls.items():
             if type(item)==str:
                 new_item = item.rstrip(',')
@@ -139,6 +146,6 @@ if __name__ == "__main__":
     import OnMayaTool_main; reload(OnMayaTool_main)
     AssetClass_list = OnMayaTool_main.ls_asset_class()
     asset_code_list = OnMayaTool_main.ls_asset_code(AssetClass_list)
-    AssetClass_list[0].export_asset(mode="Local")
+    AssetClass_list[0].export_asset(mode="Local", override_exptype="abc", add_attr="shop_materialpath")
 
     # print AssetClass.get_asset_list() ->['gutsFalconFighter', 'vernierNml', 'vulcanNml', 'vulcanDual']

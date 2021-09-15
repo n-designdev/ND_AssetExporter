@@ -78,7 +78,7 @@ def _getAllNodes(outputPath, namespace, _regexArgs):
     return nodes
 
 
-def _exportAbc2(outputPath, _namespaceList, regexArgs, step_value, frameHundle, _frameRange):
+def _exportAbc2(outputPath, _namespaceList, regexArgs, step_value, frameHundle, _frameRange, add_attr):
     namespaceList = _namespaceList.split(',')
     for i, namespaceItem in enumerate(namespaceList):
         namespaceList[i] = '[a-zA-Z0-9_:]*{}$'.format(namespaceItem)
@@ -134,6 +134,9 @@ def _exportAbc2(outputPath, _namespaceList, regexArgs, step_value, frameHundle, 
         strAbc = strAbc + '-dataFormat ogawa '
         strAbc = strAbc + '-step '
         strAbc = strAbc + str(step_value) + ' '
+        if add_attr is not None:
+            strAbc = strAbc + '-attr ' + 'shop_materialpath '
+
         for pn in pickNodes:
             strAbc = strAbc + '-root '
             strAbc = strAbc + pn + ' '
@@ -143,6 +146,9 @@ def _exportAbc2(outputPath, _namespaceList, regexArgs, step_value, frameHundle, 
         print 'AbcExport -j {}'.format(strAbc)
         # mel.eval('AbcExport -verbose -j ' + '"' + strAbc + '"')
         mel.eval('AbcExport -verbose -j \"{}\"'.format(strAbc))
+        return
+        
+        # AbcExport -j "-frameRange 995 1078 -attr shop_materialpath -attrPrefix shop_materialpath -dataFormat ogawa -root |NursedesseiShip:root -file P:/Project/RAM1/shots/ep015/s1540/c003/work/k_ueda/cache/alembic/test.abc";
 
 def ndPyLibExportAbc2(args):
     argsdic = args
@@ -155,9 +161,10 @@ def ndPyLibExportAbc2(args):
     frameHundle = argsdic['framehundle']
     frameRange = argsdic['framerange']
     regexArgs = argsdic['exportitem']
+    add_attr = argsdic['add_attr']
     _exportAbc2(
         outputPath, namespaceList,
         regexArgs, step_value,
-        frameHundle, frameRange)
+        frameHundle, frameRange, add_attr)
 
 

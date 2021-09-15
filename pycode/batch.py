@@ -33,13 +33,9 @@ def abcExport(**kwargs):
     if argsdic['env_load']:
         env_load(argsdic['project'])
         mayaBatch = maya_version(argsdic['project'])
-
     original_litte = (
         'from ndPyLibExportAbc import ndPyLibExportAbc2;'
-        'ndPyLibExportAbc2({})'.format(argsdic)
-    )
-    for key, value in kwargs.items():
-        print key, value
+        'ndPyLibExportAbc2({})'.format(argsdic))
     cmd = mayacmd_maker(original_litte, argsdic['inputpath'], mayaBatch)
     cmd[2] = str(cmd[2]).replace('\\\\', '\\')
     subprocess.call(cmd)
@@ -115,20 +111,13 @@ def animAttach(**kwargs):
     assetPath = argsdic['assetpath'].replace("\\","/")
     animPath = argsdic['animOutput']
     namespace = argsdic['ns']
-    
-    print ##animPath##
-    print animPath
-    print ##namespace##
-    print namespace
-
     original_litte = (
         'from mayaBasic import *;'
         'import maya.cmds as cmds;'
         'saveAs(\'{}\');'.format(outputPath) +
         'loadAsset(\'{}\', \'{}\');'.format(assetPath, namespace) +
         'loadAsset(\'{}\', \'{}_anim\');'.format(animPath, namespace) +
-        'saveAs(\'{}\')'.format(outputPath)
-    )
+        'saveAs(\'{}\')'.format(outputPath))
     cmd = mayacmd_maker(original_litte, None, mayaBatch)
     cmd[2] = str(cmd[2]).replace('\\\\', '\\')
     subprocess.call(cmd)
