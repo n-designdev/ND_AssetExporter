@@ -66,6 +66,7 @@ def back_starter(**kwargs):
     if 'override_shotpath' in argsdic.keys():
         if argsdic['override_shotpath'] is not None:
             opc.overrideShotpath(argsdic['override_shotpath'])
+            opc.setChar(charaName)
     if export_type == 'anim':
         if export_type == 'camera':
             opc.createCamOutputDir()
