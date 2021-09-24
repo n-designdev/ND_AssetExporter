@@ -41,12 +41,14 @@ def strdict_parse(original_string):
 
 
 def back_starter(**kwargs):
+    print "#####back_starter#######"
     if "kwargs" in kwargs.keys():
         argsdic = kwargs["kwargs"]
     else:
         argsdic = kwargs
+        
     input_path = argsdic['input_path']
-    charaName = argsdic['chara']
+    charaName = argsdic['chara'].replace(".ma", "")
     export_type = argsdic['export_type']
     debug_mode = argsdic['debug_mode']
     abc_check = argsdic['abc_check']
@@ -57,22 +59,22 @@ def back_starter(**kwargs):
         isAnim = True
     else:
         isAnim = False
+    print input_path
     opc = exporter_util.outputPathConf(input_path, isAnim=isAnim, test=debug_mode)
-    if argsdic['override_shotpath'] is not None:
-        opc.overrideShotpath(argsdic['override_shotpath'])
-
-    if export_type == 'camera':
-        opc.createCamOutputDir()
-    else:
-        opc.createOutputDir(charaName)
-    abcOutput = opc.publishfullabcpath + '/' + charaName + '.abc'
-    charaOutput = opc.publishfullpath + '/' + charaName + '.abc'
-    argsdic['abcOutput'] = abcOutput
-
+    opc.createOutputDir(charaName)
+    opc.setChar(charaName)
+    if 'override_shotpath' in argsdic.keys():
+        if argsdic['override_shotpath'] is not None:
+            opc.overrideShotpath(argsdic['override_shotpath'])
     if export_type == 'anim':
+        if export_type == 'camera':
+            opc.createCamOutputDir()
+        else:
+            opc.createOutputDir(charaName)
+        argsdic['animOutput'] = opc.publishfullanimpath
         argsdic["export_item"]=anim_item
         batch.animExport(**argsdic)
-        animFiles = os.listdir(opc.publishfullanimpath)
+        animFiles = os.listdir(opc._publishfullanimpath)
         if charaName == "camera_base" or charaName == "camera_simple":
             opc.makeCurrentDir()
             return
@@ -97,21 +99,19 @@ def back_starter(**kwargs):
             argsdic['scene_path'] = (opc.publishcurrentpath + '/' + scene_ns + '.ma')
             batch.animReplace(**argsdic)
     if export_type == 'abc' or abc_check == 'True':
-        argsdic["export_item"]=abc_item
         if abc_check == 'True':
-            opc._publishpath = opc._publishpath + '/cache'
-            if debug_mode == "True" or debug_mode == True:
-                opc._publishfullpath = opc._publishfullpath.replace("test_charSet", "cache")
-                opc._publishfullabcpath = opc._publishfullabcpath.replace("test_charSet", "cache")
-            else:
-                opc._publishfullpath = opc._publishfullpath.replace("charSet", "cache")
-                opc._publishfullabcpath = opc._publishfullabcpath.replace("charSet", "cache")
-            argsdic['abcOutput'] = opc._publishfullabcpath + "/" + charaName + '.abc'
-            argsdic['abcOutput'] = argsdic['abcOutput'].replace("\\", "/")
-            try:
-                os.makedirs(opc._publishfullabcpath.replace("\\", "/"))
-            except:
-                pass
+            opc.setCache(charaName)
+        argsdic["export_item"]=abc_item
+        argsdic['abcOutput'] = opc._publishfullabcpath + "/" + charaName + '.abc'
+        argsdic['abcOutput'] = argsdic['abcOutput'].replace("\\", "/")
+        print '#####test#'
+        print opc._publishcurrentpath
+        print opc._publishpath
+        print opc._publishfullabcpath
+        try:
+            os.makedirs(opc._publishfullabcpath)
+        except:
+            pass
         batch.abcExport(**argsdic)
         abcFiles = os.listdir(opc._publishfullabcpath)
         if len(abcFiles) == 0:
@@ -124,25 +124,19 @@ def back_starter(**kwargs):
             print "ns:", scene_ns
             print "abc:", abc
             print "publishfullabcpath", opc.publishfullabcpath
-            abcOutput = opc.publishfullabcpath + '/' + abc
-            charaOutput = opc.publishfullpath + '/' + abc.replace('abc', 'ma')
-            if abc_check == "True":
-                if debug_mode == "True":
-                    charaOutput = charaOutput.replace("test_charSet", "cache")
-                else:
-                    charaOutput = charaOutput.replace("charSet", "cache")
+            abcOutput = opc.publishfullabcpath+"/"+abc
+            charaOutput = opc.publishfullpath+"/"+abc.replace(".abc", ".ma")
             argsdic['scene_ns'] = scene_ns
-            argsdic['attachPath'] = charaOutput
-            argsdic['abcOutput'] = abcOutput
+            argsdic['attachPath'] = charaOutput #.ma
+            argsdic['abcOutput'] = abcOutput #.abc
             batch.abcAttach(**argsdic)
-            allOutput.append([abc.replace('abc', 'ma'), abc])
-        opc._publishcurrentpath = opc._publishpath + '/current'
+            allOutput.append([abc.replace('.abc', '.ma'), abc])
+        opc.makeCurrentDir()
         for output in allOutput:
-            argsdic['charaOutput'] = opc._publishcurrentpath + '/' + output[0]
+            argsdic['charaOutput'] = opc.publishcurrentpath + '/' + output[0]
             argsdic['abcOutput'] = opc.publishcurrentpath + '/abc/' + output[1]
             batch.repABC(**argsdic)
-        import pprint
-        pprint.pprint(argsdic)
+##repABC##
 
     elif export_type == 'camera':
         argsdic['publishPath'] = opc.publishfullpath

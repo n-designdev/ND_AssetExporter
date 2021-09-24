@@ -26,14 +26,14 @@ def symlink(source, link_name):
         flags = 1 if os.path.isdir(source) else 0
         if csl(link_name, source, flags) == 0:
             raise ctypes.WinError()
-
+            
 class outputPathConf(object):
     def __init__(self, input_path, isAnim=False, test=False):
         self.input_path = input_path.replace('\\', '/')
         self.isAnim = isAnim
         self.outputRootDir = 'charSet'
         self.outputCamRootDir = 'Cam'
-        if test == 'True' or test == True:
+        if test == 'True':
             self.outputRootDir = 'test_charSet'
             self.outputCamRootDir = 'test_Cam'
         dic = util_path.get_path_dic(self.input_path)
@@ -47,7 +47,7 @@ class outputPathConf(object):
                 break
 
     def createOutputDir(self, char):
-        self._publishpath = os.path.join(self._shotpath+'publish', self.outputRootDir, char)
+        self._publishpath = os.path.join(self._shotpath,'publish', self.outputRootDir, char)
         if os.path.exists(self._publishpath):
             self.verInc()
         else:
@@ -79,6 +79,7 @@ class outputPathConf(object):
             nextVerNum = currentVerNum + 1
             nextVer = 'v' + str(nextVerNum).zfill(3)
             self._currentVer = nextVer
+        print self._publishpath
         self._publishfullpath = os.path.join(self._publishpath, self._currentVer)
         self._publishfullabcpath = os.path.join(self._publishfullpath, 'abc')
         self._publishfullanimpath = os.path.join(self._publishfullpath, 'anim')
@@ -98,13 +99,7 @@ class outputPathConf(object):
     def makeCurrentDir(self):
         currentDir = os.path.join(self.publishpath, 'current')
         self._publishcurrentpath = currentDir
-        # distutils.dir_util.copy_tree(self._publishfullpath, currentDir)
-        if os.path.exists(currentDir):
-            sys.path.append("Y:/tool/ND_Tools/DCC/lib")
-            import pathlib
-            file_to_rem = pathlib.Path(currentDir)
-            file_to_rem.rmdir()
-        symlink(self._publishfullpath, currentDir)
+        distutils.dir_util.copy_tree(self._publishfullpath, currentDir)
         current_info = os.path.join(currentDir, 'current_info.txt')
         with open(current_info, 'w') as f:
             f.write("current ver:"+ str(self._currentVer)+"\n")
@@ -119,29 +114,60 @@ class outputPathConf(object):
 
     def setChar(self, char):
         if char == 'Cam' or char == 'Camera':
-            # self._publishpath = os.path.join(self._shotpath, 'publish', self.outputCamRootDir).replace(os.path.sep, '/')
             self._publishpath = os.path.join(self._shotpath, 'publish', self.outputCamRootDir).replace('/', '\\')
         else:
-            # self._publishpath = os.path.join(self._shotpath, 'publish', self.outputRootDir, char).replace(os.path.sep, '/')
             self._publishpath = os.path.join(self._shotpath, 'publish', self.outputRootDir, char).replace('/', '\\')
         try:
             vers = os.listdir(self._publishpath)
         except WindowsError as e:
-            print e
             raise ValueError
-        print len(vers)
         if len(vers) == 0:
-            raise ValueError
-        vers.sort()
-        self._currentVer = vers[-1]
-        if vers[0] > vers[-1]:
-            self._currentVer = vers[0]
+            self.currentVer = 0
+        else:
+            vers.sort()
+            self._currentVer = vers[-1]
+            if vers[0] > vers[-1]:
+                self._currentVer = vers[0]
         self._publishfullpath = os.path.join(self._publishpath, self._currentVer)
         self._publishfullabcpath = os.path.join(self._publishfullpath, 'abc')
         self._publishfullanimpath = os.path.join(self._publishfullpath, 'anim')
         self._publishfullcampath = os.path.join(self._publishfullpath, 'cam')
         self._publishcurrentpath = self._publishpath+'\\current'
 
+    def setCache(self, char):
+        self._publishpath = os.path.join(self._shotpath, 'publish', 'cache', char).replace('/', '\\')
+        if os.path.exists(self._publishpath):
+            self.verInc()
+        else:
+            try:
+                os.makedirs(self._publishpath)
+                self.verInc()
+            except:
+                pass
+        try:
+            vers = os.listdir(self._publishpath)
+        except WindowsError as e:
+            raise ValueError
+        if len(vers) == 0:
+            raise ValueError
+        else:
+            vers.sort()
+            self._currentVer = vers[-1]
+            if vers[0] > vers[-1]:
+                self._currentVer = vers[0]
+        self._publishfullpath = os.path.join(self._publishpath, self._currentVer)
+        self._publishfullabcpath = os.path.join(self._publishfullpath, 'abc')
+        self._publishfullanimpath = os.path.join(self._publishfullpath, 'anim')
+        self._publishfullcampath = os.path.join(self._publishfullpath, 'cam')
+        self._publishcurrentpath = os.path.join(self._publishpath, 'current')      
+    
+    def setDebug(self):
+        self._publishfullpath = self._publishfullpath.replace('charSet', 'test_charSet')
+        self._publishfullabcpath = self._publishfullabcpath.replace('charSet', 'test_charSet')
+        self._publishfullanimpath = self._publishfullanimpath.replace('charSet', 'test_charSet')
+        self._publishfullcampath = self._publishfullcampath.replace('charSet', 'test_charSet')
+        self._publishcurrentpath = self._publishcurrentpath.replace('charSet', 'test_charSet')
+        
     def overrideShotpath(self, shotpath):
         self._shotpath = shotpath.replace('\\', '/')
 

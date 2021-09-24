@@ -194,6 +194,8 @@ def argsmaker(new_arg, args=None):
 def execExporter(**kwargs):
     args = argsmaker(pythonBatch)
     args = argsmaker('back_starter.py', args)
+    import pprint
+    pprint.pprint(kwargs)
     args = argsmaker(str(kwargs), args)
     subprocess.call(args, shell=True)
 

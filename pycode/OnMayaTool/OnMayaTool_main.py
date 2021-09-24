@@ -1,4 +1,4 @@
-import sys,os
+import sys, os
 import ND_lib.maya.basic as basic
 
 def ls_asset_code(AssetClass_list):
@@ -23,30 +23,32 @@ class AssetClass():
         pro_name = ProjectInfoClass.project_name
         shot = ProjectInfoClass.shot
         sequence = ProjectInfoClass.sequence
+        if override_shotpath is not None:
+            override_shotpath = override_shotpath + "/"
         execargs_ls = {
                     'chara': self.regular_asset_name,
                     'namespace': self.sg_asset["sg_namespace"],
                     'export_item': "anim: "+self.sg_asset["sg_anim_export_list"]+", abc: "+self.sg_asset["sg_abc_export_list"],
                     'topnode': self.sg_asset["sg_top_node"],
                     'assetpath': self.sg_asset["sg_asset_path"],
-                    'testmode': debug,
+                    'debug_mode': debug,
                     'framerange_output': "True",
                     'export_type': self.sg_asset["sg_export_type"],
                     'project': pro_name,
                     'framerange': "None",
                     'framehundle': '0',
                     'framerange_output': 'True',
-                    'input_path': scene_path,
+                    'input_path': str(scene_path),
                     'shot': shot,
                     'sequence': sequence,
                     'scene_timeworp': "False",
                     'env_load': "True",
                     'bake_anim': "True",
-                    'abcCheck': "False",
+                    'abc_check': "False",
                     'Priority': '50',
                     'Pool': 'ram1',
                     'Group': 'mem064',
-                    'override_shotpath', override_shotpath,
+                    'override_shotpath': override_shotpath,
                     'add_attr': add_attr}
 
         for key, value in execargs_ls.items():
@@ -77,17 +79,19 @@ class AssetClass():
             current_dir = "Y:\\tool\\ND_Tools\\DCC\\ND_AssetExporter\\pycode"
             if not os.path.exists(output_dir):
                 os.makedirs(output_dir)
+            import threading
             # thread1 = threading.Thread(target=thread_main, args=(str(execargs_ls), output_file, current_dir))
             # print output_file
             # thread1.start()
             # thread1.join()
             # import time
+            # thread_len = len(threading.enumerate())
             # while True:
             #     print thread1
             #     time.sleep(1)
-            #     if len(threading.enumerate())==1:
+            #     if len(threading.enumerate())-thread_len==0:
             #         break
-            # thread_main(str(execargs_ls), output_file, current_dir)
+            thread_main(str(execargs_ls), output_file, current_dir)
             from main_util import execExporter_maya
             import ast
             import pprint
@@ -145,6 +149,8 @@ if __name__ == "__main__":
     import OnMayaTool_main; reload(OnMayaTool_main)
     AssetClass_list = OnMayaTool_main.ls_asset_class()
     asset_code_list = OnMayaTool_main.ls_asset_code(AssetClass_list)
-    AssetClass_list[0].export_asset(mode="Local", override_shotpath=None, override_exptype="abc", add_attr="shop_materialpath")
+    export_path = "C:/Users/k_ueda/Desktop/work"
+    # AssetClass_list[0].export_asset(mode="Local", override_shotpath=None, override_exptype="abc", add_attr="shop_materialpath")
+    AssetClass_list[0].export_asset(mode="Local", override_shotpath=export_path, override_exptype="abc", add_attr="shop_materialpath")
 
     # print AssetClass.get_asset_list() ->['gutsFalconFighter', 'vernierNml', 'vulcanNml', 'vulcanDual']

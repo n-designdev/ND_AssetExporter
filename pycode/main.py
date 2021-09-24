@@ -111,6 +111,7 @@ class GUI(QMainWindow):
         self.ui.current_refresh_button.clicked.connect(self.current_refresh_button_clicked)
         self.ui.open_publish_dir_button.clicked.connect(self.open_publish_dir_button_clicked)
         self.ui.help_button.clicked.connect(self.help_button_clicked)
+        
 
     def contextMenu(self, point):
         print point
@@ -331,6 +332,7 @@ class GUI(QMainWindow):
                     'project': self.project,
                     'framerange': framerange,
                     'framehundle': framehundle,
+                    # 'input_path': self.input_path,
                     'input_path': self.input_path.encode('utf-8'),
                     'shot': self.ui.shot_line.text().encode(),
                     'sequence': self.ui.cut_line.text().encode(),

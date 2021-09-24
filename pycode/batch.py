@@ -34,6 +34,7 @@ def abcExport(**kwargs):
     cmd = mayacmd_maker(original_litte, argsdic['input_path'], mayaBatch)
     cmd[2] = str(cmd[2]).replace('\\\\', '\\')
     subprocess.call(cmd)
+    print cmd
 
 
 def abcAttach(**kwargs):
@@ -58,7 +59,8 @@ def abcAttach(**kwargs):
     cmd = mayacmd_maker(original_litte, None, mayaBatch)
     cmd[2] = str(cmd[2]).replace('\\\\', '\\')
     subprocess.call(cmd)
-
+    print "##abcAttach"
+    print cmd
 
 def repABC(**kwargs):
     argsdic = kwargs
@@ -72,6 +74,8 @@ def repABC(**kwargs):
         'replaceABCPath(\'{}\');'.format(repAbcPath) +
         'save();')
     cmd = mayacmd_maker(original_litte, scenepath, mayaBatch)
+    print "##repABC##"
+    print cmd
     subprocess.call(cmd)
 
 
@@ -128,6 +132,8 @@ def animReplace(**kwargs):
     )
     cmd = mayacmd_maker(original_litte, scene_path, mayaBatch)
     cmd[2] = str(cmd[2]).replace('\\\\', '\\')
+    print "##animReplace##"
+    print cmd
     subprocess.call(cmd)
 
 

@@ -387,7 +387,8 @@ def ndPyLibExportAnim_caller(args):
     argsdic = args
     print "###args###"
     print args
-    outputPath = argsdic['output']
+    # outputPath = argsdic['output']
+    outputPath = argsdic['animOutput']
     oFilename = argsdic['export_type']
     namespaceList = argsdic['namespace']
     regexArgs = argsdic['export_item']

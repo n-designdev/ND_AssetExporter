@@ -118,6 +118,40 @@ class outputPathConf(object):
         self._publishfullcampath = os.path.join(self._publishfullpath, 'cam')
         self._publishcurrentpath = self._publishpath+'\\current'
 
+    def setCache(self, char):
+        self._publishpath = os.path.join(self._shotpath, 'publish', 'cache', char).replace('/', '\\')
+        if os.path.exists(self._publishpath):
+            self.verInc()
+        else:
+            try:
+                os.makedirs(self._publishpath)
+                self.verInc()
+            except:
+                pass
+        try:
+            vers = os.listdir(self._publishpath)
+        except WindowsError as e:
+            raise ValueError
+        if len(vers) == 0:
+            raise ValueError
+        vers.sort()
+        self._currentVer = vers[-1]
+        if vers[0] > vers[-1]:
+            self._currentVer = vers[0]
+        self._publishfullpath = os.path.join(self._publishpath, self._currentVer)
+        self._publishfullabcpath = os.path.join(self._publishfullpath, 'abc')
+        self._publishfullanimpath = os.path.join(self._publishfullpath, 'anim')
+        self._publishfullcampath = os.path.join(self._publishfullpath, 'cam')
+        self._publishcurrentpath = os.path.join(self._publishpath, 'current')      
+
+    
+    def setDebug(self):
+        self._publishfullpath = self._publishfullpath.replace('charSet', 'test_charSet')
+        self._publishfullabcpath = self._publishfullabcpath.replace('charSet', 'test_charSet')
+        self._publishfullanimpath = self._publishfullanimpath.replace('charSet', 'test_charSet')
+        self._publishfullcampath = self._publishfullcampath.replace('charSet', 'test_charSet')
+        self._publishcurrentpath = self._publishcurrentpath.replace('charSet', 'test_charSet')
+        
     @property
     def sequence (self):
         return self._sequence

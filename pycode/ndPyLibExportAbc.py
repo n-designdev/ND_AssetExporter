@@ -3,22 +3,22 @@
 import os
 import re
 
-import maya.cmds as mc
+import maya.cmds as cmds
 import maya.mel as mel
 
 
 def norefresh (func):
     def _norefresh (*args):
         try:
-            mc.refresh(suspend=True)
+            cmds.refresh(suspend=True)
             return func(*args)
         finally:
-            mc.refresh(suspend=False)
+            cmds.refresh(suspend=False)
     return _norefresh
 
 
 def _getNamespace():
-    namespaces = mc.namespaceInfo(lon=True, r=True)
+    namespaces = cmds.namespaceInfo(lon=True, r=True)
     namespaces.remove('UI')
     namespaces.remove('shared')
     return namespaces
@@ -51,8 +51,8 @@ def _getAllNodes(outputPath, namespace, _regexArgs):
             regexN += namespace + ':'
         regexN = regexN + regex
         try:
-            objs = mc.ls(regexN, type='transform')
-            objSets = mc.sets(regexN, q=True)
+            objs = cmds.ls(regexN, type='transform')
+            objSets = cmds.sets(regexN, q=True)
         except:
             continue
         if objs != None:
@@ -61,12 +61,12 @@ def _getAllNodes(outputPath, namespace, _regexArgs):
         if objSets != None:
             if len(objSets) != 0:
                 nodes += objSets
-        yetiobjs = mc.ls(namespace+':yetiSet')
+        yetiobjs = cmds.ls(namespace+':yetiSet')
         if len(yetiobjs) != 0:
             dirname = os.path.dirname(outputPath)
             dirname = os.path.dirname(dirname)
-            inyeticasch = mc.getAttr(namespace+":pgYetiMaya"+namespace+"Shape.cacheFileName")
-            outyeticasch = mc.getAttr(namespace+":pgYetiMaya"+namespace+"Shape.outputCacheFileName")
+            inyeticasch = cmds.getAttr(namespace+":pgYetiMaya"+namespace+"Shape.cacheFileName")
+            outyeticasch = cmds.getAttr(namespace+":pgYetiMaya"+namespace+"Shape.outputCacheFileName")
             outputFile = os.path.join(dirname,'yetimem.txt')
             try:
                 with open(outputFile, 'w') as fp:
@@ -82,8 +82,8 @@ def _exportAbc2(outputPath, _namespaceList, regexArgs, step_value, frameHundle, 
     namespaceList = _namespaceList.split(',')
     for i, namespaceItem in enumerate(namespaceList):
         namespaceList[i] = '[a-zA-Z0-9_:]*{}$'.format(namespaceItem)
-    sframe = mc.playbackOptions(q=True, min=True)
-    eframe = mc.playbackOptions(q=True, max=True)
+    sframe = cmds.playbackOptions(q=True, min=True)
+    eframe = cmds.playbackOptions(q=True, max=True)
 
     if _frameRange != 'None':
         _frameRange = _frameRange.lstrip('u')
@@ -110,8 +110,11 @@ def _exportAbc2(outputPath, _namespaceList, regexArgs, step_value, frameHundle, 
     for ns in allNamespaces:
         allNodes[ns] = _getAllNodes(outputPath, ns, regexArgs)
 
-    if not mc.pluginInfo('AbcExport', q=True, l=True):
-        mc.loadPlugin('AbcExport')
+    if not cmds.pluginInfo('AbcExport', q=True, l=True):
+        maya_ver = os.environ["_TMP_VER"]
+        plugin_path = "C:/Program Files/Autodesk/Maya{}/bin/plug-ins".format(maya_ver)
+        os.environ["_TMP_VER"] = os.environ["_TMP_VER"]+";"+plugin_path
+        cmds.loadPlugin('AbcExport')
 
     for ns in allNamespaces:
         pickNodes = []
@@ -161,7 +164,10 @@ def ndPyLibExportAbc2(args):
     frameHundle = argsdic['framehundle']
     frameRange = argsdic['framerange']
     regexArgs = argsdic['export_item']
-    add_attr = argsdic['add_attr']
+    if "add_attr" in argsdic.keys():
+        add_attr = argsdic['add_attr']
+    else:
+        add_attr = None
     _exportAbc2(
         outputPath, namespaceList,
         regexArgs, step_value,
