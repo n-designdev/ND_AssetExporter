@@ -111,8 +111,7 @@ class GUI(QMainWindow):
         self.ui.current_refresh_button.clicked.connect(self.current_refresh_button_clicked)
         self.ui.open_publish_dir_button.clicked.connect(self.open_publish_dir_button_clicked)
         self.ui.help_button.clicked.connect(self.help_button_clicked)
-        
-
+56
     def contextMenu(self, point):
         print point
 
@@ -211,6 +210,7 @@ class GUI(QMainWindow):
         self.ui.start_button.setEnabled(True)
         self.ui.start_submit_button.setEnabled(True)
         self.tabledata = tabledata
+        self.output_user_info()
         return True
 
     def check_button_clicked(self):
@@ -446,6 +446,27 @@ class GUI(QMainWindow):
         url = "Y:/tool/ND_Tools/DCC/ND_AssetExporter/pycode/help/help.html"
         webbrowser.open_new_tab(url)
 
+    def load_user_info(self):
+        filename = "user_info.py"
+        output_dir = "Y:\\users\\"+os.environ.get("USERNAME")+"\\DCC_log\\ND_AssetExporter"
+        output_file = output_dir + "\\" + filename
+        if not os.path.exists(output_dir):
+            return
+        if os.path.exists(output_file):
+            sys.path.append(output_dir)
+            import user_info
+            info = user_info.setting_info
+
+    def output_user_info(self):
+        filename = "user_info.py"
+        output_dir = "Y:\\users\\"+os.environ.get("USERNAME")+"\\DCC_log\\ND_AssetExporter"
+        output_file = output_dir + "\\" + filename
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        with open(output_file) as f:
+            f.write("setting_info{")
+            f.write("    path = \"{}\"".format(self.input_path))
+            f.write("}")
 
 def thread_main(execargs_ls, output_path, current_dir):
     python = "Y:\\tool\\MISC\\Python2710_amd64_vs2010\\python.exe"
