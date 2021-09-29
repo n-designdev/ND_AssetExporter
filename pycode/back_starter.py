@@ -61,18 +61,15 @@ def back_starter(**kwargs):
         isAnim = False
     print input_path
     opc = exporter_util.outputPathConf(input_path, isAnim=isAnim, test=debug_mode)
-    opc.createOutputDir(charaName)
     if export_type != "camera":
+        opc.createOutputDir(charaName)
         opc.setChar(charaName)
     if 'override_shotpath' in argsdic.keys():
         if argsdic['override_shotpath'] is not None:
             opc.overrideShotpath(argsdic['override_shotpath'])
             opc.setChar(charaName)
     if export_type == 'anim':
-        if export_type == 'camera':
-            opc.createCamOutputDir()
-        else:
-            opc.createOutputDir(charaName)
+        opc.createOutputDir(charaName)
         argsdic['animOutput'] = opc.publishfullanimpath
         argsdic["export_item"]=anim_item
         batch.animExport(**argsdic)
@@ -138,9 +135,10 @@ def back_starter(**kwargs):
             argsdic['charaOutput'] = opc.publishcurrentpath + '/' + output[0]
             argsdic['abcOutput'] = opc.publishcurrentpath + '/abc/' + output[1]
             batch.repABC(**argsdic)
-##repABC##
-
     elif export_type == 'camera':
+        opc.createCamOutputDir()
+        opc.setChar(charaName)
+        print opc.publishcurrentpath
         argsdic['publishPath'] = opc.publishfullpath
         oFilename = opc.sequence + opc.shot + '_cam'
         argsdic['camOutput'] = '{}/{}.abc'.format(opc.publishfullcampath, oFilename) #フルパスとファイル名

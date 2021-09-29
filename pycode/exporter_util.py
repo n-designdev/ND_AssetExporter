@@ -79,7 +79,6 @@ class outputPathConf(object):
             nextVerNum = currentVerNum + 1
             nextVer = 'v' + str(nextVerNum).zfill(3)
             self._currentVer = nextVer
-        print self._publishpath
         self._publishfullpath = os.path.join(self._publishpath, self._currentVer)
         self._publishfullabcpath = os.path.join(self._publishfullpath, 'abc')
         self._publishfullanimpath = os.path.join(self._publishfullpath, 'anim')

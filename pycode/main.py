@@ -2,7 +2,7 @@
 import os,sys
 import time
 # ------------------------------
-__version__ = '2.1'
+__version__ = '2.2'
 __author__ = "Kei Ueda"
 # ------------------------------
 env_key = 'ND_TOOL_PATH_PYTHON'
@@ -111,7 +111,8 @@ class GUI(QMainWindow):
         self.ui.current_refresh_button.clicked.connect(self.current_refresh_button_clicked)
         self.ui.open_publish_dir_button.clicked.connect(self.open_publish_dir_button_clicked)
         self.ui.help_button.clicked.connect(self.help_button_clicked)
-56
+        self.ui.restore_last_file_button.clicked.connect(self.load_user_info)
+
     def contextMenu(self, point):
         print point
 
@@ -121,7 +122,7 @@ class GUI(QMainWindow):
         if event.type() == QEvent.Drop:
             mimedata = event.mimeData()
             urldata = mimedata.urls()
-            self.drop_act(urldata)
+            self.drop_act(urldata=urldata)
         return True
 
     def debug_clicked(self):
@@ -135,11 +136,14 @@ class GUI(QMainWindow):
         currentState = self.ui.stepValue_CheckBox.isChecked()
         self.ui.stepValue_lineEdit.setEnabled(currentState)
 
-    def drop_act(self, urldata):
+    def drop_act(self, urldata=None, override_input_path=None):
         self.check_row = []
         self.executed_row = []
         self.tabledata = []
-        self.input_path = urldata[0].toString().replace("file:///", "")
+        if urldata is not None:
+            self.input_path = urldata[0].toString().replace("file:///", "")
+        if override_input_path is not None:
+            self.input_path = override_input_path
         self.ui.path_line.setText(self.input_path)
         self.ui.Change_Area.setCurrentIndex(1)
         ProjectInfoClass = main_util.ProjectInfo(self.input_path)
@@ -455,7 +459,7 @@ class GUI(QMainWindow):
         if os.path.exists(output_file):
             sys.path.append(output_dir)
             import user_info
-            info = user_info.setting_info
+            self.drop_act(override_input_path=user_info.path)
 
     def output_user_info(self):
         filename = "user_info.py"
@@ -463,10 +467,8 @@ class GUI(QMainWindow):
         output_file = output_dir + "\\" + filename
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
-        with open(output_file) as f:
-            f.write("setting_info{")
-            f.write("    path = \"{}\"".format(self.input_path))
-            f.write("}")
+        with open(output_file, mode='w') as f:
+            f.write("path =  \"{}\"\n".format(self.input_path))
 
 def thread_main(execargs_ls, output_path, current_dir):
     python = "Y:\\tool\\MISC\\Python2710_amd64_vs2010\\python.exe"
