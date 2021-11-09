@@ -47,7 +47,8 @@ def replaceAsset (assetPath, namespace):
                 print r+' can not replace'
     try:
         mc.file(assetPath, loadReference=tgtRN)
-    except:
+    except Exception as e:
+        print e
         print "replace not done..." 
         return
     mc.warning('replace end')

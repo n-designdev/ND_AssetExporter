@@ -111,7 +111,15 @@ class outputPathConf(object):
                     return
         shutil.rmtree(self._publishpath)
 
-    def setChar(self, char):
+    def setChar(self, char, override=False):
+        if override == True:
+            self._publishpath = os.path.join(self._shotpath).replace('/', '\\')
+            self._publishfullpath = os.path.join(self._publishpath)
+            self._publishfullabcpath = os.path.join(self._publishfullpath, 'abc')
+            self._publishfullanimpath = os.path.join(self._publishfullpath, 'anim')
+            self._publishfullcampath = os.path.join(self._publishfullpath, 'cam')
+            self._publishcurrentpath = self._publishpath+'\\current'
+            return
         if char == 'Cam' or char == 'Camera':
             self._publishpath = os.path.join(self._shotpath, 'publish', self.outputCamRootDir).replace('/', '\\')
         else:
@@ -119,6 +127,7 @@ class outputPathConf(object):
         try:
             vers = os.listdir(self._publishpath)
         except WindowsError as e:
+            print "_publishpath:", self._publishpath
             raise ValueError
         if len(vers) == 0:
             self.currentVer = 0
@@ -227,9 +236,14 @@ def addTimeLog(char, input_path, test):
     if test is True:
         publishpath = publishpath.replace("char", "test_char")
         publishpath = publishpath.replace("Cam", "test_Cam")
-    with open(os.path.join(publishpath, 'timelog.txt').replace(os.path.sep, '/'), 'a') as f:
-        f.write(datetime.now().strftime('%Y/%m/%d %H:%M:%S'))
-        f.write(' ' + opc.currentVer)
-        f.write(' ' + input_path)
-        f.write(' ' + os.environ['USERNAME'])
-        f.write('\n')
+    try:
+        with open(os.path.join(publishpath, 'timelog.txt').replace(os.path.sep, '/'), 'a') as f:
+            f.write(datetime.now().strftime('%Y/%m/%d %H:%M:%S'))
+            f.write(' ' + opc.currentVer)
+            f.write(' ' + input_path)
+            f.write(' ' + os.environ['USERNAME'])
+            f.write('\n')
+    except Exception as e:
+        print os.path.join(publishpath, 'timelog.txt')
+        print e
+    

@@ -41,7 +41,6 @@ def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName,
             return
 
     cmds.select(cl=True)
-    count = 0
     for i in range(len(retNodes)/2):
         if cmds.objExists(retNodes[i*2+1]) == 1:
             buf = retNodes[i*2+1].split(':')
@@ -59,15 +58,16 @@ def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName,
         animNodes = retNodes[1:len(retNodes):2]
         bakeList = []
         for animNode in animNodes:
-            bakeList += mc.listConnections(animNode+'.output', s=False, d=True, p=True)
+            bakeList += cmds.listConnections(animNode+'.output', s=False, d=True, p=True)
         ### bakeResult cannot bake 'scene time warp' animation
         for t in range(int(frameRange[0]),int(frameRange[1]+1)):
-            mc.currentTime(t)
-            currentTime = mc.currentTime(q=True)
+            cmds.currentTime(t)
+            currentTime = cmds.currentTime(q=True)
             print currentTime
             for bake in bakeList:
-                obj, attr = bake.split('.')
-                mc.setKeyframe(obj, t=currentTime, at=attr)
+                attr = bake.split('.')[-1]
+                obj = bake.replace("."+attr, "")
+                cmds.setKeyframe(obj, t=currentTime, at=attr)
 
     if isFilterCurve:
         cmds.filterCurve()

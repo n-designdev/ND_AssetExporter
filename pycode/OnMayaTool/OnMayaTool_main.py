@@ -1,19 +1,18 @@
 import sys, os
 import ND_lib.maya.basic as basic
+import maya.cmds as cmds
 
 def ls_asset_code(AssetClass_list):
     result_list = []
     for asset_ins in AssetClass_list:
         result_list.append(asset_ins.regular_asset_name)
     return result_list
+    
 class AssetClass():
     def __init__(self, scene_asset_name_list, regular_asset_name=None, sg_aaset=None):
         self.scene_asset_name_list = scene_asset_name_list
         self.regular_asset_name = regular_asset_name
         self.sg_asset = sg_aaset
-
-    def get_project_path(self):
-        self.project_path = basic.get_project_path_fullName()
 
     def export_asset(self, mode="Submit", debug="True", override_shotpath=None, override_exptype=None, add_attr=None):
         import maya.cmds as cmds
@@ -112,11 +111,13 @@ def thread_main(execargs_ls, output_path, current_dir):
 def ls_asset_class():
     sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter\pycode")
     sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter\pycode\OnMayaTool")
-    import path_util
+    import path_util; reload(path_util)
     import shotgun_mod
     import maya_mod; reload(maya_mod)
     #ls download sg
-    PathClass = path_util.CharSetDirConf(basic.get_project_path_fullName())
+    # PathClass = path_util.CharSetDirConf(basic.get_project_path_fullName())
+    PathClass = path_util.CharSetDirConf(cmds.file(q=True,sceneName=True))
+    
     project = PathClass.project
     base_fieldcodes = ["code", "sg_namespace", "sg_export_type",
                         "sg_top_node", "sg_abc_export_list",
@@ -132,6 +133,7 @@ def ls_asset_class():
     import re
     scene_namespaces = maya_mod.getNamespace()
     class_list = []
+
     for sg_asset in asset_list:
         found_namespaces = []
         sg_namespace = sg_asset["sg_namespace"]

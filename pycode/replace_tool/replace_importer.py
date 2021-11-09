@@ -46,7 +46,7 @@ def load_modified_anim(file_name)
        
 def all_replace(publish_path):
     refs = delete_anim_refs()
-    for ref in refs:
+    # for ref in refs:
        
 if __name__ == '__main__':
     publish_path = "P:\\Project\\D55\\shots\\SR\\SR005\\SR005c009\\publish"

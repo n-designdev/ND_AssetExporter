@@ -3,7 +3,7 @@
 import os,sys
 import re
 import shutil
-import exporter_util
+import exporter_util; reload(exporter_util)
 import batch
 
 env_key = 'ND_TOOL_PATH_PYTHON'
@@ -59,17 +59,22 @@ def back_starter(**kwargs):
         isAnim = True
     else:
         isAnim = False
-    print input_path
+    if 'override_shotpath' in argsdic.keys():
+        if argsdic['override_shotpath'] is not None:
+            override = True
+            override_shotpath = argsdic['override_shotpath']
+        else:
+            override = False
+    else:
+        override = False
     opc = exporter_util.outputPathConf(input_path, isAnim=isAnim, test=debug_mode)
     if export_type != "camera":
         opc.createOutputDir(charaName)
-        opc.setChar(charaName)
-    if 'override_shotpath' in argsdic.keys():
-        if argsdic['override_shotpath'] is not None:
-            opc.overrideShotpath(argsdic['override_shotpath'])
-            opc.setChar(charaName)
+    if override == True:
+        opc.overrideShotpath(override_shotpath)
+        opc.setChar(charaName, override=True)     
     if export_type == 'anim':
-        opc.createOutputDir(charaName)
+        # opc.createOutputDir(charaName)
         argsdic['animOutput'] = opc.publishfullanimpath
         argsdic["export_item"]=anim_item
         batch.animExport(**argsdic)
@@ -88,25 +93,22 @@ def back_starter(**kwargs):
             argsdic['charaOutput'] = charaOutput
             argsdic['scene_ns'] = scene_ns
             batch.animAttach(**argsdic)
-        opc.makeCurrentDir()
-        for animFile in animFiles:
-            if animFile[:5] != 'anim_':continue
-            if animFile[-3:] != '.ma':continue
-            scene_ns = animFile.replace('anim_', '').replace('.ma', '')
-            argsdic['animOutput'] = (opc.publishcurrentpath + '/anim/' + animFile)
-            argsdic['scene_ns'] = scene_ns
-            argsdic['scene_path'] = (opc.publishcurrentpath + '/' + scene_ns + '.ma')
-            batch.animReplace(**argsdic)
+        if override == False:
+            opc.makeCurrentDir()
+            for animFile in animFiles:
+                if animFile[:5] != 'anim_':continue
+                if animFile[-3:] != '.ma':continue
+                scene_ns = animFile.replace('anim_', '').replace('.ma', '')
+                argsdic['animOutput'] = (opc.publishcurrentpath + '/anim/' + animFile)
+                argsdic['scene_ns'] = scene_ns
+                argsdic['scene_path'] = (opc.publishcurrentpath + '/' + scene_ns + '.ma')
+                batch.animReplace(**argsdic)
     if export_type == 'abc' or abc_check == 'True':
         if abc_check == 'True':
             opc.setCache(charaName)
         argsdic["export_item"]=abc_item
         argsdic['abcOutput'] = opc._publishfullabcpath + "/" + charaName + '.abc'
         argsdic['abcOutput'] = argsdic['abcOutput'].replace("\\", "/")
-        print '#####test#'
-        print opc._publishcurrentpath
-        print opc._publishpath
-        print opc._publishfullabcpath
         try:
             os.makedirs(opc._publishfullabcpath)
         except:
@@ -130,11 +132,12 @@ def back_starter(**kwargs):
             argsdic['abcOutput'] = abcOutput #.abc
             batch.abcAttach(**argsdic)
             allOutput.append([abc.replace('.abc', '.ma'), abc])
-        opc.makeCurrentDir()
-        for output in allOutput:
-            argsdic['charaOutput'] = opc.publishcurrentpath + '/' + output[0]
-            argsdic['abcOutput'] = opc.publishcurrentpath + '/abc/' + output[1]
-            batch.repABC(**argsdic)
+        if override_shotpath == False:
+            opc.makeCurrentDir()
+            for output in allOutput:
+                argsdic['charaOutput'] = opc.publishcurrentpath + '/' + output[0]
+                argsdic['abcOutput'] = opc.publishcurrentpath + '/abc/' + output[1]
+                batch.repABC(**argsdic)
     elif export_type == 'camera':
         opc.createCamOutputDir()
         opc.setChar(charaName)
@@ -156,7 +159,12 @@ def back_starter(**kwargs):
                 except:
                     pass
         opc.makeCurrentDir()
-    exporter_util.addTimeLog(charaName, input_path, test=debug_mode)
+    
+    try:
+        exporter_util.addTimeLog(charaName, input_path, test=debug_mode)
+    except Exception as e:
+        print e
+        
 
     print 'Output directry: {}'.format(opc.publishfullpath.replace('/','\\'))
     print '=================END==================='

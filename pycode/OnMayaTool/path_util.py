@@ -72,32 +72,40 @@ class CharSetDirConf(object):
     def __init__ (self, input_path):
         self.input_path = input_path
         path_dic = util_path.get_path_dic(input_path)
-
+        shot_flag = False
         for k, v in path_dic.items():
+            print k, v
             if k == 'project_name':
                 pro_name = v
             elif k == 'shot':
                 shot = v
+                shot_flag = True
             elif k == 'sequence':
                 sequence = v
             elif k == 'roll':
                 roll = v
-        # shot_name = path_dic["shot_code"]
-
+        
+        # shot_flag = False
         shotpath = ''
-        for x in input_path.split('/'):
-            if x == shot:
-                shotpath = shotpath + '/' + x
-                break
+        for parse_path in input_path.split('/'):
+            if shot_flag == True:
+                if parse_path == shot:
+                    shotpath = shotpath + '/' + parse_path
+                    break
+                else:
+                    shotpath = shotpath + '/' + parse_path
             else:
-                shotpath = shotpath + '/' + x
+                if parse_path == sequence:
+                    shotpath = shotpath + '/' + parse_path
+                    break
+                else:
+                    shotpath = shotpath + '/' + parse_path               
 
         shotpath = shotpath.strip('/')
         self.project = pro_name
-        self.roll = roll
         self.sequence = sequence
         self.shot = shot
         self.shotpath  = shotpath
+        self.roll = roll
+
         self.charsetpath = os.path.join(self.shotpath, 'publish', 'charSet').replace('\\', '/')
-        # if testRun == True:
-            # self.charsetpath = os.path.join(self.shotpath, 'publish', 'test_charSet').replace('\\', '/')

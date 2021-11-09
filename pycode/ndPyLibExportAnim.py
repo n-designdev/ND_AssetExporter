@@ -59,6 +59,7 @@ def _getAllNodes(namespace, regexArgs):
                 objs.extend([i for i in ns_objs[:] if re.search(r"[a-zA-Z0-9_:]{}".format(_regex), i) != None])
             elif regex[-1]=="*":
                 _regex = regex.replace("*", "")
+                print regex
                 objs.extend([i for i in ns_objs[:] if re.search(r"{}:{}[a-zA-Z0-9_:]".format(namespace, regex), i)!= None])
             nodes += objs
         else:
@@ -107,6 +108,10 @@ def _getPairBlendAttributes(nodes):
         if pairblend is None: continue
         for i in range(0, len(pairblend), 2):
             attrs.append(pairblend[i])
+            const = cmds.listConnections(pairblend, s=True, d=False, p=False, c=True, t='constraint')
+            if const is None: continue
+            for i in range(0, len(const), 2):
+                attrs.append(const[i])
     return attrs
 
 
@@ -206,10 +211,64 @@ def _getKeyAttributes (nodes):
                 else:
                     attrs.append(n+'.'+attr)
     return attrs
+    
+def _getNodehasPairBlends(nodes):
+    result_nodes = []
+    for n in nodes:
+        pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=False, t='pairBlend')
+        if pairblend is not None:
+            result_nodes.append(n)
+    return result_nodes
+    
+def _getPairBlend(node):
+    pairblends = cmds.listConnections(node, s=True, d=False, p=False, c=False, t='pairBlend')
+    if pairblends is not None:
+        for pairblend in pairblends:
+            if "pairBlend" in pairblend:
+                return pairblend
+    return pairblend
+
+def replacePairBlendstoLocator(nodes, sframe, eframe):
+    for node in nodes:
+        print node
+        if "Constraint" in node:
+            continue
+        blend_attrs = ["outTranslateX", "outTranslateY", "outTranslateZ", "outRotateX", "outRotateY", "outRotateZ"]
+        nml_attrs = ["translateX", "translateY", "translateZ", "rotateX", "rotateY", "rotateZ"]
+        blend = _getPairBlend(node)
+        loc = cmds.spaceLocator(n="tmp")[0]
+        for blend_attr, attr in zip(blend_attrs, nml_attrs):
+            cmds.connectAttr("{}.{}".format(blend, blend_attr),"{}.{}".format(loc, attr)) 
+        cmds.bakeResults(loc, t=(sframe, eframe))
+        cmds.delete(blend)
+        connect_nodes = cmds.listConnections(node, p=True, s=True)
+        for connect_node in connect_nodes:
+            if connect_node.split(".")[-1] == "output":
+                try:
+                    cmds.delete(connect_node.split(".")[0])
+                except:
+                    pass
+        print node, blend
+        for attr in nml_attrs:
+            cmds.connectAttr("{}.{}".format(loc, attr),"{}.{}".format(node, attr))
+        cmds.bakeResults(node, t=(sframe, eframe))
+        cmds.delete(loc)
+            
+def reConstraint_NursedesseiDragon():
+    cmds.delete("pairBlend1")
+    cmds.delete("ctrl_allWorld_rotateX")
+    cmds.delete("ctrl_allWorld_rotateY")
+    cmds.delete("ctrl_allWorld_rotateZ")
+    cmds.delete("ctrl_allWorld_translateX")
+    cmds.delete("ctrl_allWorld_translateY")
+    cmds.delete("ctrl_allWorld_translateZ")
+    cmds.delete("ctrl_allWorld_parentConstraint1")
+    cmds.parentConstraint("AllRoot", "NursedesseiDragon:ctrl_allWorld")
 
 def unlockAttributes(nodes):
     print cmds.optionVar(iv=["refLockEditable", True])
     for node in nodes:
+        print node
         if cmds.getAttr(node, lock=True):
             try:
                 print "try unlock: {}".format(node)
@@ -302,6 +361,10 @@ def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFi
             match = re.match(input_ns, a_ns)
             if match != None:
                 allNodes += _getAllNodes(a_ns, regexArgsN)
+    
+    import bake_timewarp
+    bake_timewarp.bakeTimeWarp(allNodes, sframe, eframe)
+    
     for a_ns in namespaceList:
         for regexArgsAttr in regexArgsAttrs:
             regexAttr = a_ns+':'+regexArgsAttr
@@ -313,7 +376,13 @@ def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFi
         cmds.delete(characterSet)
     print "##allNodes##"
     print allNodes
-    cmds.select(allNodes)
+    # allNodes.append("pairBlend1")
+    for node in allNodes:
+        try:
+            cmds.select(node, add=True)
+        except:
+            pass
+    # cmds.select(allNodes)
     baseAnimationLayer = cmds.animLayer(q=True, r=True)
 
     if baseAnimationLayer!=None and len(cmds.ls(sl=True))!=0 :
@@ -321,7 +390,8 @@ def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFi
         for al in animLayers:
             cmds.animLayer(al, e=True, sel=False)
         cmds.animLayer(baseAnimationLayer, e=True, sel=True)
-        cmds.bakeResults(t=(sframe, eframe), sb=True, ral=True)
+        cmds.bakeResults(t=(sframe, eframe), sb=True, ral=True, dic=True, pok=True, sm=True)
+        # cmds.bakeResults(t=(sframe, eframe), sb=False, ral=False, dic=False, pok=False)
         print 'merge animation layers'
     cmds.select(cl=True)
 
@@ -338,7 +408,7 @@ def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFi
     if len(nodeAndAttrs) !=0:
         attrs += _getNoKeyAttributes(nodeAndAttrs)
     if len(attrs) != 0:
-        cmds.setKeyframe(attrs, t=sframe, insertBlend=False)
+        cmds.setKeyframe(attrs, t=sframe, insertBlend=True)
     attrs = _getConstraintAttributes(allNodes)
     attrs += _getPairBlendAttributes(allNodes)
     attrs += _getMotionPathAttributes(allNodes)
@@ -355,19 +425,18 @@ def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFi
     if bake_anim is True:
         attrs += _getNoKeyAttributes(allNodes)
         attrs += _getKeyAttributes(allNodes)
-        # attrs += _getAnimLayerConnectionAttributes(allNodes)
+        attrs += _getAnimLayerConnectionAttributes(allNodes)
     unlockAttributes(attrs)
     if len(attrs)!=0:
-        for x in attrs:
-            print x
         bake_tg = attrs
         bake_tg.extend(sub_attrs)
         cmds.select(bake_tg, r=True)
         cmds.bakeResults(t=(sframe, eframe), dic=True, sb=True, sm=True)
+        # cmds.bakeResults(t=(sframe, eframe), dic=False, sm=False)
         print "bake finished."
 
     Euler_filter(attrs)
-
+    cmds.setAttr("time1.enableTimewarp", False)
     for ns in namespaces:
         pickNodes = []
         pickNodesAttr = []
@@ -380,6 +449,7 @@ def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFi
         if len(pickNodes) != 0:
             outputfiles.append(publishpath+oFilename+'_'+ns+'.ma')
             ndPyLibAnimIOExportContain(isFilter, ['3', ''], publishpath, oFilename+'_'+ns, pickNodes, pickNodesAttr, 0, 0, frameRange, bake_anim, scene_timeworp)
+    cmds.setAttr("time1.enableTimewarp", True)
     return outputfiles
 
 
@@ -420,4 +490,14 @@ if __name__ == '__main__':
     sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter\pycode")
     import ndPyLibExportAnim
     reload(ndPyLibExportAnim)
-    argsdic = {'shot': 'c001', 'sequence': 's646', 'export_type': 'anim', 'env_load': 'True', 'Priority': 'u50', 'Group': 'u128gb', 'stepValue': '1.0', 'namespace': 'NursedesseiShip', 'bake_anim': 'True', 'scene_timeworp': 'False', 'abcOutput': 'P:/Project/RAM1/shots/ep006/s646/c001/publish/test_charSet/NursedesseiShip/v003/abc/NursedesseiShip.abc', 'framerange_output': 'True', 'input_path': 'P:/Project/RAM1/shots/ep006/s646/c001/work/k_ueda/test.ma', 'Pool': 'uram1', 'assetpath': 'P:/Project/RAM1/assets/chara/Nursedessei/NursedesseiShip/publish/Setup/RH/maya/current/NursedesseiShip_Rig_RH.mb', 'framerange': 'None', 'chara': 'NursedesseiShip', 'topnode': 'root', 'framehundle': '0', 'project': 'RAM1', 'testmode': 'True', 'output': 'P:/Project/RAM1/shots/ep006/s646/c001/publish/test_charSet/NursedesseiShip/v003/anim', 'export_item': 'ctrl_set,root'}
+    argsdic = {'shot': 'c001', 'sequence': 's646', 'export_type': 'anim', 
+    'env_load': 'True', 'Priority': 'u50', 'Group': 'u128gb', 'stepValue': '1.0', 
+    'namespace': 'NursedesseiDragon',
+     'bake_anim': 'True', 'scene_timeworp': 'True', 
+     'animOutput': 'P:/Project/RAM1/shots/ep006/s646/c001/publish/test_charSet/NursedesseiShip/v003/anim/NursedesseiShip.ma', 
+     'framerange_output': 'True', 
+     'input_path': 'P:/Project/RAM1/shots/ep006/s646/c001/work/k_ueda/test.ma', 'Pool': 'uram1', 
+     'assetpath': 'P:/Project/RAM1/assets/chara/Nursedessei/NursedesseiShip/publish/Setup/RH/maya/current/NursedesseiShip_Rig_RH.mb', 'framerange': 'None', 'chara': 'NursedesseiShip', 'topnode': 'root', 'framehundle': '0', 'project': 'RAM1', 
+     'testmode': 'True', 'output': 'P:/Project/RAM1/shots/ep006/s646/c001/publish/test_charSet/NursedesseiShip/v003/anim',
+      'export_item': 'ctrl_set, root,ctrloffA_set, *ik*,*LOC*, *JNT*, leg_L_grp, leg_R_grp, *fk*,ctrl_allWorld_parentConstraint1, AllRoot'}
+    ndPyLibExportAnim.ndPyLibExportAnim_caller(argsdic)
