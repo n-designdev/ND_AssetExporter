@@ -211,7 +211,7 @@ def _getKeyAttributes (nodes):
                 else:
                     attrs.append(n+'.'+attr)
     return attrs
-    
+
 def _getNodehasPairBlends(nodes):
     result_nodes = []
     for n in nodes:
@@ -219,7 +219,7 @@ def _getNodehasPairBlends(nodes):
         if pairblend is not None:
             result_nodes.append(n)
     return result_nodes
-    
+
 def _getPairBlend(node):
     pairblends = cmds.listConnections(node, s=True, d=False, p=False, c=False, t='pairBlend')
     if pairblends is not None:
@@ -238,7 +238,7 @@ def replacePairBlendstoLocator(nodes, sframe, eframe):
         blend = _getPairBlend(node)
         loc = cmds.spaceLocator(n="tmp")[0]
         for blend_attr, attr in zip(blend_attrs, nml_attrs):
-            cmds.connectAttr("{}.{}".format(blend, blend_attr),"{}.{}".format(loc, attr)) 
+            cmds.connectAttr("{}.{}".format(blend, blend_attr),"{}.{}".format(loc, attr))
         cmds.bakeResults(loc, t=(sframe, eframe))
         cmds.delete(blend)
         connect_nodes = cmds.listConnections(node, p=True, s=True)
@@ -253,7 +253,7 @@ def replacePairBlendstoLocator(nodes, sframe, eframe):
             cmds.connectAttr("{}.{}".format(loc, attr),"{}.{}".format(node, attr))
         cmds.bakeResults(node, t=(sframe, eframe))
         cmds.delete(loc)
-            
+
 def reConstraint_NursedesseiDragon():
     cmds.delete("pairBlend1")
     cmds.delete("ctrl_allWorld_rotateX")
@@ -361,10 +361,7 @@ def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFi
             match = re.match(input_ns, a_ns)
             if match != None:
                 allNodes += _getAllNodes(a_ns, regexArgsN)
-    
-    import bake_timewarp
-    bake_timewarp.bakeTimeWarp(allNodes, sframe, eframe)
-    
+
     for a_ns in namespaceList:
         for regexArgsAttr in regexArgsAttrs:
             regexAttr = a_ns+':'+regexArgsAttr
@@ -436,7 +433,6 @@ def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFi
         print "bake finished."
 
     Euler_filter(attrs)
-    cmds.setAttr("time1.enableTimewarp", False)
     for ns in namespaces:
         pickNodes = []
         pickNodesAttr = []
@@ -449,7 +445,6 @@ def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFi
         if len(pickNodes) != 0:
             outputfiles.append(publishpath+oFilename+'_'+ns+'.ma')
             ndPyLibAnimIOExportContain(isFilter, ['3', ''], publishpath, oFilename+'_'+ns, pickNodes, pickNodesAttr, 0, 0, frameRange, bake_anim, scene_timeworp)
-    cmds.setAttr("time1.enableTimewarp", True)
     return outputfiles
 
 
@@ -490,14 +485,14 @@ if __name__ == '__main__':
     sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter\pycode")
     import ndPyLibExportAnim
     reload(ndPyLibExportAnim)
-    argsdic = {'shot': 'c001', 'sequence': 's646', 'export_type': 'anim', 
-    'env_load': 'True', 'Priority': 'u50', 'Group': 'u128gb', 'stepValue': '1.0', 
+    argsdic = {'shot': 'c001', 'sequence': 's646', 'export_type': 'anim',
+    'env_load': 'True', 'Priority': 'u50', 'Group': 'u128gb', 'stepValue': '1.0',
     'namespace': 'NursedesseiDragon',
-     'bake_anim': 'True', 'scene_timeworp': 'True', 
-     'animOutput': 'P:/Project/RAM1/shots/ep006/s646/c001/publish/test_charSet/NursedesseiShip/v003/anim/NursedesseiShip.ma', 
-     'framerange_output': 'True', 
-     'input_path': 'P:/Project/RAM1/shots/ep006/s646/c001/work/k_ueda/test.ma', 'Pool': 'uram1', 
-     'assetpath': 'P:/Project/RAM1/assets/chara/Nursedessei/NursedesseiShip/publish/Setup/RH/maya/current/NursedesseiShip_Rig_RH.mb', 'framerange': 'None', 'chara': 'NursedesseiShip', 'topnode': 'root', 'framehundle': '0', 'project': 'RAM1', 
+     'bake_anim': 'True', 'scene_timeworp': 'True',
+     'animOutput': 'P:/Project/RAM1/shots/ep006/s646/c001/publish/test_charSet/NursedesseiShip/v003/anim/NursedesseiShip.ma',
+     'framerange_output': 'True',
+     'input_path': 'P:/Project/RAM1/shots/ep006/s646/c001/work/k_ueda/test.ma', 'Pool': 'uram1',
+     'assetpath': 'P:/Project/RAM1/assets/chara/Nursedessei/NursedesseiShip/publish/Setup/RH/maya/current/NursedesseiShip_Rig_RH.mb', 'framerange': 'None', 'chara': 'NursedesseiShip', 'topnode': 'root', 'framehundle': '0', 'project': 'RAM1',
      'testmode': 'True', 'output': 'P:/Project/RAM1/shots/ep006/s646/c001/publish/test_charSet/NursedesseiShip/v003/anim',
       'export_item': 'ctrl_set, root,ctrloffA_set, *ik*,*LOC*, *JNT*, leg_L_grp, leg_R_grp, *fk*,ctrl_allWorld_parentConstraint1, AllRoot'}
     ndPyLibExportAnim.ndPyLibExportAnim_caller(argsdic)
