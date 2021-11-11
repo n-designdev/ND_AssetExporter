@@ -254,16 +254,6 @@ def replacePairBlendstoLocator(nodes, sframe, eframe):
         cmds.bakeResults(node, t=(sframe, eframe))
         cmds.delete(loc)
 
-def reConstraint_NursedesseiDragon():
-    cmds.delete("pairBlend1")
-    cmds.delete("ctrl_allWorld_rotateX")
-    cmds.delete("ctrl_allWorld_rotateY")
-    cmds.delete("ctrl_allWorld_rotateZ")
-    cmds.delete("ctrl_allWorld_translateX")
-    cmds.delete("ctrl_allWorld_translateY")
-    cmds.delete("ctrl_allWorld_translateZ")
-    cmds.delete("ctrl_allWorld_parentConstraint1")
-    cmds.parentConstraint("AllRoot", "NursedesseiDragon:ctrl_allWorld")
 
 def unlockAttributes(nodes):
     print cmds.optionVar(iv=["refLockEditable", True])

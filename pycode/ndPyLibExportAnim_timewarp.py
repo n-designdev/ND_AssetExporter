@@ -1,40 +1,269 @@
 # -*- coding: utf-8 -*-
-import os
-
+import os, sys
+import re, glob
 import maya.cmds as cmds
 import maya.mel as mel
+sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter\pycode")
+
+from ndPyLibAnimIOExportContain import ndPyLibAnimIOExportContain
+def spsymbol_remover(litteral, sp_check=None):
+    listitem = ['export_item']
+    if sp_check in listitem:
+        litteral = re.sub('\'|{|}', '', litteral)
+    else:
+        litteral = re.sub('\'|,|{|}', '', litteral)
+    url_list = ['input_path', 'assetpath']
+    if sp_check in url_list:
+        litteral = litteral.replace('/', ':/')
+    return litteral
 
 
-def Euler_filter(obj_list):
-    xyz = ['.rotateX', '.rotateY', '.rotateZ']
-    for obj in obj_list:
-        anim_cv = map(lambda x: cmds.connectionInfo(obj+x, sfd=True), xyz)
-        anim_cv = map(lambda x: x.rstrip('.output'), anim_cv)
+def Euler_filter(attr_list):
+    for attr in attr_list:
+        # anim_cv = map(lambda x: cmds.connectionInfo(obj+x, sfd=True), xyz)
+        anim_cv = map(lambda x: x.rstrip('.output'), attr)
         try:
             anim_cv = filter(lambda x: cmds.nodeType(x) in ['animCurveTL', 'animCurveTU', 'animCurveTA', 'animCurveTT'], anim_cv)
             cmds.filterCurve(anim_cv, f='euler')
         except:
-            print '# Euler FilterFailed: '+obj+' #'
+            print '# Euler FilterFailed: '+attr+' #'
             continue
-        print '# Euler Filter Success: '+obj+' #'
+        print '# Euler Filter Success: '+attr+' #'
+
+
+def _getNamespace():
+    namespaces = cmds.namespaceInfo(lon=True)
+    _nestedNS = []
+    for ns in namespaces:
+        nestedNS = cmds.namespaceInfo(ns, lon=True)
+        if nestedNS != None:
+            _nestedNS += nestedNS
+    namespaces += _nestedNS
+    namespaces.remove('UI')
+    namespaces.remove('shared')
+    return namespaces
+
+
+def _getAllNodes(namespace, regexArgs):
+    if len(regexArgs) == 0:
+        regexArgs = ['*']
+    nodes = []
+    for regex in regexArgs:
+        if "[None]:" in regex:
+            objs.extend(regex.split("[None]:")[-1])
+            continue
+        regex = regex.lstrip(":")
+        if "*" in regex:
+            ns_objs = cmds.ls(str(namespace)+":*")
+            objs = []
+            if regex[0]=="*":
+                _regex = regex.replace("*", "")
+                objs.extend([i for i in ns_objs[:] if re.search(r"[a-zA-Z0-9_:]{}".format(_regex), i) != None])
+            elif regex[-1]=="*":
+                _regex = regex.replace("*", "")
+                print regex
+                objs.extend([i for i in ns_objs[:] if re.search(r"{}:{}[a-zA-Z0-9_:]".format(namespace, regex), i)!= None])
+            nodes += objs
+        else:
+            regexN = ''
+            if namespace != '':
+                regexN += namespace + ':'
+            regexN = regexN + regex
+            print 'regexN:   ' + regexN
+            objs = cmds.ls(regexN, type='transform')
+            objs += cmds.ls(regexN, type='locator')
+            objs += cmds.ls(regexN, type="joint")
+            objs += cmds.ls(regexN, shapes=True)
+            try:
+                objSets = cmds.sets(regexN, q=True)
+                objSets = cmds.sets(regexN, q=True)
+            except:
+                objSets = []
+            if objSets is None:
+                objSets = []
+            print "objSets:{}".format(objSets)
+            if len(objs) != 0:
+                nodes += objs
+            if len(objSets) != 0:
+                nodes += objSets
+    nodes = list(set(nodes))
+    nodeShort = []
+    for node in nodes:
+        nodeShort.append(node.split('|')[-1])
+    return nodeShort
+
+
+def _getConstraintAttributes(nodes):
+    attrs = []
+    for n in nodes:
+        const = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='constraint')
+        if const is None: continue
+        for i in range(0, len(const), 2):
+            attrs.append(const[i])
+    return attrs
+
+
+def _getPairBlendAttributes(nodes):
+    attrs = []
+    for n in nodes:
+        pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='pairBlend')
+        if pairblend is None: continue
+        for i in range(0, len(pairblend), 2):
+            attrs.append(pairblend[i])
+            const = cmds.listConnections(pairblend, s=True, d=False, p=False, c=True, t='constraint')
+            if const is None: continue
+            for i in range(0, len(const), 2):
+                attrs.append(const[i])
+    return attrs
+
+
+def _getMotionPathAttributes(nodes):
+    attrs = []
+    for n in nodes:
+        pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='motionPath')
+        if pairblend is None: continue
+        for i in range(0, len(pairblend), 2):
+            attrs.append(pairblend[i])
+    return attrs
+
+
+def _getAddDoubleLinearAttributes(nodes):
+    attrs = []
+    for n in nodes:
+        pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='addDoubleLinear')
+        if pairblend is None: continue
+        for i in range(0, len(pairblend), 2):
+            attrs.append(pairblend[i])
+    return attrs
+
+
+def _getTransformConnectionAttributes(nodes):
+    attrs = []
+    for n in nodes:
+        pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='transform')
+        if pairblend is None: continue
+        for i in range(0, len(pairblend), 2):
+            attrs.append(pairblend[i])
+    return attrs
+
+
+def _getAnimLayerConnectionAttributes(nodes):
+    attrs = []
+    for n in nodes:
+        pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='animLayer')
+        if pairblend is None: continue
+        for i in range(0, len(pairblend), 2):
+            attrs.append(pairblend[i])
+    return attrs
+
+def _getAnimCurveAttributes(nodes):
+    attrs = []
+    for n in nodes:
+        pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='animCurveTL')
+        if pairblend is not None:
+            for i in range(0, len(pairblend), 2):
+                attrs.append(pairblend[i])
+                continue
+        pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='animCurveTU')
+        if pairblend is not None:
+            for i in range(0, len(pairblend), 2):
+                attrs.append(pairblend[i])
+                continue
+        pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='animCurveTA')
+        if pairblend is not None:
+            for i in range(0, len(pairblend), 2):
+                attrs.append(pairblend[i])
+                continue
+        pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='animCurveTT')
+        if pairblend is not None:
+            for i in range(0, len(pairblend), 2):
+                attrs.append(pairblend[i])
+                continue
+    return attrs
+
+def _getNoKeyAttributes (nodes):
+    print "#getNoKeyAttributes#"
+    attrs = []
+    for n in nodes:
+        if '.' in n:
+            n = n.split('.')[0]
+        gAttrs = cmds.listAttr(n, keyable=True)
+        print n, gAttrs
+        if gAttrs is None: continue
+        for attr in gAttrs:
+            if '.' not in attr:
+                if cmds.listConnections(n+'.'+attr, s=True, d=False) is None:
+                    attrs.append(n+'.'+attr)
+                    print 'find no key attribute : ' + n + '.' + attr
+    return attrs
+
+def _getKeyAttributes (nodes):
+    print "#getKeyAttributes#"
+    attrs = []
+    for n in nodes:
+        if '.' in n:
+            n = n.split('.')[0]
+        gAttrs = cmds.listAttr(n, keyable=True)
+        print n, gAttrs
+        if gAttrs is None: continue
+        for attr in gAttrs:
+            if '.' not in attr:
+                if cmds.listConnections(n+'.'+attr, s=True, d=False) is None:
+                    pass
+                else:
+                    attrs.append(n+'.'+attr)
+    return attrs
+
+def _getNodehasPairBlends(nodes):
+    result_nodes = []
+    for n in nodes:
+        pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=False, t='pairBlend')
+        if pairblend is not None:
+            result_nodes.append(n)
+    return result_nodes
+
+def _getPairBlend(node):
+    pairblends = cmds.listConnections(node, s=True, d=False, p=False, c=False, t='pairBlend')
+    if pairblends is not None:
+        for pairblend in pairblends:
+            if "pairBlend" in pairblend:
+                return pairblend
+    return pairblend
+
+def Euler_filter(obj_list):
+    xyz = ['.rotateX', '.rotateY', '.rotateZ']
+    for obj in obj_list:
+        try:
+            anim_cv = map(lambda x: cmds.connectionInfo(obj+x, sfd=True), xyz)
+            anim_cv = map(lambda x: x.rstrip('.output'), anim_cv)
+            try:
+                anim_cv = filter(lambda x: cmds.nodeType(x) in ['animCurveTL', 'animCurveTU', 'animCurveTA', 'animCurveTT'], anim_cv)
+                cmds.filterCurve(anim_cv, f='euler')
+            except:
+                print '# Euler FilterFailed: '+obj+' #'
+                continue
+            print '# Euler Filter Success: '+obj+' #'
+        except:
+            pass
 
 
 def get_reference_file(obj):
     return cmds.referenceQuery(obj, f=True)
 
 
-def reference_ma(ma):
-    cmds.file(ma, reference=True, ns="{}_test")
+def reference_ma(ma, ns):
+    cmds.file(ma, reference=True, ns=ns)
 
-
-
+def copy_obj(top_node, ns):
+    copied_objs = cmds.listRelatives(cmds.duplicate(top_node)[0], ad=True, f=True)
+    result = []
+    for obj in copied_objs:
+        _obj = obj.split("|")[-1]
+        print _obj
+        result.append(cmds.rename(obj, "{}{}".format(ns, _obj)))
+    return  result
 
 def ndPyLibExportAnim_timewarp(publishpath, oFilename, strnamespaceList, strregexArgs, isFilter, bake_anim, strextra_dic, framehundle, framerange, scene_timeworp):
-    ns = "NursedesseiDragon"
-    top_node = "root"
-    ref_ma = get_reference_file("{}:{}".format(ns, top_node))
-    reference_ma(ref_ma, "{}_test".format(ns))
-
     regexArgsN = [] #regexArgs Normal
     regexArgsAttrs = [] #regexArgs Attribute用
     regexArgs = strregexArgs.split(',')
@@ -86,7 +315,7 @@ def ndPyLibExportAnim_timewarp(publishpath, oFilename, strnamespaceList, strrege
         for al in animLayers:
             cmds.animLayer(al, e=True, sel=False)
         cmds.animLayer(baseAnimationLayer, e=True, sel=True)
-        cmds.bakeResults(t=(sframe, eframe), sb=True, ral=True, dic=True, pok=True, sm=True)
+        # cmds.bakeResults(t=(sframe, eframe), sb=True, ral=True, dic=True, pok=True, sm=True)
     cmds.select(cl=True)
 
     if strextra_dic != None:
@@ -124,10 +353,14 @@ def ndPyLibExportAnim_timewarp(publishpath, oFilename, strnamespaceList, strrege
     for t in range(int(sframe),int(eframe+1)):
         cmds.currentTime(t)
         for attr in attrs:
-            ns = attr.split(":")[0]
-            tg_attr = attr.replace(ns, ns+"_test")
-
-            cmds.setKetframe(tg_attr, t=t, v=cmds.getAttr(attr))
+            to_attr = "test"+attr.split(":")[-1]
+            try:
+                print cmds.getAttr(attr)
+                cmds.setKeyframe(to_attr, t=t, v=cmds.getAttr(attr))
+            except Exception as e:
+                print to_attr, attr
+                print e
+                # pass
 
     if framerange != None:
         frameRange = [sframe, eframe]
@@ -149,15 +382,6 @@ def ndPyLibExportAnim_timewarp(publishpath, oFilename, strnamespaceList, strrege
             ndPyLibAnimIOExportContain(isFilter, ['3', ''], publishpath, oFilename+'_'+ns, pickNodes, pickNodesAttr, 0, 0, frameRange, bake_anim, scene_timeworp)
     return outputfiles
 #end of ndPylibExportCam_bakeCamera
-
-
-def ndPyLibPlatform(text):
-    prefix = 'nd'
-    otsr = ''
-    otsr = otsr+'['+prefix+']'+text+'\n'
-
-    print(otsr)
-#end of ndPyLibPlatform
 
 
 def ndPyLibExportCam(camOutput, CameraScale, frameHundle, _frameRange):
@@ -253,11 +477,62 @@ def ndPyLibExportCam3(outputPath, cameraScale=-1, frameHundle=5, frameRange="Non
         batch.animAttach(**argsdic)
 
 
+def ndPyLibExportAnim_timewarp_caller(args):
+    argsdic = args
+    print "###args###"
+    print args
+    # outputPath = argsdic['output']
+    outputPath = argsdic['animOutput']
+    oFilename = argsdic['export_type']
+    namespaceList = argsdic['namespace']
+    regexArgs = argsdic['export_item']
+    bake_anim = argsdic['bake_anim']
+    scene_timeworp = argsdic['scene_timeworp']
+    if bake_anim == "False" or bake_anim == False:
+        bake_anim=False
+    elif bake_anim == "True" or bake_anim == True:
+        bake_anim=True
+    if scene_timeworp == "False" or scene_timeworp == False:
+        scene_timeworp=False
+    elif scene_timeworp == "True" or scene_timeworp == True:
+        scene_timeworp=True
+    # extradic = argsdic['extra_dic']
+    try:
+        frameHundle = argsdic['framehundle']
+    except KeyError:
+        frameHundle = 0
+    try:
+        frameRange = argsdic['framerange']
+    except KeyError:
+        frameRange = None
+    extra_dic = None
+    isFilter = 1
+    ndPyLibExportAnim_timewarp(outputPath, oFilename, namespaceList, regexArgs, isFilter, bake_anim, extra_dic, frameHundle, frameRange, scene_timeworp)
+    print "ndPylibExportAnim End"
+
 
 if __name__ == '__main__':
     sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter\pycode")
+    top_node = "NursedesseiDragon:root"
+    ns = "test"
+    copy_obj(top_node, ns)
+    top_node = "cameraGEMINI4K:cameraGEMINI4K_allOffset_GP"
+    ns = "test"
+    copy_obj(top_node, ns)
     import ndPyLibExportAnim_timewarp
     reload(ndPyLibExportAnim_timewarp)
+    argsdic = {'shot': 'c001', 'sequence': 's646', 'export_type': 'anim',
+    'env_load': 'True', 'Priority': 'u50', 'Group': 'u128gb', 'stepValue': '1.0',
+    'namespace': 'cameraGEMINI4K',
+     'bake_anim': 'True', 'scene_timeworp': 'True',
+     'animOutput': 'P:/Project/RAM1/shots/ep006/s646/c001/publish/test_charSet/NursedesseiShip/v003/anim/NursedesseiShip.ma',
+     'framerange_output': 'True',
+     'input_path': 'P:/Project/RAM1/shots/ep006/s646/c001/work/k_ueda/test.ma', 'Pool': 'uram1',
+     'assetpath': 'P:/Project/RAM1/assets/chara/Nursedessei/NursedesseiShip/publish/Setup/RH/maya/current/NursedesseiShip_Rig_RH.mb', 'framerange': 'None', 'chara': 'NursedesseiShip', 'topnode': 'root', 'framehundle': '0', 'project': 'RAM1',
+     'testmode': 'True', 'output': 'P:/Project/RAM1/shots/ep006/s646/c001/publish/test_charSet/NursedesseiShip/v003/anim',
+      'export_item': 'cameraGEMINI4K_allOffset_GP, cameraGEMINI4K_trans, *ik*,*LOC*, *JNT*, leg_L_grp, leg_R_grp, *fk*'}
+    ndPyLibExportAnim_timewarp.ndPyLibExportAnim_timewarp_caller(argsdic)
+    # ndPyLibExportAnim.ndPyLibExportAnim_caller(argsdic)    
     argsdic = {'shot': 'c001', 'sequence': 's646', 'export_type': 'anim',
     'env_load': 'True', 'Priority': 'u50', 'Group': 'u128gb', 'stepValue': '1.0',
     'namespace': 'NursedesseiDragon',
@@ -269,4 +544,4 @@ if __name__ == '__main__':
      'testmode': 'True', 'output': 'P:/Project/RAM1/shots/ep006/s646/c001/publish/test_charSet/NursedesseiShip/v003/anim',
       'export_item': 'ctrl_set, root,ctrloffA_set, *ik*,*LOC*, *JNT*, leg_L_grp, leg_R_grp, *fk*'}
     # ndPyLibExportAnim.ndPyLibExportAnim_caller(argsdic)
-    ndPyLibExportAnim_timewarp(argsdic)
+    ndPyLibExportAnim_timewarp.ndPyLibExportAnim_timewarp_caller(argsdic)
