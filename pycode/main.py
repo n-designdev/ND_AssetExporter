@@ -48,14 +48,15 @@ class GUI(QMainWindow):
     def __init__(self, parent=None, qApp=None):
         super(self.__class__, self).__init__(parent)
         self.ui_path = '.\\Exp_gui.ui'
-        self.ui = QUiLoader().load(self.ui_path)
+        try:
+            self.ui = QUiLoader().load(self.ui_path)
+        except:
+            self.ui = QUiLoader().load(onpath+"\\Exp_gui.ui")
         self.ui.DD_area.installEventFilter(self)
         self.setCentralWidget(self.ui)
         self.setGeometry(500, 200, 1000, 800)
         self.debug = False
-        debug = ''
-        if self.debug:debug = '__debug__'
-        self.setWindowTitle('%s %s %s' % (self.WINDOW, __version__, debug))
+        self.setWindowTitle('%s %s' % (self.WINDOW, __version__))
         # self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.headers_item = [
             "Asset name", "Name space",

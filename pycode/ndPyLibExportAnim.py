@@ -2,21 +2,10 @@
 import os, sys
 import re, glob
 import maya.cmds as cmds
-
+sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter\pycode")
 from ndPyLibAnimIOExportContain import ndPyLibAnimIOExportContain
-def spsymbol_remover(litteral, sp_check=None):
-    listitem = ['export_item']
-    if sp_check in listitem:
-        litteral = re.sub('\'|{|}', '', litteral)
-    else:
-        litteral = re.sub('\'|,|{|}', '', litteral)
-    url_list = ['input_path', 'assetpath']
-    if sp_check in url_list:
-        litteral = litteral.replace('/', ':/')
-    return litteral
 
-
-def Euler_filter(attr_list):
+def eulerfilter(attr_list):
     for attr in attr_list:
         # anim_cv = map(lambda x: cmds.connectionInfo(obj+x, sfd=True), xyz)
         anim_cv = map(lambda x: x.rstrip('.output'), attr)
@@ -27,9 +16,18 @@ def Euler_filter(attr_list):
             print '# Euler FilterFailed: '+attr+' #'
             continue
         print '# Euler Filter Success: '+attr+' #'
+        
+        
+def get_reference_file(obj):
+    return cmds.referenceQuery(obj, f=True)
 
 
-def _getNamespace():
+def reference_ma(ma, ns):
+    # cmds.file(ma, reference=True, ns=ns, force=False, pmt=True)
+    cmds.file(ma, i=True, ns=ns)
+
+
+def getNamespace():
     namespaces = cmds.namespaceInfo(lon=True)
     _nestedNS = []
     for ns in namespaces:
@@ -42,7 +40,7 @@ def _getNamespace():
     return namespaces
 
 
-def _getAllNodes(namespace, regexArgs):
+def getAllNodes(namespace, regexArgs):
     if len(regexArgs) == 0:
         regexArgs = ['*']
     nodes = []
@@ -91,7 +89,7 @@ def _getAllNodes(namespace, regexArgs):
     return nodeShort
 
 
-def _getConstraintAttributes(nodes):
+def getConstraintAttributes(nodes):
     attrs = []
     for n in nodes:
         const = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='constraint')
@@ -101,7 +99,7 @@ def _getConstraintAttributes(nodes):
     return attrs
 
 
-def _getPairBlendAttributes(nodes):
+def getPairBlendAttributes(nodes):
     attrs = []
     for n in nodes:
         pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='pairBlend')
@@ -115,7 +113,7 @@ def _getPairBlendAttributes(nodes):
     return attrs
 
 
-def _getMotionPathAttributes(nodes):
+def getMotionPathAttributes(nodes):
     attrs = []
     for n in nodes:
         pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='motionPath')
@@ -125,7 +123,7 @@ def _getMotionPathAttributes(nodes):
     return attrs
 
 
-def _getAddDoubleLinearAttributes(nodes):
+def getAddDoubleLinearAttributes(nodes):
     attrs = []
     for n in nodes:
         pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='addDoubleLinear')
@@ -135,7 +133,7 @@ def _getAddDoubleLinearAttributes(nodes):
     return attrs
 
 
-def _getTransformConnectionAttributes(nodes):
+def getTransformConnectionAttributes(nodes):
     attrs = []
     for n in nodes:
         pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='transform')
@@ -145,7 +143,7 @@ def _getTransformConnectionAttributes(nodes):
     return attrs
 
 
-def _getAnimLayerConnectionAttributes(nodes):
+def getAnimLayerConnectionAttributes(nodes):
     attrs = []
     for n in nodes:
         pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='animLayer')
@@ -154,7 +152,8 @@ def _getAnimLayerConnectionAttributes(nodes):
             attrs.append(pairblend[i])
     return attrs
 
-def _getAnimCurveAttributes(nodes):
+
+def getAnimCurveAttributes(nodes):
     attrs = []
     for n in nodes:
         pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=True, t='animCurveTL')
@@ -179,8 +178,8 @@ def _getAnimCurveAttributes(nodes):
                 continue
     return attrs
 
-def _getNoKeyAttributes (nodes):
-    print "#getNoKeyAttributes#"
+
+def getNoKeyAttributes(nodes):
     attrs = []
     for n in nodes:
         if '.' in n:
@@ -195,8 +194,8 @@ def _getNoKeyAttributes (nodes):
                     print 'find no key attribute : ' + n + '.' + attr
     return attrs
 
-def _getKeyAttributes (nodes):
-    print "#getKeyAttributes#"
+
+def getKeyAttributes(nodes):
     attrs = []
     for n in nodes:
         if '.' in n:
@@ -212,7 +211,8 @@ def _getKeyAttributes (nodes):
                     attrs.append(n+'.'+attr)
     return attrs
 
-def _getNodehasPairBlends(nodes):
+
+def getNodehasPairBlends(nodes):
     result_nodes = []
     for n in nodes:
         pairblend = cmds.listConnections(n, s=True, d=False, p=False, c=False, t='pairBlend')
@@ -220,13 +220,15 @@ def _getNodehasPairBlends(nodes):
             result_nodes.append(n)
     return result_nodes
 
-def _getPairBlend(node):
+
+def getPairBlend(node):
     pairblends = cmds.listConnections(node, s=True, d=False, p=False, c=False, t='pairBlend')
     if pairblends is not None:
         for pairblend in pairblends:
             if "pairBlend" in pairblend:
                 return pairblend
     return pairblend
+
 
 def replacePairBlendstoLocator(nodes, sframe, eframe):
     for node in nodes:
@@ -235,7 +237,7 @@ def replacePairBlendstoLocator(nodes, sframe, eframe):
             continue
         blend_attrs = ["outTranslateX", "outTranslateY", "outTranslateZ", "outRotateX", "outRotateY", "outRotateZ"]
         nml_attrs = ["translateX", "translateY", "translateZ", "rotateX", "rotateY", "rotateZ"]
-        blend = _getPairBlend(node)
+        blend = getPairBlend(node)
         loc = cmds.spaceLocator(n="tmp")[0]
         for blend_attr, attr in zip(blend_attrs, nml_attrs):
             cmds.connectAttr("{}.{}".format(blend, blend_attr),"{}.{}".format(loc, attr))
@@ -256,19 +258,23 @@ def replacePairBlendstoLocator(nodes, sframe, eframe):
 
 
 def unlockAttributes(nodes):
-    print cmds.optionVar(iv=["refLockEditable", True])
     for node in nodes:
-        print node
         if cmds.getAttr(node, lock=True):
             try:
-                print "try unlock: {}".format(node)
-                print cmds.setAttr(node, lock=False)
+                cmds.setAttr(node, lock=False)
             except Exception as e:
-                print e
-                print "failed."
+                pass
+                
+
+def unmuteAttributes(nodes):
+    for node in nodes:
+        try:
+            cmds.mute("NursedesseiShip:root_ctrl", d=True)
+        except Exception as e:   
+            pass
 
 
-def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFilter, bake_anim, strextra_dic, framehundle, framerange, scene_timeworp):
+def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFilter, bake_anim, strextra_dic, framehundle, framerange, scene_timeworp, top_node):
     regexArgsN = [] #regexArgs Normal
     regexArgsAttrs = [] #regexArgs Attribute用
     regexArgs = strregexArgs.split(',')
@@ -283,9 +289,9 @@ def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFi
             regexArgsN.append(regexArg)
 
     outputfiles = []
-    namespaces = _getNamespace()
+    namespaces = getNamespace()
     allNodes = []
-    nodeAndAttrs = [] # ns+node+attr, ex:ketel_evo:wave8.minRadius
+    nodeAndAttrs = []
 
     frameHandle = framehundle
     if frameHandle == 'None':
@@ -350,7 +356,7 @@ def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFi
         for input_ns in namespaceList:
             match = re.match(input_ns, a_ns)
             if match != None:
-                allNodes += _getAllNodes(a_ns, regexArgsN)
+                allNodes += getAllNodes(a_ns, regexArgsN)
 
     for a_ns in namespaceList:
         for regexArgsAttr in regexArgsAttrs:
@@ -390,39 +396,100 @@ def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFi
                 _ns = ns.split('*')[1].rstrip('$')
                 cmds.setAttr(_ns + ':' + _key, int(item))
                 cmds.setKeyframe(_ns + ':' + _key, t=1)
-    attrs = _getNoKeyAttributes(allNodes)
+    attrs = getNoKeyAttributes(allNodes)
 
     if len(nodeAndAttrs) !=0:
-        attrs += _getNoKeyAttributes(nodeAndAttrs)
+        attrs += getNoKeyAttributes(nodeAndAttrs)
     if len(attrs) != 0:
         cmds.setKeyframe(attrs, t=sframe, insertBlend=True)
-    attrs = _getConstraintAttributes(allNodes)
-    attrs += _getPairBlendAttributes(allNodes)
-    attrs += _getMotionPathAttributes(allNodes)
-    attrs += _getAddDoubleLinearAttributes(allNodes)
-    attrs += _getTransformConnectionAttributes(allNodes)
-
-    #ConstraintがあってBakeできないものの対応のテスト
+    attrs = getConstraintAttributes(allNodes)
+    # attrs += getPairBlendAttributes(allNodes)
+    attrs += getMotionPathAttributes(allNodes)
+    attrs += getAddDoubleLinearAttributes(allNodes)
+    attrs += getTransformConnectionAttributes(allNodes)
     sub_attrs = []
     for node in allNodes:
         if cmds.listConnections(node, s=True, type="constraint") is not None:
             sub_attrs.extend(list(set(cmds.listConnections(node, s=True, type="constraint"))))
-
-    # attrs += _getAnimCurveAttributes(allNodes)
-    if bake_anim is True:
-        attrs += _getNoKeyAttributes(allNodes)
-        attrs += _getKeyAttributes(allNodes)
-        attrs += _getAnimLayerConnectionAttributes(allNodes)
+    if bake_anim == True:
+        attrs += getNoKeyAttributes(allNodes)
+        attrs += getKeyAttributes(allNodes)
+        attrs += getAnimLayerConnectionAttributes(allNodes)
     unlockAttributes(attrs)
-    if len(attrs)!=0:
+    unmuteAttributes(attrs)
+    if scene_timeworp==True:
         bake_tg = attrs
         bake_tg.extend(sub_attrs)
-        cmds.select(bake_tg, r=True)
-        cmds.bakeResults(t=(sframe, eframe), dic=True, sb=True, sm=True)
-        # cmds.bakeResults(t=(sframe, eframe), dic=False, sm=False)
-        print "bake finished."
-
-    Euler_filter(attrs)
+        time_value_set_list = []
+        ref_files = []
+        ref_attrs = []
+        sframe = cmds.playbackOptions(q=True, min=True)
+        eframe = cmds.playbackOptions(q=True, max=True)
+        #copy topobjs
+        ignore_objs = ['persp','top', 'front', 'side', 'AllRoot']
+        top_objs = cmds.ls(assemblies=True)
+        top_objs = list(set(top_objs)-set(ignore_objs))
+        for top_obj in top_objs:
+            if cmds.referenceQuery(top_obj, inr=True):
+                ns = top_obj.split(":")[0]
+                for in_ns in namespaceList:
+                    if re.match(in_ns, ns) != None:
+                        ref_file = get_reference_file(top_obj)        
+                        reference_ma(ref_file, "tmp_"+ns)
+                        ref_files.append([ns, ref_file])
+                        for obj in cmds.listRelatives(top_obj, ad=True):
+                            try:
+                                if cmds.listAttr(obj, keyable=True)!=None:
+                                    for attr in cmds.listAttr(obj, keyable=True):
+                                        ref_attrs.append(obj+"."+attr)
+                            except:
+                                pass
+                        continue
+        #store timewarp
+        for t in range(int(sframe),int(eframe+1)):
+            cmds.currentTime(t)
+            warp_time = cmds.getAttr("time1.outTime", time=t)
+            for attr in ref_attrs:
+                obj = attr.split(".")[0]
+                try:
+                    if attr in attrs:           
+                        value = cmds.getAttr(attr, time=warp_time)  
+                        time_value_set_list.append([t, attr, value])
+                except Exception as e:
+                    pass
+        for ref in ref_files:
+            ns = ref[0]
+            ref_file = ref[1]
+            cmds.file(ref_file, rr=True)
+        for ns_obj in cmds.ls("tmp_*:*"):
+            try:
+                cmds.rename(ns_obj, ns_obj.replace("tmp_", ":"))
+            except:
+                pass
+        #restore timewarp
+        cmds.setAttr("time1.enableTimewarp", 0)
+        current_f = 0
+        for time_list in time_value_set_list:
+            frame = time_list[0]
+            attr = time_list[1]
+            value = time_list[2]
+            if current_f !=frame:
+                cmds.currentTime(frame)
+                current_f = frame
+            try:
+                cmds.setAttr(attr, value)
+                cmds.setKeyframe(attr)
+            except:
+                pass
+    if len(attrs)!=0 and scene_timeworp !=True:
+        bake_tg = attrs
+        bake_tg.extend(sub_attrs)
+        cmds.select(clear=True)
+        for obj in bake_tg:
+            if cmds.objExists(obj) == True:
+                cmds.select(obj, add=True)
+        cmds.bakeResults(t=(sframe, eframe), dic=True)
+        eulerfilter(attrs)
     for ns in namespaces:
         pickNodes = []
         pickNodesAttr = []
@@ -449,6 +516,7 @@ def ndPyLibExportAnim_caller(args):
     regexArgs = argsdic['export_item']
     bake_anim = argsdic['bake_anim']
     scene_timeworp = argsdic['scene_timeworp']
+    top_node = argsdic['topnode']
     if bake_anim == "False" or bake_anim == False:
         bake_anim=False
     elif bake_anim == "True" or bake_anim == True:
@@ -468,7 +536,7 @@ def ndPyLibExportAnim_caller(args):
         frameRange = None
     extra_dic = None
     isFilter = 1
-    ExportAnim_body(outputPath, oFilename, namespaceList, regexArgs, isFilter, bake_anim, extra_dic, frameHundle, frameRange, scene_timeworp)
+    ExportAnim_body(outputPath, oFilename, namespaceList, regexArgs, isFilter, bake_anim, extra_dic, frameHundle, frameRange, scene_timeworp, top_node)
     print "ndPylibExportAnim End"
 
 if __name__ == '__main__':
@@ -478,11 +546,16 @@ if __name__ == '__main__':
     argsdic = {'shot': 'c001', 'sequence': 's646', 'export_type': 'anim',
     'env_load': 'True', 'Priority': 'u50', 'Group': 'u128gb', 'stepValue': '1.0',
     'namespace': 'NursedesseiDragon',
-     'bake_anim': 'True', 'scene_timeworp': 'True',
-     'animOutput': 'P:/Project/RAM1/shots/ep006/s646/c001/publish/test_charSet/NursedesseiShip/v003/anim/NursedesseiShip.ma',
+    'bake_anim': 'True', 'scene_timeworp': 'True',
+    # 'animOutput': 'P:/Project/RAM1/shots/ep006/s646/c001/publish/test_charSet/NursedesseiShip/v003/anim/NursedesseiShip.ma',
+    'animOutput': 'C:/Users/k_ueda/Desktop/work/NursedesseiDragon',
      'framerange_output': 'True',
      'input_path': 'P:/Project/RAM1/shots/ep006/s646/c001/work/k_ueda/test.ma', 'Pool': 'uram1',
-     'assetpath': 'P:/Project/RAM1/assets/chara/Nursedessei/NursedesseiShip/publish/Setup/RH/maya/current/NursedesseiShip_Rig_RH.mb', 'framerange': 'None', 'chara': 'NursedesseiShip', 'topnode': 'root', 'framehundle': '0', 'project': 'RAM1',
-     'testmode': 'True', 'output': 'P:/Project/RAM1/shots/ep006/s646/c001/publish/test_charSet/NursedesseiShip/v003/anim',
-      'export_item': 'ctrl_set, root,ctrloffA_set, *ik*,*LOC*, *JNT*, leg_L_grp, leg_R_grp, *fk*,ctrl_allWorld_parentConstraint1, AllRoot'}
+    #  'assetpath': 'P:/Project/RAM1/assets/chara/Nursedessei/NursedesseiShip/publish/Setup/RH/maya/current/NursedesseiShip_Rig_RH.mb',
+     'assetpath': 'P:/Project/RAM1/assets/chara/Nursedessei/NursedesseiDragon/publish/Setup/RH/maya/current/NursedesseiDragon_Rig_RH.mb',
+      'framerange': 'None', 'chara': 'NursedesseiShip', 'topnode': 'root', 'framehundle': '0', 'project': 'RAM1',
+     'testmode': 'True',
+    #   'output': 'P:/Project/RAM1/shots/ep006/s646/c001/publish/test_charSet/NursedesseiShip/v003/anim',
+      'output': 'C:\Users\k_ueda\Desktop\work',
+      'export_item': 'ctrl_set'}
     ndPyLibExportAnim.ndPyLibExportAnim_caller(argsdic)

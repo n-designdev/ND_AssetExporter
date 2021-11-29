@@ -230,6 +230,7 @@ def _getPairBlend(node):
                 return pairblend
     return pairblend
 
+
 def Euler_filter(obj_list):
     xyz = ['.rotateX', '.rotateY', '.rotateZ']
     for obj in obj_list:
@@ -252,16 +253,31 @@ def get_reference_file(obj):
 
 
 def reference_ma(ma, ns):
-    cmds.file(ma, reference=True, ns=ns)
+    cmds.file(ma, reference=True, ns=ns, force=True, pmt=False)
+
 
 def copy_obj(top_node, ns):
-    copied_objs = cmds.listRelatives(cmds.duplicate(top_node)[0], ad=True, f=True)
+    copied_obj_top = cmds.duplicate(top_node)[0]
+    copied_objs = cmds.listRelatives(copied_obj_top, ad=True, f=True)
+    copied_objs.append(copied_obj_top)
     result = []
     for obj in copied_objs:
         _obj = obj.split("|")[-1]
-        print _obj
-        result.append(cmds.rename(obj, "{}{}".format(ns, _obj)))
-    return  result
+        renamed_obj = cmds.rename(obj, "{}{}".format(ns, _obj))
+        cmds.cutKey(renamed_obj)
+        result.append(renamed_obj)
+    return result
+    
+
+def ls_hierarchy_attrs(top_node):
+    objs = cmds.listRelatives(top_node, ad=True, f=True)
+    objs.append(top_node)
+    result = []
+    for obj in objs:
+        if cmds.listAttr(obj, keyable=True) != None:
+            for attr in cmds.listAttr(obj, keyable=True):
+                result.append(obj+"."+attr)
+    return result
 
 def ndPyLibExportAnim_timewarp(publishpath, oFilename, strnamespaceList, strregexArgs, isFilter, bake_anim, strextra_dic, framehundle, framerange, scene_timeworp):
     regexArgsN = [] #regexArgs Normal
@@ -287,7 +303,7 @@ def ndPyLibExportAnim_timewarp(publishpath, oFilename, strnamespaceList, strrege
 
     sframe = cmds.playbackOptions(q=True, min=True) - float(frameHandle)
     eframe = cmds.playbackOptions(q=True, max=True) + float(frameHandle)
-
+    
     for a_ns in namespaces:
         for input_ns in namespaceList:
             match = re.match(input_ns, a_ns)
@@ -350,17 +366,22 @@ def ndPyLibExportAnim_timewarp(publishpath, oFilename, strnamespaceList, strrege
         attrs += _getKeyAttributes(allNodes)
         attrs += _getAnimLayerConnectionAttributes(allNodes)
 
+
+    # scene timewarp test
+    # attrs += ls_hierarchy_attrs("NursedesseiDragon:root")
+    # attrs += ls_hierarchy_attrs("AllRoot")
+    attrs = list(set(attrs))
     for t in range(int(sframe),int(eframe+1)):
         cmds.currentTime(t)
         for attr in attrs:
-            to_attr = "test"+attr.split(":")[-1]
+            to_attr = "test:"+attr.split(":")[-1]
             try:
-                print cmds.getAttr(attr)
+                # print cmds.getAttr(attr)
                 cmds.setKeyframe(to_attr, t=t, v=cmds.getAttr(attr))
             except Exception as e:
-                print to_attr, attr
-                print e
-                # pass
+                # print to_attr, attr
+                # print e
+                pass
 
     if framerange != None:
         frameRange = [sframe, eframe]
@@ -512,31 +533,22 @@ def ndPyLibExportAnim_timewarp_caller(args):
 
 
 if __name__ == '__main__':
-    sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter\pycode")
+    # sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter\pycode")
+    # top_node = "AllRoot"
+    # ns = "test"
+    # copy_obj(top_node, ns)
     top_node = "NursedesseiDragon:root"
     ns = "test"
-    copy_obj(top_node, ns)
-    top_node = "cameraGEMINI4K:cameraGEMINI4K_allOffset_GP"
-    ns = "test"
-    copy_obj(top_node, ns)
+    ref_file = get_reference_file(top_node)
+    reference_ma(ref_file, ns)
+    
     import ndPyLibExportAnim_timewarp
     reload(ndPyLibExportAnim_timewarp)
-    argsdic = {'shot': 'c001', 'sequence': 's646', 'export_type': 'anim',
-    'env_load': 'True', 'Priority': 'u50', 'Group': 'u128gb', 'stepValue': '1.0',
-    'namespace': 'cameraGEMINI4K',
-     'bake_anim': 'True', 'scene_timeworp': 'True',
-     'animOutput': 'P:/Project/RAM1/shots/ep006/s646/c001/publish/test_charSet/NursedesseiShip/v003/anim/NursedesseiShip.ma',
-     'framerange_output': 'True',
-     'input_path': 'P:/Project/RAM1/shots/ep006/s646/c001/work/k_ueda/test.ma', 'Pool': 'uram1',
-     'assetpath': 'P:/Project/RAM1/assets/chara/Nursedessei/NursedesseiShip/publish/Setup/RH/maya/current/NursedesseiShip_Rig_RH.mb', 'framerange': 'None', 'chara': 'NursedesseiShip', 'topnode': 'root', 'framehundle': '0', 'project': 'RAM1',
-     'testmode': 'True', 'output': 'P:/Project/RAM1/shots/ep006/s646/c001/publish/test_charSet/NursedesseiShip/v003/anim',
-      'export_item': 'cameraGEMINI4K_allOffset_GP, cameraGEMINI4K_trans, *ik*,*LOC*, *JNT*, leg_L_grp, leg_R_grp, *fk*'}
-    ndPyLibExportAnim_timewarp.ndPyLibExportAnim_timewarp_caller(argsdic)
-    # ndPyLibExportAnim.ndPyLibExportAnim_caller(argsdic)    
+
     argsdic = {'shot': 'c001', 'sequence': 's646', 'export_type': 'anim',
     'env_load': 'True', 'Priority': 'u50', 'Group': 'u128gb', 'stepValue': '1.0',
     'namespace': 'NursedesseiDragon',
-     'bake_anim': 'True', 'scene_timeworp': 'True',
+     'bake_anim': 'True', 'scene_timeworp': 'False',
      'animOutput': 'P:/Project/RAM1/shots/ep006/s646/c001/publish/test_charSet/NursedesseiShip/v003/anim/NursedesseiShip.ma',
      'framerange_output': 'True',
      'input_path': 'P:/Project/RAM1/shots/ep006/s646/c001/work/k_ueda/test.ma', 'Pool': 'uram1',

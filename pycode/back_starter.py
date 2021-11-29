@@ -65,8 +65,10 @@ def back_starter(**kwargs):
             override_shotpath = argsdic['override_shotpath']
         else:
             override = False
+            override_shotpath = None
     else:
         override = False
+        override_shotpath = None
     opc = exporter_util.outputPathConf(input_path, isAnim=isAnim, test=debug_mode)
     if export_type != "camera":
         opc.createOutputDir(charaName)

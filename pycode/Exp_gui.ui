@@ -295,7 +295,7 @@ QScrollBar::handle::horizontal {background:  rgb(90, 90, 90);}
          <enum>Qt::RightToLeft</enum>
         </property>
         <property name="text">
-         <string>scene timeworp</string>
+         <string>scene timewarp</string>
         </property>
         <property name="checked">
          <bool>false</bool>

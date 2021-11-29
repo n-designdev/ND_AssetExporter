@@ -34,6 +34,7 @@ def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName,
 
     if len(retNodes) <= 0:
         message = 'No Animation Nodes!\n' + 'Do you want to continue ?\n'
+        return
         resultStr = cmds.confirmDialog(title='Confirm', message=message,
             button=['Yes', 'No'], defaultButton='Yes', cancelButton='No', dismissString='No')
         if resultStr == 'No':
@@ -54,20 +55,20 @@ def ndPyLibAnimIOExportContain (isFilterCurve, inPfxInfo, inDirPath, inFileName,
             cmds.select(retNodes[i*2+1], add=True)
 
     # sceneTime warp
-    if scene_timeworp:
-        animNodes = retNodes[1:len(retNodes):2]
-        bakeList = []
-        for animNode in animNodes:
-            bakeList += cmds.listConnections(animNode+'.output', s=False, d=True, p=True)
-        ### bakeResult cannot bake 'scene time warp' animation
-        for t in range(int(frameRange[0]),int(frameRange[1]+1)):
-            cmds.currentTime(t)
-            currentTime = cmds.currentTime(q=True)
-            print currentTime
-            for bake in bakeList:
-                attr = bake.split('.')[-1]
-                obj = bake.replace("."+attr, "")
-                cmds.setKeyframe(obj, t=currentTime, at=attr)
+    # if scene_timeworp:
+    #     animNodes = retNodes[1:len(retNodes):2]
+    #     bakeList = []
+    #     for animNode in animNodes:
+    #         bakeList += cmds.listConnections(animNode+'.output', s=False, d=True, p=True)
+    #     ### bakeResult cannot bake 'scene time warp' animation
+    #     for t in range(int(frameRange[0]),int(frameRange[1]+1)):
+    #         cmds.currentTime(t)
+    #         currentTime = cmds.currentTime(q=True)
+    #         print currentTime
+    #         for bake in bakeList:
+    #             attr = bake.split('.')[-1]
+    #             obj = bake.replace("."+attr, "")
+    #             cmds.setKeyframe(obj, t=currentTime, at=attr)
 
     if isFilterCurve:
         cmds.filterCurve()

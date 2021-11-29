@@ -25,37 +25,39 @@ def _GetAnimNodeAndAttrFunc (inNode, inMode):
     for l in animCurve:
         flag = 1
         nodes = []
-
-        nodes = cmds.listConnections(inNode, c=True, type=l)
-        if nodes is not None:
-            if inMode == 0 or inMode == 2:
-                for k in range(0, len(nodes)):
-                    if inMode == 0:
-                        retNodes.append(nodes[k])
-                    else:
-                        if len(nodeAttr)>1:
-                            print '[nd] ASSERT!!\n'
-                            nodeAttr = nodes[k].split('.')
-                            delPfxNode = ndPyLibStrDeletePrefix(nodeAttr[0])
-                            retNodes[count] = delPfxNode + '.' + nodeAttr[1]
+        try:
+            nodes = cmds.listConnections(inNode, c=True, type=l)
+            if nodes is not None:
+                if inMode == 0 or inMode == 2:
+                    for k in range(0, len(nodes)):
+                        if inMode == 0:
+                            retNodes.append(nodes[k])
                         else:
-                            delPfxNode = ndPyLibStrDeletePrefix(nodes[k])
-                            retNodes[count] = delPfxNode
-                    count+=1
-            elif inMode == 1 or inMode == 3:
-                for k in range(len(nodes)):
-                    if flag == 1:
-                        if inMode == 1:
-                            retNodes[count] = nodes[k]
-                        else:
-                            nodeAttr = nodes[k].split('.')
-                            delPfxNode = ndPyLibStrDeletePrefix(nodeAttr[0])
-                            retNodes[count] = delPfxNode + '.' + nodeAttr[1]
-
-                        flag = 0
+                            if len(nodeAttr)>1:
+                                print '[nd] ASSERT!!\n'
+                                nodeAttr = nodes[k].split('.')
+                                delPfxNode = ndPyLibStrDeletePrefix(nodeAttr[0])
+                                retNodes[count] = delPfxNode + '.' + nodeAttr[1]
+                            else:
+                                delPfxNode = ndPyLibStrDeletePrefix(nodes[k])
+                                retNodes[count] = delPfxNode
                         count+=1
-                    else:
-                        flag = 1
+                elif inMode == 1 or inMode == 3:
+                    for k in range(len(nodes)):
+                        if flag == 1:
+                            if inMode == 1:
+                                retNodes[count] = nodes[k]
+                            else:
+                                nodeAttr = nodes[k].split('.')
+                                delPfxNode = ndPyLibStrDeletePrefix(nodeAttr[0])
+                                retNodes[count] = delPfxNode + '.' + nodeAttr[1]
+
+                            flag = 0
+                            count+=1
+                        else:
+                            flag = 1
+        except:
+            pass
     return retNodes
 
 def ndPyLibAnimGetAnimNodeAndAttrFunc (inForNodes, inMode, isCheckAnimCurve, isCheckConstraint):
