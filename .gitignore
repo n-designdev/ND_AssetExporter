@@ -1,0 +1,6 @@
+*.pyc
+old
+nouse
+log
+.vscode
+.vscode/settings.json

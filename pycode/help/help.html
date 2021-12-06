@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Staney</title>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <meta content="" name="keywords">
+  <meta content="" name="description">
+
+  <!-- Favicons -->
+  <link href="img/favicon.png" rel="icon">
+  <link href="img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,700" rel="stylesheet">
+
+  <!-- Bootstrap CSS File -->
+  <link href="lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Libraries CSS Files -->
+  <link href="lib/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+
+  <!-- Main Stylesheet File -->
+  <link href="css/style.css" rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- Static navbar -->
+  <div class="navbar navbar-inverse navbar-static-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+        <a class="navbar-brand" href="index.html">ND_AssetExporter Help</a>
+      </div>
+      <div class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right">
+        </ul>
+      </div>
+      <!--/.nav-collapse -->
+    </div>
+  </div>
+
+  <!-- +++++ Posts Lists +++++ -->
+  <!-- +++++ First Post +++++ -->
+  <div id="grey">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-lg-offset-2">
+          <p>
+            <bd> 2021, 0608</bd>
+          </p>
+          <h3>ツールUIの説明</h3>
+              <img src="img/body.png">
+
+              <ul type="1">
+                <li>オプション</li>
+                  <ul>
+                    <li>project environment load</li>
+                    <p>環境設定を読み込んだmaya batchを使用します。</p>
+                    <li>camera scale override</li>
+                    <p>カメラスケールをオーバーライドします。オフの場合シーン内の値をそのまま使います。</p>
+                    <li>abc step override</li>
+                    <p>abcステップをオーバーライドします。</p>
+                    <li>debug</li>
+                    <p>出力先がpublish/test_charにエクスポートされます。テストしたいときにお使いください。</p>
+                    <li>bake animation</li>
+                    <p>キーフレームが打たれたオブジェクトをベイクします。</p>
+                    <li>frameRangeCustom</li>
+                    <p>フレームレンジを上書きします。</p>
+                    <li>FrameHundle</li>
+                    <p>フレームハンドルを設定します。オフの場合±5フレームが自動で設定されます。</p>
+                  </ul>
+                <li>D&Dエリア</li>
+                  <p>ここにファイルをドラッグ・アンド・ドロップすることでプロジェクトやショット、シーケンス情報を解析し、それを元にshotgunから情報を取得します。</p>
+                  <p>正しく取得された場合、shotgun上のアセット情報がテーブル化され表示されます。</p>
+                <li>パス</li>
+                  <p>D&Dエリアにドロップしたファイルのパスが表示されます。</p>
+                <li>Exportボタン</li>
+                  <ul>
+                    <li>Local Export</li>
+                    <p>そのままエクスポートを実行します。</p>
+                    <li>Submit to Deadline</li>
+                    <p>deadlineで実行します(試験中)。</p>
+                  </ul>
+              </ul>
+              <h3>ShotGridの説明</h3>
+              <img src="img/sg_assets1.png">
+              <br>
+              <img src="img/sg_assets2.png">
+              <ul type="1">
+                <li>1 Category List</li>
+                <p>chara, bg, prop, cameraのアセットがリストアップされます。</p>
+                <li>2 Asset Name</li>
+                <p>ここで登録された名前がリストアップされます。アセットの名前は出力ファイルの名前にもなります</p>
+                <li>3 Asset Path</li>
+                <p>アセットのパスを登録してください。</p>
+                <li>4 Namespcae</li>
+                <p>ネームスペースを登録してください。プロップなどで後ろに数字が付く場合は正規表現を用いてください。</p>
+                <li>5 TopNode</li>
+                <p>トップノードを登録してください。</p>
+                <li>6 Export type</li>
+                <p>エクスポートタイプを選択してください。anim, abcのどちらかを選択できます。</p>
+                <li>7 ABC Export</li>
+                <p>abcで出力する場合にはここにエクスポート対象を登録しください。複数登録する場合は「,」で区切ってください。</p>
+                <li>8 Animation Export List</li>
+                <p>animで出力する場合にはここにエクスポート対象を登録してください。複数登録する場合は「,」で区切ってください。</p>
+                <li>9 Sequence</li>
+                <p>登録されたシーケンスのシーンでは、Assetをシーケンス単位で出力したい場合に登録してください。対象のシーケンスでは、shot側で設定されているAssetに加えここで登録したアセットも追加でリストアップされます。</p>
+                <li>shotページでは、以下のReferenced Assetsを設定してください。設定されたアセットがND_AssetExporterにリストアップされます。</li>
+                <div id="center-img">
+                  <img src="img/sg_shot1.png">
+                </div>
+              </ul>
+              <h3>Tips</h3>
+                <p>Chara Importerで設定されるフレーム設定はCameraを書き出した際にシーン内のminFrame, maxFrameを出力します。</p>
+                <p>Current Refresh Toolボタンを押すことで、パブリッシュディレクトリのcurrentが最新かチェックします。最新でない場合は出力された最新のバージョンをコピーします。</p>
+                <p>リストアップされるCamera はAssetとして登録されたものでは無く、デフォルトで入っているものです。シーン内のカメラを検索し、authographicsではないカメラを簡易的にコピーします。複雑なカメラを使う場合はアセットとして登録してください。</p>
+                <p>Shotgunでは少なくとも、shot, Asset Path, Namespace, Top Node, Export Type Anim Export Listを登録してください。
+          </ol>
+
+        </div>
+
+      </div>
+      <!-- /row -->
+    </div>
+    <!-- /container -->
+  </div>
+  <!-- /grey -->
+
+  <!-- +++++ Footer Section +++++ -->
+
+  <div id="footer">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4">
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- JavaScript Libraries -->
+  <script src="lib/jquery/jquery.min.js"></script>
+  <script src="lib/bootstrap/js/bootstrap.min.js"></script>
+  <script src="lib/php-mail-form/validate.js"></script>
+  <script src="lib/easing/easing.min.js"></script>
+
+  <script src="js/main.js"></script>
+
+</body>
+</html>
