@@ -11,7 +11,7 @@ for path in ND_TOOL_PATH.split(';'):
     if path in sys.path: continue
     sys.path.append(path)
 #------------------------------------
-import ND_lib.util.path as util_path
+import exporter_lib.path as util_path
 
 def symlink(source, link_name):
     import os
@@ -93,7 +93,7 @@ class outputPathConf(object):
                 os.mkdir(self._publishfullabcpath)
         except Exception as e:
             print(isCam, self.isAnim)
-            print e
+            print(e)
 
     def makeCurrentDir(self):
         currentDir = os.path.join(self.publishpath, 'current')
@@ -127,7 +127,7 @@ class outputPathConf(object):
         try:
             vers = os.listdir(self._publishpath)
         except WindowsError as e:
-            print "_publishpath:", self._publishpath
+            # print "_publishpath:", self._publishpath
             raise ValueError
         if len(vers) == 0:
             self.currentVer = 0
@@ -223,14 +223,9 @@ class outputPathConf(object):
 def addTimeLog(char, input_path, test):
     from datetime import datetime
     opc = outputPathConf(input_path, char, test)
-    print "#####addTimeLog#####"
-    print "chara: {}".format(char)
-    print "input_path: {}".format(input_path)
-    print "test: {}".format(test)
     try:
         opc.setChar(char)
     except ValueError:
-        print "AddTimeLog Error!!"
         return
     publishpath = opc.publishpath
     if test is True:
@@ -244,6 +239,5 @@ def addTimeLog(char, input_path, test):
             f.write(' ' + os.environ['USERNAME'])
             f.write('\n')
     except Exception as e:
-        print os.path.join(publishpath, 'timelog.txt')
-        print e
+        print(e)
     

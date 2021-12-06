@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import os,sys
 import ast
+import shutil
+import distutils.dir_util
 # ------------------------------
 env_key = 'ND_TOOL_PATH_PYTHON'
 ND_TOOL_PATH = os.environ.get(env_key, 'Y:/tool/ND_Tools/python')
@@ -11,25 +13,29 @@ for path in ND_TOOL_PATH.split(';'):
     sys.path.append(path)
 # ------------------------------------
 
-import ND_lib.shotgun.sg_util as sg_util
-import ND_lib.util.path as util_path
-import ND_lib.env as util_env
+# import ND_lib.shotgun.sg_util as sg_util
+import exporter_lib.sg_util as sg_util
+import exporter_lib.path as util_path
+import exporter_lib.env as util_env
 try:
     from PySide2.QtGui import *
     from PySide2.QtCore import *
     from PySide2.QtUiTools import QUiLoader
     from PySide2.QtWidgets import *
 except:
-    from PySide.QtGui import *
-    from PySide.QtCore import *
-    from PySide.QtUiTools import QUiLoader
+    import PySide6.QtCore as QtCore
+    import PySide6.QtGui as QtGui
+    from PySide6.QtCore import *
+    from PySide6.QtGui import *
+    from PySide6.QtUiTools import QUiLoader
 import subprocess
+# import shotgun_api3
 
 pythonBatch = 'Y:\\tool\\MISC\\Python2710_amd64_vs2010\\python.exe'
 
 class ProjectInfo():
     def __init__(self, url):
-        import ND_lib.util.path as util_path
+        import exporter_lib.path as util_path
         url_parsedict = util_path.get_path_dic(url)
         self.path = url_parsedict['path']
         self.path_type = url_parsedict['path_type']
@@ -82,11 +88,11 @@ class TableModelMaker(QAbstractTableModel):
             if column == 0:
                 if row in self.executed_row:
                     x = "✔"
-                    value = x.decode("utf-8", errors="ignore")
+                    value = x
                 else:
                     if row in self.check_row:
                         x = "◎"
-                        value = x.decode("utf-8", errors="ignore")
+                        value = x
                     else:
                         value = self.table_data[row][column]
             else:
@@ -229,9 +235,9 @@ def dictlist_parse(dictlist):
     return argsdict
 
 
-def check_arnold(project):
+def is_arnold(project):
     import yaml
-    project_name = "RAM1"
+    project_name = project
     toolkit_path = "Y:\\tool\\ND_Tools\\shotgun"
     app_launcher_path = "config\\env\\includes\\app_launchers.yml"
     project_app_launcher = "%s\\ND_sgtoolkit_%s\\%s" % (toolkit_path, project_name, app_launcher_path)
@@ -315,9 +321,7 @@ class DeadlineMod():
         command = '{deadline_cmd} "{job_file}" "{info_file}"'.format(**vars())
         process = subprocess.Popen(command, stdout=subprocess.PIPE)
         lines_iterator = iter(process.stdout.readline, b"")
-        print lines_iterator
         for line in lines_iterator:
-            print(line)
             if 'JobID' in line:
                 jobid = line.replace('JobID=', '')
             sys.stdout.flush()
@@ -338,6 +342,208 @@ def submit_to_deadlineJobs(jobs, farm="Deadline", version="10"):
     lines_iterator = iter(process.stdout.readline, b"")
     return lines_iterator
 
+
+class outputPathConf(object):
+    def __init__(self, input_path, isAnim=False, debug=False):
+        self.input_path = input_path.replace('\\', '/')
+        self.isAnim = isAnim
+        self.outputRootDir = 'charSet'
+        self.outputCamRootDir = 'Cam'
+        if debug == 'True':
+            self.outputRootDir = 'test_charSet'
+            self.outputCamRootDir = 'test_Cam'
+        dic = util_path.get_path_dic(self.input_path)
+        self._pro_name = dic['project_name']
+        self._shot = dic['shot']
+        self._sequence = dic['sequence']
+        self._shotpath = ''
+        for path_parts in self.input_path.split('/'):
+            self._shotpath = self._shotpath + path_parts+'/'
+            if path_parts == self._shot:
+                break
+
+    def createOutputDir(self, char):
+        self._publishpath = os.path.join(self._shotpath+'publish', self.outputRootDir, char)
+        if os.path.exists(self._publishpath):
+            self.verInc()
+        else:
+            try:
+                os.makedirs(self._publishpath)
+                self.verInc()
+            except:
+                pass
+
+    def createCamOutputDir(self):
+        self._publishpath = os.path.join(self._shotpath, 'publish', self.outputCamRootDir)
+        if os.path.exists(self._publishpath):
+            self.verInc(True)
+        else:
+            try:
+                os.makedirs(self._publishpath)
+                self.verInc(True)
+            except:
+                pass
+
+    def verInc(self, isCam=False):
+        vers = os.listdir(self._publishpath)
+        if len(vers) == 0:
+            self._currentVer = 'v001'
+        else:
+            vers.sort()
+            currentVer = vers[-1]
+            currentVerNum = int(currentVer[1:])
+            nextVerNum = currentVerNum + 1
+            nextVer = 'v' + str(nextVerNum).zfill(3)
+            self._currentVer = nextVer
+        self._publishfullpath = os.path.join(self._publishpath, self._currentVer)
+        self._publishfullabcpath = os.path.join(self._publishfullpath, 'abc')
+        self._publishfullanimpath = os.path.join(self._publishfullpath, 'anim')
+        self._publishfullcampath = os.path.join(self._publishfullpath,'cam')
+        try:
+            os.mkdir(self._publishfullpath)
+            if isCam == True:
+                os.mkdir(self._publishfullcampath)
+            elif self.isAnim:
+                os.mkdir(self._publishfullanimpath)
+            else:
+                os.mkdir(self._publishfullabcpath)
+        except Exception as e:
+            print(isCam, self.isAnim)
+            print(e)
+
+    def makeCurrentDir(self):
+        currentDir = os.path.join(self.publishpath, 'current')
+        self._publishcurrentpath = currentDir
+        distutils.dir_util.copy_tree(self._publishfullpath, currentDir)
+        current_info = os.path.join(currentDir, 'current_info.txt')
+        with open(current_info, 'w') as f:
+            f.write("current ver:"+ str(self._currentVer)+"\n")
+
+    def removeDir(self):
+        if os.path.exists(self._publishpath+'\\current'):
+            files = os.listdir(self._publishpath+'\\current')
+            for f in files:
+                if '.ma' in f:
+                    return
+        shutil.rmtree(self._publishpath)
+
+    def setChar(self, char):
+        if char == 'Cam' or char == 'Camera':
+            self._publishpath = os.path.join(self._shotpath, 'publish', self.outputCamRootDir).replace('/', '\\')
+        else:
+            self._publishpath = os.path.join(self._shotpath, 'publish', self.outputRootDir, char).replace('/', '\\')
+        try:
+            vers = os.listdir(self._publishpath)
+        except WindowsError as e:
+            raise ValueError
+        if len(vers) == 0:
+            raise ValueError
+        vers.sort()
+        self._currentVer = vers[-1]
+        if vers[0] > vers[-1]:
+            self._currentVer = vers[0]
+        self._publishfullpath = os.path.join(self._publishpath, self._currentVer)
+        self._publishfullabcpath = os.path.join(self._publishfullpath, 'abc')
+        self._publishfullanimpath = os.path.join(self._publishfullpath, 'anim')
+        self._publishfullcampath = os.path.join(self._publishfullpath, 'cam')
+        self._publishcurrentpath = self._publishpath+'\\current'
+
+    def setCache(self, char):
+        self._publishpath = os.path.join(self._shotpath, 'publish', 'cache', char).replace('/', '\\')
+        if os.path.exists(self._publishpath):
+            self.verInc()
+        else:
+            try:
+                os.makedirs(self._publishpath)
+                self.verInc()
+            except:
+                pass
+        try:
+            vers = os.listdir(self._publishpath)
+        except WindowsError as e:
+            raise ValueError
+        if len(vers) == 0:
+            raise ValueError
+        vers.sort()
+        self._currentVer = vers[-1]
+        if vers[0] > vers[-1]:
+            self._currentVer = vers[0]
+        self._publishfullpath = os.path.join(self._publishpath, self._currentVer)
+        self._publishfullabcpath = os.path.join(self._publishfullpath, 'abc')
+        self._publishfullanimpath = os.path.join(self._publishfullpath, 'anim')
+        self._publishfullcampath = os.path.join(self._publishfullpath, 'cam')
+        self._publishcurrentpath = os.path.join(self._publishpath, 'current')      
+
+    
+    def setDebug(self):
+        self._publishfullpath = self._publishfullpath.replace('charSet', 'test_charSet')
+        self._publishfullabcpath = self._publishfullabcpath.replace('charSet', 'test_charSet')
+        self._publishfullanimpath = self._publishfullanimpath.replace('charSet', 'test_charSet')
+        self._publishfullcampath = self._publishfullcampath.replace('charSet', 'test_charSet')
+        self._publishcurrentpath = self._publishcurrentpath.replace('charSet', 'test_charSet')
+        
+    @property
+    def sequence (self):
+        return self._sequence
+
+    @property
+    def shot (self):
+        return self._shot
+
+    @property
+    def publishpath (self):
+        return self._publishpath.replace(os.path.sep, '/')
+
+    @property
+    def publishfullpath (self):
+        return self._publishfullpath.replace(os.path.sep, '/')
+
+    @property
+    def publishfullabcpath (self):
+        return self._publishfullabcpath.replace(os.path.sep, '/')
+
+    @property
+    def publishfullanimpath (self):
+        return self._publishfullanimpath.replace(os.path.sep, '/')
+
+    @property
+    def publishcurrentpath (self):
+        return self._publishcurrentpath.replace(os.path.sep, '/')
+
+    @property
+    def publishfullcampath(self):
+        return self._publishfullcampath.replace(os.path.sep, '/')
+
+    @property
+    def publishshotpath(self):
+        return self._shotpath.replace(os.path.sep, '/')
+
+    @property
+    def currentVer (self):
+        return self._currentVer
+
+
+def addTimeLog(char, input_path, debug):
+    from datetime import datetime
+    opc = outputPathConf(input_path, char, debug)
+    print("#####addTimeLog#####")
+    print("chara: {}".format(char))
+    print("input_path: {}".format(input_path))
+    try:
+        opc.setChar(char)
+    except ValueError:
+        print("AddTimeLog Error!!")
+        return
+    publishpath = opc.publishpath
+    if debug is True:
+        publishpath = publishpath.replace("char", "test_char")
+        publishpath = publishpath.replace("Cam", "test_Cam")
+    with open(os.path.join(publishpath, 'timelog.txt').replace(os.path.sep, '/'), 'a') as f:
+        f.write(datetime.now().strftime('%Y/%m/%d %H:%M:%S'))
+        f.write(' ' + opc.currentVer)
+        f.write(' ' + input_path)
+        f.write(' ' + os.environ['USERNAME'])
+        f.write('\n')
 
 if __name__ == '__main__':
     import sys

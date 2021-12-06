@@ -120,20 +120,7 @@ QScrollBar::handle::horizontal {background:  rgb(90, 90, 90);}
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <widget class="QCheckBox" name="project_loader_checkbox">
-        <property name="layoutDirection">
-         <enum>Qt::RightToLeft</enum>
-        </property>
-        <property name="text">
-         <string>project environment load</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="cameraScaleOverride_CheckBox">
+       <widget class="QCheckBox" name="cam_scale_override_chk">
         <property name="layoutDirection">
          <enum>Qt::RightToLeft</enum>
         </property>
@@ -143,7 +130,7 @@ QScrollBar::handle::horizontal {background:  rgb(90, 90, 90);}
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="overrideValue_LineEdit">
+       <widget class="QLineEdit" name="cam_scale_override_velue_line">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -153,7 +140,7 @@ QScrollBar::handle::horizontal {background:  rgb(90, 90, 90);}
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="stepValue_CheckBox">
+       <widget class="QCheckBox" name="abc_step_override_chk">
         <property name="layoutDirection">
          <enum>Qt::RightToLeft</enum>
         </property>
@@ -163,7 +150,7 @@ QScrollBar::handle::horizontal {background:  rgb(90, 90, 90);}
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="stepValue_lineEdit">
+       <widget class="QLineEdit" name="abc_step_value_line">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -177,7 +164,7 @@ QScrollBar::handle::horizontal {background:  rgb(90, 90, 90);}
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
-       <widget class="QCheckBox" name="debug_CheckBox">
+       <widget class="QCheckBox" name="debug_chk">
         <property name="layoutDirection">
          <enum>Qt::RightToLeft</enum>
         </property>
@@ -190,20 +177,7 @@ QScrollBar::handle::horizontal {background:  rgb(90, 90, 90);}
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="bake_anim">
-        <property name="layoutDirection">
-         <enum>Qt::RightToLeft</enum>
-        </property>
-        <property name="text">
-         <string>bake animation</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="framerangecustom_checkbox">
+       <widget class="QCheckBox" name="custom_framerange_chk">
         <property name="layoutDirection">
          <enum>Qt::RightToLeft</enum>
         </property>
@@ -247,7 +221,7 @@ QScrollBar::handle::horizontal {background:  rgb(90, 90, 90);}
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="framehundle_checkbox">
+       <widget class="QCheckBox" name="framehundle_chk">
         <property name="enabled">
          <bool>true</bool>
         </property>
@@ -345,7 +319,7 @@ QScrollBar::handle::horizontal {background:  rgb(90, 90, 90);}
      </layout>
     </item>
     <item>
-     <widget class="QGroupBox" name="DD_area">
+     <widget class="QGroupBox" name="dd_area">
       <property name="acceptDrops">
        <bool>true</bool>
       </property>
@@ -393,7 +367,7 @@ QScrollBar::handle::horizontal {background:  rgb(90, 90, 90);}
            <number>0</number>
           </property>
           <item>
-           <widget class="QStackedWidget" name="Change_Area">
+           <widget class="QStackedWidget" name="stack_area">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
               <horstretch>0</horstretch>
@@ -562,28 +536,28 @@ QScrollBar::handle::horizontal {background:  rgb(90, 90, 90);}
                      <number>6</number>
                     </property>
                     <item>
-                     <widget class="QPushButton" name="check_button">
+                     <widget class="QPushButton" name="check_selected_btn">
                       <property name="text">
                        <string>Check Selected</string>
                       </property>
                      </widget>
                     </item>
                     <item>
-                     <widget class="QPushButton" name="uncheck_button">
+                     <widget class="QPushButton" name="uncheck_selected_btn">
                       <property name="text">
                        <string>UnChecked Selected</string>
                       </property>
                      </widget>
                     </item>
                     <item>
-                     <widget class="QPushButton" name="allcheck_button">
+                     <widget class="QPushButton" name="allcheck_btn">
                       <property name="text">
                        <string>All ItemCheck</string>
                       </property>
                      </widget>
                     </item>
                     <item>
-                     <widget class="QPushButton" name="alluncheck_button">
+                     <widget class="QPushButton" name="alluncheck_btn">
                       <property name="text">
                        <string>All Item Uncheck</string>
                       </property>
@@ -597,7 +571,7 @@ QScrollBar::handle::horizontal {background:  rgb(90, 90, 90);}
                      </widget>
                     </item>
                     <item>
-                     <widget class="QLineEdit" name="proj_line">
+                     <widget class="QLineEdit" name="pro_line">
                       <property name="sizePolicy">
                        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                         <horstretch>0</horstretch>
@@ -949,7 +923,7 @@ QScrollBar::handle::horizontal {background:  rgb(90, 90, 90);}
      </widget>
     </item>
     <item>
-     <widget class="QPushButton" name="start_button">
+     <widget class="QPushButton" name="export_local_btn">
       <property name="enabled">
        <bool>false</bool>
       </property>
@@ -983,7 +957,7 @@ QScrollBar::handle::horizontal {background:  rgb(90, 90, 90);}
      </widget>
     </item>
     <item>
-     <widget class="QPushButton" name="start_submit_button">
+     <widget class="QPushButton" name="export_submit_btn">
       <property name="enabled">
        <bool>false</bool>
       </property>

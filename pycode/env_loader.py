@@ -36,7 +36,6 @@ def run(args, **kwargs):
     # values_ana = ['mem2/maya/2018/amd64/win']
     # values_ana = ['MSTB4/maya/2018/amd64/win']
     # values_ana = ['MST_NS/maya/2018/amd64/win']
-
     #------------------------------------
     env_key = 'ND_TOOL_PATH_PYTHON'
     ND_TOOL_PATH = os.environ.get(env_key,'Y:/tool/ND_Tools/python')
@@ -45,9 +44,6 @@ def run(args, **kwargs):
         if path in sys.path: continue
         sys.path.append(path)
     #------------------------------------
-
-    import ND_lib.util.files as util_file
-    import ND_lib.util.path as util_path
 
     toolkit_path = "Y:\\tool\\ND_Tools\\shotgun"
     app_launcher_path = "config\\env\\includes\\app_launchers.yml"
@@ -71,33 +67,16 @@ def run(args, **kwargs):
     renderer = renderinfo[1].replace('_','').upper()
     rendver = renderinfo[2]
     ryear = renderinfo[0]
-    # ryear = '2017'
-
     oe = "_TMP_" + renderer + "_VER"
     os.environ[oe] = rendver
 
-    print '###render: env_loader#############'
-    print ryear
-    print rendver
-    print args
-    x = args.split(' ')
-    print x[0]
-    args = x[0].lower()
-    print args
-    print oe
-    print os.environ[oe]
-    print '###################'
-
+    argslist = args.split(' ')
+    args = argslist[0].lower()
 
     values_ana = [args+'/maya/'+ryear+'/amd64/win']
-
-
-    # name = args.pop(0)
     app_mode = values_ana.pop(0)
-
     #-----------------------------------
     filePath = '/'.join([env_param.data_path, "dummy.json"])
-
     #-----------------------------------
     keys = ["name", "appName", "version", "osType", "osName"]
     values = ["ndesign_base", ".", ".", ".", "."]
@@ -107,23 +86,5 @@ def run(args, **kwargs):
 
     #-----------------------------------
     envDict = util_env.loadConf(filePath, **options)
-
-    #-----------------------------------
     env = util_env.getEnvDict(envDict, env=os.environ, expand=True)
-    # #-----------------------------------
-    # import subprocess
-    # if fork:
-    #     args = [u'start', ''] + args
 
-    # # proc = subprocess.Popen(args, shell=True, env=env, close_fds=True)
-    # if fork:
-    #     return (0)
-    # else:
-    #     proc.wait()
-    #     return (proc.returncode)
-    # time.sleep(5)
-
-#-----------------------------------
-#-----------------------------------
-if __name__ == '__main__':
-    run(sys.argv[:])
