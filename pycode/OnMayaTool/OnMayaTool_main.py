@@ -1,5 +1,4 @@
 import sys, os
-import ND_lib.maya.basic as basic
 import maya.cmds as cmds
 
 def ls_asset_code(AssetClass_list):
@@ -16,7 +15,7 @@ class AssetClass():
 
     def export_asset(self, mode="Submit", debug="True", override_shotpath=None, override_exptype=None, add_attr=None):
         import maya.cmds as cmds
-        import main_util; reload(main_util)
+        import main_util
         scene_path = cmds.file(q=True, sn=True)
         ProjectInfoClass = main_util.ProjectInfo(scene_path)
         pro_name = ProjectInfoClass.project_name
@@ -78,23 +77,9 @@ class AssetClass():
             current_dir = "Y:\\tool\\ND_Tools\\DCC\\ND_AssetExporter\\pycode"
             if not os.path.exists(output_dir):
                 os.makedirs(output_dir)
-            import threading
-            # thread1 = threading.Thread(target=thread_main, args=(str(execargs_ls), output_file, current_dir))
-            # print output_file
-            # thread1.start()
-            # thread1.join()
-            # import time
-            # thread_len = len(threading.enumerate())
-            # while True:
-            #     print thread1
-            #     time.sleep(1)
-            #     if len(threading.enumerate())-thread_len==0:
-            #         break
             thread_main(str(execargs_ls), output_file, current_dir)
             from main_util import execExporter_maya
             import ast
-            import pprint
-            pprint.pprint(execargs_ls)
             argsdict = ast.literal_eval(str(execargs_ls))
             execExporter_maya(kwargs=argsdict)
 
@@ -111,11 +96,9 @@ def thread_main(execargs_ls, output_path, current_dir):
 def ls_asset_class():
     sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter\pycode")
     sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter\pycode\OnMayaTool")
-    import path_util; reload(path_util)
+    import path_util
     import shotgun_mod
     import maya_mod; reload(maya_mod)
-    #ls download sg
-    # PathClass = path_util.CharSetDirConf(basic.get_project_path_fullName())
     PathClass = path_util.CharSetDirConf(cmds.file(q=True,sceneName=True))
     
     project = PathClass.project
@@ -129,7 +112,7 @@ def ls_asset_class():
     for sg_asset in AssetSG_list:
         if sg_asset["sg_namespace"] is not None:
             asset_list.append(sg_asset)
-    #ls seane_space
+    #ls scene_space
     import re
     scene_namespaces = maya_mod.getNamespace()
     class_list = []
@@ -151,7 +134,8 @@ if __name__ == "__main__":
     import OnMayaTool_main; reload(OnMayaTool_main)
     AssetClass_list = OnMayaTool_main.ls_asset_class()
     asset_code_list = OnMayaTool_main.ls_asset_code(AssetClass_list)
-    export_path = "C:/Users/k_ueda/Desktop/work"
+    # export_path = "C:/Users/k_ueda/Desktop/work"
+    export_path = 'P:/Project/RAM1/shots/ep022/s2227/c008/publish/cache/alembic/s2227c008_anm_v004_old_asset'
     # AssetClass_list[0].export_asset(mode="Local", override_shotpath=None, override_exptype="abc", add_attr="shop_materialpath")
     AssetClass_list[0].export_asset(mode="Local", override_shotpath=export_path, override_exptype="abc", add_attr="shop_materialpath")
 

@@ -41,7 +41,6 @@ def strdict_parse(original_string):
 
 
 def back_starter(**kwargs):
-    print "#####back_starter#######"
     if "kwargs" in kwargs.keys():
         argsdic = kwargs["kwargs"]
     else:
@@ -80,6 +79,8 @@ def back_starter(**kwargs):
         argsdic['animOutput'] = opc.publishfullanimpath
         argsdic["export_item"]=anim_item
         batch.animExport(**argsdic)
+        if override == True:
+            return
         animFiles = os.listdir(opc._publishfullanimpath)
         if charaName == "camera_base" or charaName == "camera_simple":
             opc.makeCurrentDir()
@@ -115,7 +116,9 @@ def back_starter(**kwargs):
             os.makedirs(opc._publishfullabcpath)
         except:
             pass
-        batch.abcExport(**argsdic)
+        # batch.abcExport(**argsdic)
+        if override == True:
+            return
         abcFiles = os.listdir(opc._publishfullabcpath)
         if len(abcFiles) == 0:
             opc.removeDir()
@@ -161,13 +164,11 @@ def back_starter(**kwargs):
                 except:
                     pass
         opc.makeCurrentDir()
-    
     try:
         exporter_util.addTimeLog(charaName, input_path, test=debug_mode)
     except Exception as e:
         print e
         
-
     print 'Output directry: {}'.format(opc.publishfullpath.replace('/','\\'))
     print '=================END==================='
 

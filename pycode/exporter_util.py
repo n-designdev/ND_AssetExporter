@@ -115,7 +115,7 @@ class outputPathConf(object):
         if override == True:
             self._publishpath = os.path.join(self._shotpath).replace('/', '\\')
             self._publishfullpath = os.path.join(self._publishpath)
-            self._publishfullabcpath = os.path.join(self._publishfullpath, 'abc')
+            self._publishfullabcpath = os.path.join(self._publishfullpath)
             self._publishfullanimpath = os.path.join(self._publishfullpath, 'anim')
             self._publishfullcampath = os.path.join(self._publishfullpath, 'cam')
             self._publishcurrentpath = self._publishpath+'\\current'
