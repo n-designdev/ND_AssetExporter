@@ -1,5 +1,7 @@
 import sys, os
+import yaml
 import maya.cmds as cmds
+import back_starter
 
 def ls_asset_code(AssetClass_list):
     result_list = []
@@ -78,10 +80,7 @@ class AssetClass():
             if not os.path.exists(output_dir):
                 os.makedirs(output_dir)
             thread_main(str(execargs_ls), output_file, current_dir)
-            from main_util import execExporter_maya
-            import ast
-            argsdict = ast.literal_eval(str(execargs_ls))
-            execExporter_maya(kwargs=argsdict)
+            back_starter.back_starter(kwargs=yaml.safe_dump(execargs_ls))
 
 def thread_main(execargs_ls, output_path, current_dir):
     import subprocess

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os,sys
 import ast
+import yaml
 import shutil
 import distutils.dir_util
 # ------------------------------
@@ -18,10 +19,11 @@ import exporter_lib.sg_util as sg_util
 import exporter_lib.path as util_path
 import exporter_lib.env as util_env
 try:
-    from PySide2.QtGui import *
-    from PySide2.QtCore import *
-    from PySide2.QtUiTools import QUiLoader
-    from PySide2.QtWidgets import *
+    import PySide.QtCore as QtCore
+    import PySide.QtGui as QtGui
+    from PySide.QtCore import *
+    from PySide.QtGui import *
+    from PySide.QtUiTools import QUiLoader
 except:
     import PySide6.QtCore as QtCore
     import PySide6.QtGui as QtGui
@@ -156,14 +158,22 @@ def tabledata_maker(headers, convert_dic, target_assets):
                         td_row.append("abc_anim")
                         anim_item = target_asset["sg_anim_export_list"]
                         abc_item = target_asset["sg_abc_export_list"]
-                        td_row.append("{{anim:{}, abc:{}}})".format(anim_item, abc_item))
+                        # td_row.append("{{anim:{}, abc:{}}})".format(anim_item, abc_item))
+                        export_item_dic = {}
+                        export_item_dic['anim']=anim_item
+                        export_item_dic['abc'] =abc_item
+                        td_row.append(yaml.safe_dump(export_item_dic))
                         continue
                     else:
                         td_row.append('{Empty!}')
                         td_row.append('{Empty!}')
                     anim_item = target_asset["sg_anim_export_list"]
                     abc_item = target_asset["sg_abc_export_list"]
-                    td_row.append("{{anim:{}, abc:{}}})".format(anim_item, abc_item))
+                    # td_row.append("{{anim:{}, abc:{}}})".format(anim_item, abc_item))
+                    export_item_dic = {}
+                    export_item_dic['anim']=anim_item
+                    export_item_dic['abc'] =abc_item
+                    td_row.append(yaml.safe_dump(export_item_dic))
                     continue
                 if target_asset[sg_code] is None:
                     td_row.append("{Empty!}")
@@ -190,35 +200,21 @@ def add_camera_row(headers_item, tabledata, camera_rig_export):
     return tabledata
 
 
-def argsmaker(new_arg, args=None):
-    if not args:
-        return new_arg
-    else:
-        return args + ' ' + new_arg
-
-
-def execExporter(**kwargs):
-    args = argsmaker(pythonBatch)
-    args = argsmaker('back_starter.py', args)
-    args = argsmaker(str(kwargs), args)
-    subprocess.call(args, shell=True)
-
-
 def execExporter_maya(**kwargs):
     import back_starter
     reload(back_starter)
     back_starter.back_starter(kwargs=kwargs["kwargs"])
 
 
-def spsymbol_remover(litteral, itemtype):
-    import re
-    if itemtype == 'key':
-        litteral = re.sub(',| |:|\'|{|}', '', litteral)
-        litteral = litteral.rstrip(',')
-    elif itemtype == 'value':
-        litteral = litteral.rstrip(',')
-        litteral = re.sub(' |\'|{|}', '', litteral)
-    return litteral
+# def spsymbol_remover(litteral, itemtype):
+#     import re
+#     if itemtype == 'key':
+#         litteral = re.sub(',| |:|\'|{|}', '', litteral)
+#         litteral = litteral.rstrip(',')
+#     elif itemtype == 'value':
+#         litteral = litteral.rstrip(',')
+#         litteral = re.sub(' |\'|{|}', '', litteral)
+#     return litteral
 
 
 def dictlist_parse(dictlist):
@@ -242,7 +238,7 @@ def is_arnold(project):
     app_launcher_path = "config\\env\\includes\\app_launchers.yml"
     project_app_launcher = "%s\\ND_sgtoolkit_%s\\%s" % (toolkit_path, project_name, app_launcher_path)
     f = open(project_app_launcher, "r")
-    data = yaml.load(f)
+    data = yaml.yaml_load(f)
     f.close()
     for version in data["launch_maya"]["versions"]:
         if "(_MtoA_)" in version:
@@ -252,11 +248,11 @@ def is_arnold(project):
 class DeadlineMod():
     def __init__(self, **kwargs):
         #jobFile
-        self.target_py = "Y:/tool/ND_Tools/DCC/ND_AssetExporter/pycode/main_util.py"
+        self.target_py = "Y:/tool/ND_Tools/DCC/ND_AssetExporter_test/pycode/back_starter.py"
         #infoFile
         self.argsdict = kwargs
-        self.executer = "Y:/tool/MISC/Python2710_amd64_vs2010/python.exe"
-        self.stg_dir = "Y:/tool/ND_Tools/DCC/ND_AssetExporter/pycode"
+        self.executer = r"C:\Users\k_ueda\AppData\Local\Programs\Python\Python310\python.exe"
+        self.stg_dir = "Y:/tool/ND_Tools/DCC/ND_AssetExporter_test/pycode"
         self.tmp_dir = os.environ.get('TEMP', 'E:/TEMP')
         self.job_dict = self.job_content()
         self.info_dict = self.info_content()
@@ -327,6 +323,7 @@ class DeadlineMod():
             sys.stdout.flush()
         return jobid
 
+
 def submit_to_deadlineJobs(jobs, farm="Deadline", version="10"):
     arg_file_path = '{}/args.txt'.format(util_env.env_temp)
     submit_text = "-SubmitMultipleJobs"
@@ -341,186 +338,6 @@ def submit_to_deadlineJobs(jobs, farm="Deadline", version="10"):
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=devnull)
     lines_iterator = iter(process.stdout.readline, b"")
     return lines_iterator
-
-
-class outputPathConf(object):
-    def __init__(self, input_path, isAnim=False, debug=False):
-        self.input_path = input_path.replace('\\', '/')
-        self.isAnim = isAnim
-        self.outputRootDir = 'charSet'
-        self.outputCamRootDir = 'Cam'
-        if debug == 'True':
-            self.outputRootDir = 'test_charSet'
-            self.outputCamRootDir = 'test_Cam'
-        dic = util_path.get_path_dic(self.input_path)
-        self._pro_name = dic['project_name']
-        self._shot = dic['shot']
-        self._sequence = dic['sequence']
-        self._shotpath = ''
-        for path_parts in self.input_path.split('/'):
-            self._shotpath = self._shotpath + path_parts+'/'
-            if path_parts == self._shot:
-                break
-
-    def createOutputDir(self, char):
-        self._publishpath = os.path.join(self._shotpath+'publish', self.outputRootDir, char)
-        if os.path.exists(self._publishpath):
-            self.verInc()
-        else:
-            try:
-                os.makedirs(self._publishpath)
-                self.verInc()
-            except:
-                pass
-
-    def createCamOutputDir(self):
-        self._publishpath = os.path.join(self._shotpath, 'publish', self.outputCamRootDir)
-        if os.path.exists(self._publishpath):
-            self.verInc(True)
-        else:
-            try:
-                os.makedirs(self._publishpath)
-                self.verInc(True)
-            except:
-                pass
-
-    def verInc(self, isCam=False):
-        vers = os.listdir(self._publishpath)
-        if len(vers) == 0:
-            self._currentVer = 'v001'
-        else:
-            vers.sort()
-            currentVer = vers[-1]
-            currentVerNum = int(currentVer[1:])
-            nextVerNum = currentVerNum + 1
-            nextVer = 'v' + str(nextVerNum).zfill(3)
-            self._currentVer = nextVer
-        self._publishfullpath = os.path.join(self._publishpath, self._currentVer)
-        self._publishfullabcpath = os.path.join(self._publishfullpath, 'abc')
-        self._publishfullanimpath = os.path.join(self._publishfullpath, 'anim')
-        self._publishfullcampath = os.path.join(self._publishfullpath,'cam')
-        try:
-            os.mkdir(self._publishfullpath)
-            if isCam == True:
-                os.mkdir(self._publishfullcampath)
-            elif self.isAnim:
-                os.mkdir(self._publishfullanimpath)
-            else:
-                os.mkdir(self._publishfullabcpath)
-        except Exception as e:
-            print(isCam, self.isAnim)
-            print(e)
-
-    def makeCurrentDir(self):
-        currentDir = os.path.join(self.publishpath, 'current')
-        self._publishcurrentpath = currentDir
-        distutils.dir_util.copy_tree(self._publishfullpath, currentDir)
-        current_info = os.path.join(currentDir, 'current_info.txt')
-        with open(current_info, 'w') as f:
-            f.write("current ver:"+ str(self._currentVer)+"\n")
-
-    def removeDir(self):
-        if os.path.exists(self._publishpath+'\\current'):
-            files = os.listdir(self._publishpath+'\\current')
-            for f in files:
-                if '.ma' in f:
-                    return
-        shutil.rmtree(self._publishpath)
-
-    def setChar(self, char):
-        if char == 'Cam' or char == 'Camera':
-            self._publishpath = os.path.join(self._shotpath, 'publish', self.outputCamRootDir).replace('/', '\\')
-        else:
-            self._publishpath = os.path.join(self._shotpath, 'publish', self.outputRootDir, char).replace('/', '\\')
-        try:
-            vers = os.listdir(self._publishpath)
-        except WindowsError as e:
-            raise ValueError
-        if len(vers) == 0:
-            raise ValueError
-        vers.sort()
-        self._currentVer = vers[-1]
-        if vers[0] > vers[-1]:
-            self._currentVer = vers[0]
-        self._publishfullpath = os.path.join(self._publishpath, self._currentVer)
-        self._publishfullabcpath = os.path.join(self._publishfullpath, 'abc')
-        self._publishfullanimpath = os.path.join(self._publishfullpath, 'anim')
-        self._publishfullcampath = os.path.join(self._publishfullpath, 'cam')
-        self._publishcurrentpath = self._publishpath+'\\current'
-
-    def setCache(self, char):
-        self._publishpath = os.path.join(self._shotpath, 'publish', 'cache', char).replace('/', '\\')
-        if os.path.exists(self._publishpath):
-            self.verInc()
-        else:
-            try:
-                os.makedirs(self._publishpath)
-                self.verInc()
-            except:
-                pass
-        try:
-            vers = os.listdir(self._publishpath)
-        except WindowsError as e:
-            raise ValueError
-        if len(vers) == 0:
-            raise ValueError
-        vers.sort()
-        self._currentVer = vers[-1]
-        if vers[0] > vers[-1]:
-            self._currentVer = vers[0]
-        self._publishfullpath = os.path.join(self._publishpath, self._currentVer)
-        self._publishfullabcpath = os.path.join(self._publishfullpath, 'abc')
-        self._publishfullanimpath = os.path.join(self._publishfullpath, 'anim')
-        self._publishfullcampath = os.path.join(self._publishfullpath, 'cam')
-        self._publishcurrentpath = os.path.join(self._publishpath, 'current')      
-
-    
-    def setDebug(self):
-        self._publishfullpath = self._publishfullpath.replace('charSet', 'test_charSet')
-        self._publishfullabcpath = self._publishfullabcpath.replace('charSet', 'test_charSet')
-        self._publishfullanimpath = self._publishfullanimpath.replace('charSet', 'test_charSet')
-        self._publishfullcampath = self._publishfullcampath.replace('charSet', 'test_charSet')
-        self._publishcurrentpath = self._publishcurrentpath.replace('charSet', 'test_charSet')
-        
-    @property
-    def sequence (self):
-        return self._sequence
-
-    @property
-    def shot (self):
-        return self._shot
-
-    @property
-    def publishpath (self):
-        return self._publishpath.replace(os.path.sep, '/')
-
-    @property
-    def publishfullpath (self):
-        return self._publishfullpath.replace(os.path.sep, '/')
-
-    @property
-    def publishfullabcpath (self):
-        return self._publishfullabcpath.replace(os.path.sep, '/')
-
-    @property
-    def publishfullanimpath (self):
-        return self._publishfullanimpath.replace(os.path.sep, '/')
-
-    @property
-    def publishcurrentpath (self):
-        return self._publishcurrentpath.replace(os.path.sep, '/')
-
-    @property
-    def publishfullcampath(self):
-        return self._publishfullcampath.replace(os.path.sep, '/')
-
-    @property
-    def publishshotpath(self):
-        return self._shotpath.replace(os.path.sep, '/')
-
-    @property
-    def currentVer (self):
-        return self._currentVer
 
 
 def addTimeLog(char, input_path, debug):
@@ -546,13 +363,7 @@ def addTimeLog(char, input_path, debug):
         f.write('\n')
 
 if __name__ == '__main__':
-    import sys
-    import subprocess
-    _strargv = sys.argv
-    _strargv.pop(0)
-    try:
-        argsdict = ast.literal_eval(_strargv[0])
-    except:
-        argsdict = dictlist_parse(_strargv)
-    execExporter(**argsdict)
+    py_file = sys.argv[0] 
+    argsdic = yaml.safe_load(sys.argv[1])
+    execExporter(argsdic)
     sys.exit()

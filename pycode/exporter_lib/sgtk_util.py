@@ -66,7 +66,7 @@ def get_project_root_dic(project):
     roots_dic = {"Windows": "", "Mac": "", "Linux": ""}
 
     f = open(roots_yaml_path, "r")
-    roots = yaml.full_load(f)
+    roots = yaml.safe_load(f)
     f.close()
 
 
@@ -85,7 +85,7 @@ def get_template_dic(project, dcc=None):
     template_path = get_sgtk_template_path(sgtk_path)
 
     f = open(template_path, "r")
-    template = yaml.full_load(f)
+    template = yaml.safe_load(f)
     f.close()
 
     #DCCツール単位にテンプレートを取得

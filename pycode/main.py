@@ -3,6 +3,8 @@ from __future__ import print_function
 import os
 import sys
 import time
+import importlib
+import yaml
 # ------------------------------
 __version__ = '2.2'
 __author__ = "Kei Ueda"
@@ -18,6 +20,7 @@ for path in ND_TOOL_PATH.split(";"):
 import datetime
 import subprocess
 import threading
+import json
 
 # import ND_lib.shotgun.sg_scriptkey as sg_scriptkey
 # sg = sg_scriptkey.scriptKey()
@@ -36,9 +39,9 @@ except ModuleNotFoundError:
     from PySide6.QtUiTools import QUiLoader
 # ------------------------------------
 
-import main_util
-import shotgun_mod
-import util
+import main_util; importlib.reload(main_util)
+import shotgun_mod; importlib.reload(shotgun_mod)
+import util; importlib.reload(util)
 try:
     import ND_Submitter.env as util_env
     # import ND_Submitter2.env as util_env
@@ -47,6 +50,7 @@ except Exception as e:
 else:
     NoDeadlineMode = False
 
+PYPATH = r"C:\Users\k_ueda\AppData\Local\Programs\Python\Python310\python.exe"
 onpath = os.path.dirname(os.path.abspath(__file__)).replace('\\', '/')
 os.chdir(onpath)
 
@@ -127,10 +131,163 @@ class GUI(QMainWindow):
         self.ui.export_submit_btn.clicked.connect(self.export_submit_btn_clicked)
 
 
-    def drop_func(self, urldata, override_input_path=None):
-        if urldata is None:
-            return False
-        self.input_path = urldata[0].toString().replace("file:///", "")
+    def debug_chk_stateChange(self):
+        self.debug = self.ui.debug_chk.isChecked()
+
+    def camscale_override_chk_stateChange(self):
+        state = self.ui.abc_step_override_chk.isChecked()
+        self.ui.stepValue_LineEdit.setEnabled(state)
+
+    def abc_step_override_chk_stateChange(self):
+        state = self.ui.abc_step_override_chk.isChecked()
+        self.ui.stepValue_lineEdit.setEnabled(state)
+
+    def check_selected_btn_clicked(self):
+        for selected_row in self.ui.main_table.selectedIndexes():
+            self.check_row.append(selected_row.row())
+        self.check_row = list(set(self.check_row))
+        model = main_util.TableModelMaker(
+            self.tabledata, self.headers,
+            self.check_row, self.executed_row)
+        self.ui.main_table.setModel(model)
+
+    def uncheck_selected_btn_clicked(self):
+        selected_index = []
+        for selected_row in self.ui.main_table.selectedIndexes():
+            selected_index.append(selected_row.row())
+        selected_index = list(set(selected_index))
+        for _index in selected_index:
+            try:
+                self.check_row.remove(_index)
+            except:
+                pass
+        model = main_util.TableModelMaker(
+                self.tabledata, self.headers,
+                self.check_row)
+        self.ui.main_table.setModel(model)
+
+    def allcheck_btn_clicked(self):
+        self.check_row = range(len(self.tabledata))
+        model = main_util.TableModelMaker(
+                self.tabledata, self.headers,
+                self.check_row, self.executed_row)
+        self.ui.main_table.setModel(model)
+
+    def alluncheck_btn_clicked(self):
+        self.check_row = []
+        model = main_util.TableModelMaker(
+                self.tabledata, self.headers,
+                self.check_row, self.executed_row)
+        self.ui.main_table.setModel(model)
+
+    def framehundle_chk_clicked(self):
+        self.ui.framehundle_value.setEnabled(
+            self.ui.framehundle_chk.isChecked())
+
+    def custom_framerange_chk(self):
+        state = self.ui.custom_framerange_chk.isChecked()
+        self.ui.sFrame.setEnabled(state)
+        self.ui.eFrame.setEnabled(state)
+
+    def cam_scale_override_chk_stateChange(self):
+        currentState = self.ui.camscale_override_chk.isChecked()
+        self.ui.overrideValue_LineEdit.setEnabled(currentState)
+
+    def export_local_btn_clicked(self):
+        print('local')
+        self.export_main(mode='Local')
+
+    def export_submit_btn_clicked(self):
+        print('Submit')
+        self.export_main(mode='Submit')
+
+    def open_log_button_clicked(self):
+        sakura = r"C:\Program Files (x86)\sakura\sakura.exe"
+        subprocess.Popen([sakura, self.last_log_path])
+
+    def contextMenu(self, point):
+        print(point)
+
+    def eventFilter(self, object, event):
+        if event.type() == QEvent.DragEnter:
+            event.acceptProposedAction()
+        if event.type() == QEvent.Drop:
+            mimedata = event.mimeData()
+            urldata = mimedata.urls()
+            self.drop_func(urldata)
+        return True
+
+
+    def main_table_clicked(self):
+        if self.selected_item != None:
+            self.ui.main_table.closePersistentEditor(self.selected_item)
+            self.selected_item = None
+
+    def main_table_doubleClicked(self):
+        clicked_row = self.ui.main_table.selectedIndexes()[0].row()
+        check_rows = self.check_row
+        if clicked_row in check_rows[:]:
+            check_rows.remove(clicked_row)
+        else:
+            check_rows.append(clicked_row)
+        self.check_row = list(set(check_rows))
+        model = main_util.TableModelMaker(
+            self.tabledata, self.headers, self.check_row, self.executed_row)
+        self.ui.main_table.setModel(model)
+
+    def main_table_rclicked(self):
+        self.selected_item = self.ui.main_table.selectedIndexes()[0]
+        _row = self.selected_item.row()
+        _column = self.selected_item.column()
+        newitem = self.selected_item.data()
+        self.ui.main_table.openPersistentEditor(self.selected_item)
+
+    def current_refresh_button_clicked(self):
+        import copy_tool.copy_main as copy_main
+        import exporter_util
+        opc = exporter_util.outputPathConf(self.input_path)
+        shot_path = opc.publishshotpath
+        if self.debug:
+            current_path = os.path.join(shot_path, "publish", "test_charSet")
+        else:
+            current_path = os.path.join(shot_path, "publish", "charSet")
+        copy_main.copy_main(current_path)
+
+    def open_publish_dir_button_clicked(self):
+        import exporter_util
+        opc = exporter_util.outputPathConf(self.input_path)
+        shot_path = opc.publishshotpath
+        publish_path = os.path.join(shot_path, "publish")
+        subprocess.call("explorer {}".format(publish_path.replace("/", "\\")))
+
+    def help_button_clicked(self):
+        import webbrowser
+        url = "Y:/tool/ND_Tools/DCC/ND_AssetExporter/pycode/help/help.html"
+        webbrowser.open_new_tab(url)
+
+    def load_user_info(self):
+        filename = "user_info.py"
+        output_dir = "Y:\\users\\"+os.environ.get("USERNAME")+"\\DCC_log\\ND_AssetExporter"
+        output_file = output_dir + "\\" + filename
+        if not os.path.exists(output_dir):
+            return
+        if os.path.exists(output_file):
+            sys.path.append(output_dir)
+            import user_info
+            self.drop_func(user_info.path)
+        
+    def output_user_info(self):
+        filename = "user_info.py"
+        output_dir = "Y:\\users\\"+os.environ.get("USERNAME")+"\\DCC_log\\ND_AssetExporter"
+        output_file = output_dir + "\\" + filename
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        with open(output_file, mode='w') as f:
+            f.write("path =  \"{}\"\n".format(self.input_path))
+
+    def drop_func(self, urldata):
+        if type(urldata)==list:
+            self.input_path = urldata[0].toString().replace("file:///", "")
         self.ui.path_line.setText(self.input_path)
         self.ui.stack_area.setCurrentIndex(1)
 
@@ -206,92 +363,6 @@ class GUI(QMainWindow):
 
         return True
 
-    def debug_chk_stateChange(self):
-        self.debug = self.ui.debug_chk.isChecked()
-
-    def camscale_override_chk_stateChange(self):
-        state = self.ui.abc_step_override_chk.isChecked()
-        self.ui.stepValue_LineEdit.setEnabled(state)
-
-    def abc_step_override_chk_stateChange(self):
-        state = self.ui.abc_step_override_chk.isChecked()
-        self.ui.stepValue_lineEdit.setEnabled(state)
-
-    def check_selected_btn_clicked(self):
-        for selected_row in self.ui.main_table.selectedIndexes():
-            self.check_row.append(selected_row.row())
-        self.check_row = list(set(self.check_row))
-        model = main_util.TableModelMaker(
-            self.tabledata, self.headers,
-            self.check_row, self.executed_row)
-        self.ui.main_table.setModel(model)
-
-    def uncheck_selected_btn_clicked(self):
-        selected_index = []
-        for selected_row in self.ui.main_table.selectedIndexes():
-            selected_index.append(selected_row.row())
-        selected_index = list(set(selected_index))
-        for _index in selected_index:
-            try:
-                self.check_row.remove(_index)
-            except:
-                pass
-        model = main_util.TableModelMaker(
-                self.tabledata, self.headers,
-                self.check_row)
-        self.ui.main_table.setModel(model)
-
-    def allcheck_btn_clicked(self):
-        self.check_row = range(len(self.tabledata))
-        model = main_util.TableModelMaker(
-                self.tabledata, self.headers,
-                self.check_row, self.executed_row)
-        self.ui.main_table.setModel(model)
-
-    def alluncheck_btn_clicked(self):
-        self.check_row = []
-        model = main_util.TableModelMaker(
-                self.tabledata, self.headers,
-                self.check_row, self.executed_row)
-        self.ui.main_table.setModel(model)
-
-    def framehundle_chk_clicked(self):
-        self.ui.framehundle_value.setEnabled(
-            self.ui.framehundle_chk.isChecked())
-
-    def custom_framerange_chk(self):
-        state = self.ui.custom_framerange_chk.isChecked()
-        self.ui.sFrame.setEnabled(state)
-        self.ui.eFrame.setEnabled(state)
-
-    def cam_scale_override_chk_stateChange(self):
-        currentState = self.ui.camscale_override_chk.isChecked()
-        self.ui.overrideValue_LineEdit.setEnabled(currentState)
-
-    def export_local_btn_clicked(self):
-        print('local')
-        self.export_main(mode='Local')
-
-    def export_submit_btn_clicked(self):
-        print('Submit')
-        self.export_main(mode='Submit')
-
-    def open_log_button_clicked(self):
-        sakura = r"C:\Program Files (x86)\sakura\sakura.exe"
-        subprocess.Popen([sakura, self.output_file])
-
-    def contextMenu(self, point):
-        print(point)
-
-    def eventFilter(self, object, event):
-        if event.type() == QEvent.DragEnter:
-            event.acceptProposedAction()
-        if event.type() == QEvent.Drop:
-            mimedata = event.mimeData()
-            urldata = mimedata.urls()
-            self.drop_func(urldata)
-        return True
-
     def export_main(self, mode):
         self.ui.stack_area.setCurrentIndex(2)
         self.ui.repaint()
@@ -333,7 +404,7 @@ class GUI(QMainWindow):
                 print("table data not qualified...")
                 continue
 
-            assetname = row_items[1]
+            asset_name = row_items[1]
             namespace = row_items[2]
             export_type = row_items[3]
             export_item = row_items[4]
@@ -341,9 +412,9 @@ class GUI(QMainWindow):
             asset_path = row_items[6].replace("\\","/")
 
             argsdic = {
-                'chara': assetname,
+                'asset_name': asset_name,
                 'namespace': namespace,
-                'export_item': export_item,
+                'export_item': yaml.safe_load(export_item),
                 'topnode': topnode,
                 'assetpath': asset_path,
                 'debug': self.debug,
@@ -353,9 +424,9 @@ class GUI(QMainWindow):
                 'framerange': framerange,
                 'framehundle': framehundle,
                 'cam_scale': cam_scale,
-                'input_path': self.input_path.encode('utf-8'),
-                'shot': self.ui.shot_line.text().encode(),
-                'sequence': self.ui.cut_line.text().encode(),
+                'input_path': self.input_path,
+                'shot': self.ui.shot_line.text(),
+                'sequence': self.ui.cut_line.text(),
                 'scene_timeworp': self.ui.scene_timeworp_check.isChecked(),
                 'abc_check': self.ui.abc_cache_check.isChecked(),
                 'priority': self.ui.priority.text(),
@@ -366,19 +437,23 @@ class GUI(QMainWindow):
                 continue
 
             if mode == 'Local':
-                filename = "log_" + datetime.datetime.now().strftime('%Y%m%d_%H%M%S') + chara+ ".txt"
-                output_dir = "Y:\\users\\"+os.environ.get("USERNAME")+"\\DCC_log\\ND_AssetExporter"
-                output_file = output_dir + "\\" + filename
-                current_dir = "Y:\\tool\\ND_Tools\\DCC\\ND_AssetExporter\\pycode"
+                log_name = "log_" + datetime.datetime.now().strftime('%Y%m%d_%H%M%S') + asset_name+ ".txt"
+                log_dir = "Y:\\users\\"+os.environ.get("USERNAME")+"\\DCC_log\\ND_AssetExporter"
+                log_path = log_dir + "\\" + log_name
+                current_dir = r"Y:/tool/ND_Tools/DCC/ND_AssetExporter_test/pycode"
+                if not os.path.exists(log_dir):
+                    os.makedirs(log_dir)
                 self.ui.stack_area.setCurrentIndex(2)
-                if not os.path.exists(output_dir):
-                    os.makedirs(output_dir)
-
-                export_thread = threading.Thread(target=thread_main, args=(argsdic, output_file, current_dir))
+                thread_args = {}
+                thread_args["argsdic"]=argsdic
+                thread_args["log_path"]=log_path
+                thread_args["current_dir"]=current_dir
+                export_thread = threading.Thread(target=thread_main, kwargs=thread_args)
                 export_thread.start()
 
                 count = 0
                 timer=0
+
                 while True:
                     if len(threading.enumerate())==1:
                         break
@@ -392,9 +467,9 @@ class GUI(QMainWindow):
                         self.ui.log_area.setPlainText("now working{}".format("."*timer))
                         self.ui.repaint()
                     qApp.processEvents()
-                self.output_file = output_file
+                self.last_log_path = log_path
                 self.ui.open_log_button.setEnabled(True)
-            if mode == 'Submit':
+            elif mode == 'Submit':
                 DLclass = main_util.DeadlineMod(**argsdic)
                 jobfiles_list.append(DLclass.make_submit_files(file_number))
                 file_number += 1
@@ -406,81 +481,23 @@ class GUI(QMainWindow):
         self.ui.stack_area.setCurrentIndex(1)
         self.executed_row = list(set(self.executed_row))
         main_util.TableModelMaker(
-            self.tabledata, self.headers,
-            self.check_row, self.executed_row)
+                self.tabledata, self.headers,
+                self.check_row, self.executed_row)
         print("===============Export End==================")
 
-    def main_table_clicked(self):
-        if self.selected_item != None:
-            self.ui.main_table.closePersistentEditor(self.selected_item)
-            self.selected_item = None
 
-    def main_table_doubleClicked(self):
-        clicked_row = self.ui.main_table.selectedIndexes()[0].row()
-        check_rows = self.check_row
-        if clicked_row in check_rows[:]:
-            check_rows.remove(clicked_row)
-        else:
-            check_rows.append(clicked_row)
-        self.check_row = list(set(check_rows))
-        model = main_util.TableModelMaker(
-            self.tabledata, self.headers, self.check_row, self.executed_row)
-        self.ui.main_table.setModel(model)
-
-    def main_table_rclicked(self):
-        self.selected_item = self.ui.main_table.selectedIndexes()[0]
-        _row = self.selected_item.row()
-        _column = self.selected_item.column()
-        newitem = self.selected_item.data()
-        self.ui.main_table.openPersistentEditor(self.selected_item)
-
-    def current_refresh_button_clicked(self):
-        import copy_tool.copy_main as copy_main
-        opc = util.outputPathConf(self.input_path)
-        shot_path = opc.publishshotpath
-        if self.debug:
-            current_path = os.path.join(shot_path, "publish", "test_charSet")
-        else:
-            current_path = os.path.join(shot_path, "publish", "charSet")
-        copy_main.copy_main(current_path)
-
-    def open_publish_dir_button_clicked(self):
-        import exporter_util
-        opc = exporter_util.outputPathConf(self.input_path)
-        shot_path = opc.publishshotpath
-        publish_path = os.path.join(shot_path, "publish")
-        subprocess.call("explorer {}".format(publish_path.replace("/", "\\")))
-
-    def help_button_clicked(self):
-        import webbrowser
-        url = "Y:/tool/ND_Tools/DCC/ND_AssetExporter/pycode/help/help.html"
-        webbrowser.open_new_tab(url)
-
-    def load_user_info(self):
-        filename = "user_info.py"
-        output_dir = "Y:\\users\\"+os.environ.get("USERNAME")+"\\DCC_log\\ND_AssetExporter"
-        output_file = output_dir + "\\" + filename
-        if not os.path.exists(output_dir):
-            return
-        if os.path.exists(output_file):
-            sys.path.append(output_dir)
-            import user_info
-            self.drop_func(override_input_path=user_info.path)
-        
-    def output_user_info(self):
-        filename = "user_info.py"
-        output_dir = "Y:\\users\\"+os.environ.get("USERNAME")+"\\DCC_log\\ND_AssetExporter"
-        output_file = output_dir + "\\" + filename
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-        with open(output_file, mode='w') as f:
-            f.write("path =  \"{}\"\n".format(self.input_path))
-
-def thread_main(execargs_ls, output_path, current_dir):
-    python = "Y:\\tool\\MISC\\Python2710_amd64_vs2010\\python.exe"
-    py_path = "Y:\\tool\\ND_Tools\\DCC\\ND_AssetExporter\\pycode\\main_util.py"
-    with open(output_path, "w+")as f:
-        proc = subprocess.Popen([python, py_path,str(execargs_ls)], shell=True,stdout=f, cwd=current_dir)
+def thread_main(**kwargs):
+    argsdic = json.dumps(kwargs['argsdic'], ensure_ascii=False)
+    log_path = kwargs['log_path']
+    current_dir = kwargs['current_dir']
+    # python = "Y:\\tool\\MISC\\Python2710_amd64_vs2010\\python.exe"
+    python = PYPATH
+    py_path = r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_test\pycode\back_starter.py"
+    with open(log_path, "w+")as f:
+        # proc = subprocess.run([python, py_path, argsdic], shell=True, stdout=f, cwd=current_dir)
+        print(python, py_path, argsdic)
+        # proc = subprocess.run([python, py_path, argsdic], shell=True, stdout=f , cwd=current_dir)
+        proc = subprocess.run([python, py_path, argsdic], shell=True, stdout=subprocess.PIPE , cwd=current_dir)
         proc.wait()
     return
 

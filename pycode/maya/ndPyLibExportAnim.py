@@ -506,9 +506,6 @@ def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFi
 
 
 def ndPyLibExportAnim_caller(args):
-    argsdic = args
-    print "###args###"
-    print args
     # outputPath = argsdic['output']
     outputPath = argsdic['animOutput']
     oFilename = argsdic['export_type']

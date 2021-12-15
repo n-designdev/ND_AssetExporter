@@ -6,150 +6,19 @@ import yaml
 
 onpath = os.path.dirname(os.path.abspath(__file__)).replace('\\','/')
 
-def mayacmd_maker(unique_order, mayafile=None, mayaBatch=None):
-    batch_firstact = (
+def maya_cmd_maker(unique_order, mayafile=None, mayaBatch=None):
+    maya_cmd = (
         "import sys;"
-        "sys.path.append(\'{}\');".format(onpath)
-        + unique_order.replace('\'', '\\\'')
+        "sys.path.append(\'{}/maya\');".format(onpath)
     )
-    if mayaBatch==None:
-        mayaBatch = 'C:/Program Files/Autodesk/Maya2017/bin/mayabatch.exe'
+    maya_cmd = maya_cmd + unique_order
     cmd = [mayaBatch]
     cmd.append('-command')
-    cmd.append("python(\"{}\")".format(batch_firstact))
+    cmd.append('python(\"{}\")'.format(maya_cmd.replace(';', '\;').replace('\'', '\\\'')))
     if mayafile is not None:
         cmd.append('-file')
         cmd.append(mayafile)
     return cmd
-
-
-def abcExport(**kwargs):
-    argsdic = kwargs
-    if argsdic['env_load']:
-        env_load(argsdic['project'])
-        mayaBatch = maya_version(argsdic['project'])
-    original_litte = (
-        'from ndPyLibExportAbc import ndPyLibExportAbc2;'
-        'ndPyLibExportAbc2({})'.format(argsdic))
-    cmd = mayacmd_maker(original_litte, argsdic['input_path'], mayaBatch)
-    cmd[2] = str(cmd[2]).replace('\\\\', '\\')
-    subprocess.call(cmd)
-    print cmd
-
-
-def abcAttach(**kwargs):
-    argsdic = kwargs
-    if argsdic['env_load']:
-        env_load(argsdic['project'])
-        mayaBatch = maya_version(argsdic['project'])
-    assetPath = argsdic['assetpath'].replace("\\","/")
-    namespace = argsdic['scene_ns']
-    topnode = namespace + ':' + argsdic['topnode']
-    outputPath = argsdic['attachPath']
-    abcOutput = argsdic['abcOutput']###ここの名前を合わせる
-
-    original_litte = (
-        'from mayaBasic import *;'
-        'import maya.cmds as cmds;'
-        'saveAs(\'{}\');'.format(outputPath) +
-        'loadAsset(\'{}\', \'{}\');'.format(assetPath, namespace) +
-        'selHierarchy=cmds.ls(\'{}\', dag=True);'.format(topnode) +
-        'attachABC(\'{}\', \'{}\', selHierarchy);'.format(abcOutput, namespace) +
-        'saveAs(\'{}\')'.format(outputPath))
-    cmd = mayacmd_maker(original_litte, None, mayaBatch)
-    cmd[2] = str(cmd[2]).replace('\\\\', '\\')
-    subprocess.call(cmd)
-    print "##abcAttach"
-    print cmd
-
-def repABC(**kwargs):
-    argsdic = kwargs
-    scenepath = argsdic['charaOutput']
-    repAbcPath = argsdic['abcOutput'].replace("\\","/")
-    if argsdic['env_load']:
-        env_load(argsdic['project'])
-        mayaBatch = maya_version(argsdic['project'])
-    original_litte = (
-        'from mayaBasic import *;'
-        'replaceABCPath(\'{}\');'.format(repAbcPath) +
-        'save();')
-    cmd = mayacmd_maker(original_litte, scenepath, mayaBatch)
-    print "##repABC##"
-    print cmd
-    subprocess.call(cmd)
-
-
-def animExport(**kwargs):
-    argsdic = kwargs
-    if argsdic['env_load']:
-        env_load(argsdic['project'])
-        mayaBatch = maya_version(argsdic['project'])
-    else:
-        mayaBatch = None
-    original_litte = (
-        'from mayaBasic import *;'
-        'from ndPyLibExportAnim import ndPyLibExportAnim_caller;'
-        'ndPyLibExportAnim_caller({})'.format(str(argsdic))
-    )
-    cmd = mayacmd_maker(original_litte, argsdic['input_path'], mayaBatch)
-    cmd[2] = str(cmd[2]).replace('\\\\','\\')
-    subprocess.call(cmd)
-
-
-def animAttach(**kwargs):
-    argsdic = kwargs
-    if argsdic['env_load']:
-        env_load(argsdic['project'])
-        mayaBatch = maya_version(argsdic['project'])
-    outputPath = argsdic['charaOutput']
-    assetPath = argsdic['assetpath'].replace("\\","/")
-    animPath = argsdic['animOutput']
-    scene_ns = argsdic['scene_ns']
-    original_litte = (
-        'from mayaBasic import *;'
-        'import maya.cmds as cmds;'
-        'saveAs(\'{}\');'.format(outputPath) +
-        'loadAsset(\'{}\', \'{}\');'.format(assetPath, scene_ns) +
-        'loadAsset(\'{}\', \'{}_anim\');'.format(animPath, scene_ns) +
-        'saveAs(\'{}\')'.format(outputPath))
-    cmd = mayacmd_maker(original_litte, None, mayaBatch)
-    cmd[2] = str(cmd[2]).replace('\\\\', '\\')
-    subprocess.call(cmd)
-
-
-def animReplace(**kwargs):
-    argsdic = kwargs
-    if argsdic['env_load']:
-        env_load(argsdic['project'])
-        mayaBatch = maya_version(argsdic['project'])
-    anim_path = argsdic['animOutput']
-    scene_ns = argsdic['scene_ns']
-    scene_path = argsdic['scene_path']
-    original_litte = (
-        'from mayaBasic import *;'
-        'replaceAsset(\'{}\', \'{}_anim\');'.format(anim_path, scene_ns) +
-        'save();'
-    )
-    cmd = mayacmd_maker(original_litte, scene_path, mayaBatch)
-    cmd[2] = str(cmd[2]).replace('\\\\', '\\')
-    print "##animReplace##"
-    print cmd
-    subprocess.call(cmd)
-
-
-def camExport(**kwargs):
-    argsdic = kwargs
-    if argsdic['env_load']:
-        env_load(argsdic['project'])
-        mayaBatch = maya_version(argsdic['project'])
-    scene = argsdic['input_path']
-    original_litte = (
-        'from ndPyLibExportCam import ndPyLibExportCam2;'
-        'ndPyLibExportCam2({})'.format(str(argsdic))
-    )
-    cmd = mayacmd_maker(original_litte, scene, mayaBatch)
-    cmd[2] = str(cmd[2]).replace('\\\\', '\\')
-    subprocess.call(cmd)
 
 
 def env_load(project):
@@ -180,7 +49,7 @@ def maya_version(project):
     project_app_launcher = "%s\\ND_sgtoolkit_%s\\%s" % (toolkit_path, project.lower(), app_launcher_path)
 
     f = open(project_app_launcher, "r")
-    data = yaml.load(f)
+    data = yaml.safe_load(f)
     f.close()
 
     for dcc in dcc_tools:
@@ -192,3 +61,113 @@ def maya_version(project):
     ryear = renderinfo[0]
     # return  'C:\\Program Files\\Autodesk\\Maya2019'+'\\bin\\mayabatch.exe'
     return  'C:\\Program Files\\Autodesk\\Maya'+ryear+'\\bin\\mayabatch.exe'
+
+
+def animExport(**kwargs):
+    env_load(kwargs['project'])
+    mayaBatch = maya_version(kwargs['project'])
+    unique_order = (
+        # 'from mayaBasic import *;'
+        'from ndPyLibExportAnim import ndPyLibExportAnim_caller;'
+        'ndPyLibExportAnim_caller({})'.format(kwargs)
+    )
+    cmd = maya_cmd_maker(unique_order, kwargs['input_path'], mayaBatch)
+    print(cmd)
+    # import pdb;pdb.set_trace()
+    subprocess.run(cmd)
+
+
+def animAttach(**kwargs):
+    argsdic = kwargs
+    if argsdic['env_load']:
+        env_load(argsdic['project'])
+        mayaBatch = maya_version(argsdic['project'])
+    file_name_space = kwargs['file_name_space']
+    
+    ma_ver_path = kwargs['ma_ver_path']
+    anim_ver_path = kwargs['anim_ver_path']
+
+    asset_path = kwargs['asset_path']
+    unique_order = (
+        'from mayaBasic import *;'
+        'import maya.cmds as cmds;'
+        'saveAs(\'{}\');'.format(ma_ver_path) +
+        'loadAsset(\'{}\', \'{}\');'.format(asset_path, file_name_space) +
+        'loadAsset(\'{}\', \'{}_anim\');'.format(anim_ver_path, file_name_space) +
+        'saveAs(\'{}\')'.format(ma_ver_path))
+    cmd = maya_cmd_maker(unique_order, None, mayaBatch)
+    subprocess.run(cmd)
+
+
+def animReplace(**kwargs):
+    argsdic = kwargs
+    if argsdic['env_load']:
+        env_load(argsdic['project'])
+        mayaBatch = maya_version(argsdic['project'])
+    ma_current_path = argsdic['ma_current_path']
+    anim_current_path = argsdic['anim_current_path']
+    file_name_space = argsdic['file_name_space']
+    unique_order = (
+        'from mayaBasic import *;'
+        'replaceAsset(\'{}\', \'{}_anim\');'.format(anim_current_path, file_name_space) +
+        'save();'
+    )
+    cmd = maya_cmd_maker(unique_order, ma_current_path, mayaBatch)
+    subprocess.run(cmd)
+
+
+def abcExport(**kwargs):
+    env_load(kwargs['project'])
+    mayaBatch = maya_version(kwargs['project'])
+    unique_order = (
+            'from ndPyLibExportAbc import ndPyLibExportAbc2;'
+            'ndPyLibExportAbc2({})'.format(yaml.safe_dump(kwargs)))
+    cmd = maya_cmd_maker(unique_order, mayafile=kwargs['input_path'], mayaBatch=mayaBatch)
+    subprocess.run(cmd)
+
+
+def abcAttach(**kwargs):
+    env_load(kwargs['project'])
+    mayaBatch = maya_version(kwargs['project'])
+    asset_path = kwargs['asset_path']
+    namespace = kwargs['scene_ns']
+    topnode = namespace + ':' + kwargs['topnode']
+    outputPath = kwargs['attachPath']
+    abcOutput = kwargs['abcOutput']###ここの名前を合わせる
+
+    unique_order = (
+            'from mayaBasic import *;'
+            'import maya.cmds as cmds;'
+            'saveAs(\'{}\');'.format(outputPath) +
+            'loadAsset(\'{}\', \'{}\');'.format(asset_path, namespace) +
+            'selHierarchy=cmds.ls(\'{}\', dag=True);'.format(topnode) +
+            'attachABC(\'{}\', \'{}\', selHierarchy);'.format(abcOutput, namespace) +
+            'saveAs(\'{}\')'.format(outputPath))
+    cmd = maya_cmd_maker(unique_order, mayafile=None, mayaBatch=mayaBatch)
+    subprocess.run(cmd)
+
+
+def repABC(**kwargs):
+    scenepath = argsdic['charaOutput']
+    repAbcPath = argsdic['abcOutput'].replace("\\","/")
+    env_load(argsdic['project'])
+    mayaBatch = maya_version(argsdic['project'])
+    unique_order = (
+            'from mayaBasic import *;'
+            'replaceABCPath(\'{}\');'.format(repAbcPath) +
+            'save();')
+    cmd = maya_cmd_maker(unique_order, scenepath, mayaBatch)
+    subprocess.run(cmd)
+
+
+def camExport(**kwargs):
+    argsdic = kwargs
+    if argsdic['env_load']:
+        env_load(argsdic['project'])
+        mayaBatch = maya_version(argsdic['project'])
+    unique_order = (
+        'from ndPyLibExportCam import ndPyLibExportCam2;'
+        'ndPyLibExportCam2({})'.format(yaml.safe_dump(argsdic))
+    )
+    cmd = maya_cmd_maker(unique_order, kwargs['input_path'], mayaBatch)
+    subprocess.run(cmd)

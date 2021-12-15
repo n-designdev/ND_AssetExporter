@@ -23,11 +23,9 @@ for path in ND_TOOL_PATH.split(';'):
     sys.path.append(path)
 
 #------------------------------
-import ND_appEnv.lib.util.env_io as util_env
 import ND_appEnv.env as env_param
+import exporter_lib.env_io as util_env
 
-reload(util_env)
-reload(env_param)
 
 #-----------------------------------
 #-----------------------------------
@@ -54,7 +52,7 @@ def run(args, **kwargs):
     project_app_launcher = "%s\\ND_sgtoolkit_%s\\%s" % (toolkit_path, args.lower(), app_launcher_path)
 
     f = open(project_app_launcher, "r")
-    data = yaml.load(f)
+    data = yaml.safe_load(f)
 
     f.close()
 
@@ -86,5 +84,5 @@ def run(args, **kwargs):
 
     #-----------------------------------
     envDict = util_env.loadConf(filePath, **options)
-    env = util_env.getEnvDict(envDict, env=os.environ, expand=True)
+    # env = util_env.getEnvDict(envDict, env=os.environ, expand=True)
 
