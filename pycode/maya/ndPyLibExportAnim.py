@@ -1,21 +1,27 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 import os, sys
 import re, glob
+sys.path.append(r"Y:\users\env\maya\scripts\Python\site-packages")
+import yaml
 import maya.cmds as cmds
-sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter\pycode")
-from ndPyLibAnimIOExportContain import ndPyLibAnimIOExportContain
+sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_test\pycode")
+sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_test\pycode\maya")
+import ndPyLibAnimIOExportContain
+try:
+    from importlib import reload
+except:
+    pass
+reload(ndPyLibAnimIOExportContain)
 
 def eulerfilter(attr_list):
     for attr in attr_list:
-        # anim_cv = map(lambda x: cmds.connectionInfo(obj+x, sfd=True), xyz)
         anim_cv = map(lambda x: x.rstrip('.output'), attr)
         try:
             anim_cv = filter(lambda x: cmds.nodeType(x) in ['animCurveTL', 'animCurveTU', 'animCurveTA', 'animCurveTT'], anim_cv)
             cmds.filterCurve(anim_cv, f='euler')
         except:
-            print '# Euler FilterFailed: '+attr+' #'
             continue
-        print '# Euler Filter Success: '+attr+' #'
         
         
 def get_reference_file(obj):
@@ -40,7 +46,7 @@ def getNamespace():
     return namespaces
 
 
-def getAllNodes(namespace, regexArgs):
+def getAllnodes(namespace, regexArgs):
     if len(regexArgs) == 0:
         regexArgs = ['*']
     nodes = []
@@ -57,7 +63,6 @@ def getAllNodes(namespace, regexArgs):
                 objs.extend([i for i in ns_objs[:] if re.search(r"[a-zA-Z0-9_:]{}".format(_regex), i) != None])
             elif regex[-1]=="*":
                 _regex = regex.replace("*", "")
-                print regex
                 objs.extend([i for i in ns_objs[:] if re.search(r"{}:{}[a-zA-Z0-9_:]".format(namespace, regex), i)!= None])
             nodes += objs
         else:
@@ -65,7 +70,6 @@ def getAllNodes(namespace, regexArgs):
             if namespace != '':
                 regexN += namespace + ':'
             regexN = regexN + regex
-            print 'regexN:   ' + regexN
             objs = cmds.ls(regexN, type='transform')
             objs += cmds.ls(regexN, type='locator')
             objs += cmds.ls(regexN, type="joint")
@@ -77,7 +81,6 @@ def getAllNodes(namespace, regexArgs):
                 objSets = []
             if objSets is None:
                 objSets = []
-            print "objSets:{}".format(objSets)
             if len(objs) != 0:
                 nodes += objs
             if len(objSets) != 0:
@@ -185,13 +188,11 @@ def getNoKeyAttributes(nodes):
         if '.' in n:
             n = n.split('.')[0]
         gAttrs = cmds.listAttr(n, keyable=True)
-        print n, gAttrs
         if gAttrs is None: continue
         for attr in gAttrs:
             if '.' not in attr:
                 if cmds.listConnections(n+'.'+attr, s=True, d=False) is None:
                     attrs.append(n+'.'+attr)
-                    print 'find no key attribute : ' + n + '.' + attr
     return attrs
 
 
@@ -201,7 +202,6 @@ def getKeyAttributes(nodes):
         if '.' in n:
             n = n.split('.')[0]
         gAttrs = cmds.listAttr(n, keyable=True)
-        print n, gAttrs
         if gAttrs is None: continue
         for attr in gAttrs:
             if '.' not in attr:
@@ -232,7 +232,6 @@ def getPairBlend(node):
 
 def replacePairBlendstoLocator(nodes, sframe, eframe):
     for node in nodes:
-        print node
         if "Constraint" in node:
             continue
         blend_attrs = ["outTranslateX", "outTranslateY", "outTranslateZ", "outRotateX", "outRotateY", "outRotateZ"]
@@ -250,7 +249,6 @@ def replacePairBlendstoLocator(nodes, sframe, eframe):
                     cmds.delete(connect_node.split(".")[0])
                 except:
                     pass
-        print node, blend
         for attr in nml_attrs:
             cmds.connectAttr("{}.{}".format(loc, attr),"{}.{}".format(node, attr))
         cmds.bakeResults(node, t=(sframe, eframe))
@@ -274,169 +272,110 @@ def unmuteAttributes(nodes):
             pass
 
 
-def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFilter, bake_anim, strextra_dic, framehundle, framerange, scene_timeworp, top_node):
-    regexArgsN = [] #regexArgs Normal
-    regexArgsAttrs = [] #regexArgs Attribute用
-    regexArgs = strregexArgs.split(',')
-    namespaceList = strnamespaceList.split(',')
-    _namespaceList = namespaceList[:]
+def export_anim_main(**kwargs):
+    # publishpath, oFilename, strnamespaceList, strregexArgs, isFilter, bake_anim, strextra_dic, frame_handle, frame_range, scene_timewarp, top_node):
+    import pprint
+    pprint.pprint(kwargs)
+    output_files = []
+    scene_ns_list = getNamespace()
+    all_nodes = []
+    node_and_attrs = []
 
-    for regexArg in regexArgs:
-        regexArg = regexArg.lstrip(":")
-        if '.' in regexArg:
-            regexArgsAttrs.append(regexArg)
-        else:
-            regexArgsN.append(regexArg)
+    frame_handle = kwargs['frame_handle']
+    publish_ver_anim_path = kwargs['publish_ver_anim_path']
 
-    outputfiles = []
-    namespaces = getNamespace()
-    allNodes = []
-    nodeAndAttrs = []
+    sframe = cmds.playbackOptions(q=True, min=True) - float(frame_handle)
+    eframe = cmds.playbackOptions(q=True, max=True) + float(frame_handle)
 
-    frameHandle = framehundle
-    if frameHandle == 'None':
-        frameHandle = 0
+    if 'frame_range' in kwargs.keys():
+        frame_range = kwargs['frame_range']
+    else:
+        frame_range = [sframe, eframe]
 
-    sframe = cmds.playbackOptions(q=True, min=True) - float(frameHandle)
-    eframe = cmds.playbackOptions(q=True, max=True) + float(frameHandle)
-
-    with open(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(publishpath))), "resolutionConf.txt").replace("\\", "/"), "w") as f:
+    with open(os.path.dirname(os.path.dirname(os.path.dirname(publish_ver_anim_path))) + '/sceneConf.txt', 'w') as f:
+        f.write(str(sframe)+'\n')
+        f.write(str(eframe)+'\n')
+    with open(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(publish_ver_anim_path))), "resolutionConf.txt"), "w") as f:
         f.write(str(cmds.getAttr("defaultResolution.width"))+"\n")
         f.write(str(cmds.getAttr("defaultResolution.height"))+"\n")
 
-    if 'camera_base' in _namespaceList:
-        root_list = cmds.ls("root", r=True)
-        for root in root_list:
-            if 'camera_base' in root:
-                try:
-                    cam_objs = cmds.listRelatives(root, ad=True)
-                    camera_name = root.split(":")[0]
-                    cam_objs.remove(camera_name+":aim_jt1")
-                    cam_objs.remove(camera_name+":aim_jt2")
-                    cmds.bakeResults(cam_objs, t=(sframe, eframe), sb=1, simulation=True)
-                    for x in cmds.listRelatives(root, ad=True):
-                        if "Constraint" in cmds.objectType(x):
-                            cmds.delete(x)
-                    cmds.select(root)
-                    _path = os.path.dirname(publishpath)+"/"+root.split(":")[0]
-                    cmds.file(_path, f=True, es=True, typ="mayaAscii", ch=1, chn=1, exp=1, sh=0)
-                    outputfiles.append(_path)
-                except Exception as e:
-                    print e
-        return outputfiles
-
-    if 'camera_simple' in _namespaceList:
-        root_list = cmds.ls("camera", r=True)
-        for root in root_list:
-            if 'camera_simple' in root:
-                try:
-                    cam_objs = cmds.listRelatives(root, ad=True)
-                    camera_name = root.split(":")[0]
-                    cmds.bakeResults(cam_objs, hi='below', t=(sframe, eframe), simulation=True)
-                    for x in cmds.listRelatives(root, ad=True):
-                        if "Constraint" in cmds.objectType(x):
-                            cmds.delete(x)
-                    cmds.select(root)
-                    _path = os.path.dirname(publishpath)+"/"+root.split(":")[0]
-                    cmds.file(_path, f=True, es=True, typ="mayaAscii", ch=1, chn=1, exp=1, sh=0)
-                    outputfiles.append(_path)
-                except Exception as e:
-                    print e
-        return outputfiles
-
-    if framerange != None:
-        frameRange = [sframe, eframe]
-    else:
-        frameRange = framerange
-    with open(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(publishpath))), 'sceneConf.txt').replace('\\', '/'), 'w') as f:
-        f.write(str(sframe)+'\n')
-        f.write(str(eframe)+'\n')
-
-    for a_ns in namespaces:
-        for input_ns in namespaceList:
-            match = re.match(input_ns, a_ns)
+    input_ns_list = kwargs['namespace'].split(';')
+    regex_obj_list = [i for i in kwargs['export_item']['anim'].replace(' ','').split(',') if not '.' in i]  # 通常のエクスポート対象 
+    regex_obj_and_attr_list = [i for i in kwargs['export_item']['anim'].split(',') if '.' in i] # アトリビュートを直接指定
+    for scene_ns in scene_ns_list:
+        for input_ns in input_ns_list:
+            match = re.match(input_ns, scene_ns)           
             if match != None:
-                allNodes += getAllNodes(a_ns, regexArgsN)
+                all_nodes += getAllnodes(scene_ns, regex_obj_list)
+            for regex_obj_and_attr in regex_obj_and_attr_list:
+                obj_and_attr = scene_ns+':'+ regex_obj_and_attr
+                if cmds.objExists(obj_and_attr):
+                    node_and_attrs.append(obj_and_attr)
+    character_set = cmds.ls(type='character')
+    if len(character_set) != 0:
+        cmds.delete(character_set)
 
-    for a_ns in namespaceList:
-        for regexArgsAttr in regexArgsAttrs:
-            regexAttr = a_ns+':'+regexArgsAttr
-            if cmds.objExists(regexAttr):
-                nodeAndAttrs.append(regexAttr)
-
-    characterSet = cmds.ls(type='character')
-    if len(characterSet) == 0:
-        cmds.delete(characterSet)
-    print "##allNodes##"
-    print allNodes
-    # allNodes.append("pairBlend1")
-    for node in allNodes:
+    for node in all_nodes:
         try:
             cmds.select(node, add=True)
         except:
             pass
-    # cmds.select(allNodes)
     baseAnimationLayer = cmds.animLayer(q=True, r=True)
-
     if baseAnimationLayer!=None and len(cmds.ls(sl=True))!=0 :
         animLayers = cmds.ls(type='animLayer')
         for al in animLayers:
             cmds.animLayer(al, e=True, sel=False)
         cmds.animLayer(baseAnimationLayer, e=True, sel=True)
         cmds.bakeResults(t=(sframe, eframe), sb=True, ral=True, dic=True, pok=True, sm=True)
-        # cmds.bakeResults(t=(sframe, eframe), sb=False, ral=False, dic=False, pok=False)
-        print 'merge animation layers'
-    cmds.select(cl=True)
+    # cmds.select(cl=True)
 
-    if strextra_dic != None:
-        for extra_dicitem in strextra_dic:
-            _key, item = extra_dicitem.split(':')
-        for ns in namespaceList:
-            for _nsList in namespaceList:
-                _ns = ns.split('*')[1].rstrip('$')
-                cmds.setAttr(_ns + ':' + _key, int(item))
-                cmds.setKeyframe(_ns + ':' + _key, t=1)
-    attrs = getNoKeyAttributes(allNodes)
+    attrs = getNoKeyAttributes(all_nodes)
 
-    if len(nodeAndAttrs) !=0:
-        attrs += getNoKeyAttributes(nodeAndAttrs)
+    if len(node_and_attrs) !=0:
+        attrs.extend(getNoKeyAttributes(node_and_attrs))
     if len(attrs) != 0:
         cmds.setKeyframe(attrs, t=sframe, insertBlend=True)
-    attrs = getConstraintAttributes(allNodes)
-    # attrs += getPairBlendAttributes(allNodes)
-    attrs += getMotionPathAttributes(allNodes)
-    attrs += getAddDoubleLinearAttributes(allNodes)
-    attrs += getTransformConnectionAttributes(allNodes)
-    sub_attrs = []
-    for node in allNodes:
-        if cmds.listConnections(node, s=True, type="constraint") is not None:
-            sub_attrs.extend(list(set(cmds.listConnections(node, s=True, type="constraint"))))
-    if bake_anim == True:
-        attrs += getNoKeyAttributes(allNodes)
-        attrs += getKeyAttributes(allNodes)
-        attrs += getAnimLayerConnectionAttributes(allNodes)
+
+    attrs = getConstraintAttributes(all_nodes)
+    attrs += getMotionPathAttributes(all_nodes)
+    attrs += getAddDoubleLinearAttributes(all_nodes)
+    attrs += getTransformConnectionAttributes(all_nodes)
+
+    attrs += getNoKeyAttributes(all_nodes)
+    attrs += getKeyAttributes(all_nodes)
+    attrs += getAnimLayerConnectionAttributes(all_nodes)
+    # attrs += getPairBlendAttributes(all_nodes)
+
     unlockAttributes(attrs)
     unmuteAttributes(attrs)
-    if scene_timeworp==True:
-        bake_tg = attrs
-        bake_tg.extend(sub_attrs)
+
+    '''
+        関連するアトリビュートの追加
+    '''
+    sub_attrs = []
+    for node in all_nodes:
+        if cmds.listConnections(node, s=True, type="constraint") is not None:
+            sub_attrs.extend(list(set(cmds.listConnections(node, s=True, type="constraint"))))
+    attrs.extend(sub_attrs)
+
+    if kwargs['scene_timewarp']==True:
         time_value_set_list = []
         ref_files = []
         ref_attrs = []
         sframe = cmds.playbackOptions(q=True, min=True)
         eframe = cmds.playbackOptions(q=True, max=True)
-        #copy topobjs
+        #copy top_objs
         ignore_objs = ['persp','top', 'front', 'side', 'AllRoot']
         top_objs = cmds.ls(assemblies=True)
         top_objs = list(set(top_objs)-set(ignore_objs))
         for top_obj in top_objs:
             if cmds.referenceQuery(top_obj, inr=True):
-                ns = top_obj.split(":")[0]
-                for in_ns in namespaceList:
-                    if re.match(in_ns, ns) != None:
+                obj_ns = top_obj.split(":")[0]
+                for scene_ns in scene_ns_list:
+                    if re.match(scene_ns, obj_ns) != None:
                         ref_file = get_reference_file(top_obj)        
-                        reference_ma(ref_file, "tmp_"+ns)
-                        ref_files.append([ns, ref_file])
+                        reference_ma(ref_file, "tmp_"+obj_ns)
+                        ref_files.append([obj_ns, ref_file])
                         for obj in cmds.listRelatives(top_obj, ad=True):
                             try:
                                 if cmds.listAttr(obj, keyable=True)!=None:
@@ -481,78 +420,71 @@ def ExportAnim_body(publishpath, oFilename, strnamespaceList, strregexArgs, isFi
                 cmds.setKeyframe(attr)
             except:
                 pass
-    if len(attrs)!=0 and scene_timeworp !=True:
-        bake_tg = attrs
-        bake_tg.extend(sub_attrs)
-        cmds.select(clear=True)
-        for obj in bake_tg:
-            if cmds.objExists(obj) == True:
-                cmds.select(obj, add=True)
+    else:
+        # for obj_and_attr in attrs:
+        #     if cmds.objExists(obj_and_attr) == True:
+        #         cmds.select(obj_and_attr, add=True)
+        cmds.select(attrs, add=True)
         cmds.bakeResults(t=(sframe, eframe), dic=True)
         eulerfilter(attrs)
-    for ns in namespaces:
-        pickNodes = []
-        pickNodesAttr = []
-        for n in allNodes:
-            if ns+':' in n:
-                pickNodes.append(n)
-        for n in nodeAndAttrs:
-            if ns+':' in n:
-                pickNodesAttr.append(n)
-        if len(pickNodes) != 0:
-            outputfiles.append(publishpath+oFilename+'_'+ns+'.ma')
-            ndPyLibAnimIOExportContain(isFilter, ['3', ''], publishpath, oFilename+'_'+ns, pickNodes, pickNodesAttr, 0, 0, frameRange, bake_anim, scene_timeworp)
-    return outputfiles
+
+    for scene_ns in scene_ns_list:
+        pick_nodes = []
+        pick_node_and_attrs = []
+        for node in all_nodes:
+            if scene_ns+':' in node:
+                pick_nodes.append(node)
+        for node in pick_node_and_attrs:
+            if scene_ns +':' in node:
+                pick_node_and_attrs.append(node)
+        if len(pick_nodes) != 0 or len(pick_node_and_attrs) != 0:
+            argsdic = {}
+            argsdic['is_filter'] = True
+            argsdic['inPfxInfo'] = ['3', '']
+            argsdic['anim_file_name'] = 'anim_'+scene_ns+'.ma'
+            argsdic['publish_ver_anim_path'] = kwargs['publish_ver_anim_path']
+            argsdic['pick_nodes'] = pick_nodes
+            argsdic['pick_node_and_attrs'] = pick_node_and_attrs
+            argsdic['frame_range'] = frame_range
+            argsdic['scene_timewarp'] = kwargs['scene_timewarp']
+            argsdic['is_check_constraint'] = False
+            argsdic['is_check_anim_curve'] = False
+            ndPyLibAnimIOExportContain.ndPyLibAnimIOExportContain_main(**argsdic)
+    return output_files
 
 
 def ndPyLibExportAnim_caller(args):
-    # outputPath = argsdic['output']
-    outputPath = argsdic['animOutput']
-    oFilename = argsdic['export_type']
-    namespaceList = argsdic['namespace']
-    regexArgs = argsdic['export_item']
-    bake_anim = argsdic['bake_anim']
-    scene_timeworp = argsdic['scene_timeworp']
-    top_node = argsdic['topnode']
-    if bake_anim == "False" or bake_anim == False:
-        bake_anim=False
-    elif bake_anim == "True" or bake_anim == True:
-        bake_anim=True
-    if scene_timeworp == "False" or scene_timeworp == False:
-        scene_timeworp=False
-    elif scene_timeworp == "True" or scene_timeworp == True:
-        scene_timeworp=True
-    # extradic = argsdic['extra_dic']
-    try:
-        frameHundle = argsdic['framehundle']
-    except KeyError:
-        frameHundle = 0
-    try:
-        frameRange = argsdic['framerange']
-    except KeyError:
-        frameRange = None
-    extra_dic = None
-    isFilter = 1
-    ExportAnim_body(outputPath, oFilename, namespaceList, regexArgs, isFilter, bake_anim, extra_dic, frameHundle, frameRange, scene_timeworp, top_node)
-    print "ndPylibExportAnim End"
+    export_anim_main(**args)
+    print("ndPylibExportAnim End")
 
 if __name__ == '__main__':
-    sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter\pycode")
+    sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_test\pycode\maya")
     import ndPyLibExportAnim
     reload(ndPyLibExportAnim)
-    argsdic = {'shot': 'c001', 'sequence': 's646', 'export_type': 'anim',
-    'env_load': 'True', 'Priority': 'u50', 'Group': 'u128gb', 'stepValue': '1.0',
-    'namespace': 'NursedesseiDragon',
-    'bake_anim': 'True', 'scene_timeworp': 'True',
-    # 'animOutput': 'P:/Project/RAM1/shots/ep006/s646/c001/publish/test_charSet/NursedesseiShip/v003/anim/NursedesseiShip.ma',
-    'animOutput': 'C:/Users/k_ueda/Desktop/work/NursedesseiDragon',
-     'framerange_output': 'True',
-     'input_path': 'P:/Project/RAM1/shots/ep006/s646/c001/work/k_ueda/test.ma', 'Pool': 'uram1',
-    #  'assetpath': 'P:/Project/RAM1/assets/chara/Nursedessei/NursedesseiShip/publish/Setup/RH/maya/current/NursedesseiShip_Rig_RH.mb',
-     'assetpath': 'P:/Project/RAM1/assets/chara/Nursedessei/NursedesseiDragon/publish/Setup/RH/maya/current/NursedesseiDragon_Rig_RH.mb',
-      'framerange': 'None', 'chara': 'NursedesseiShip', 'topnode': 'root', 'framehundle': '0', 'project': 'RAM1',
-     'testmode': 'True',
-    #   'output': 'P:/Project/RAM1/shots/ep006/s646/c001/publish/test_charSet/NursedesseiShip/v003/anim',
-      'output': 'C:\Users\k_ueda\Desktop\work',
-      'export_item': 'ctrl_set'}
+    argsdic = {'input_path': 'P:/Project/RAM1/shots/ep022/s2227/c008/work/k_ueda/s2227c008_anm_v006.ma', 'sequence': 's2227', 'export_type': 'anim', 'abc_check': False, 'step_value': False, 'abc_item': 'abc_Root', 'shot': 'c008', 'group': '', 'anim_item': 'ctrl_set, root', 'namespace': 'NursedesseiDragon[0-9]*$', 'priority': '50', 'top_node': 'root', 'asset_path': 'P:/Project/RAM1/assets/chara/Nursedessei/NursedesseiDragon/publish/Setup/RH/maya/current/NursedesseiDragon_Rig_RH.mb', 'export_item': {'anim': 'ctrl_set, root', 'abc': 'abc_Root'}, 'asset_name': 'NursedesseiDragon', 'frame_range': False, 'publish_ver_anim_path': 'P:/Project/RAM1/shots/ep022/s2227/c008/publish/test_charSet/NursedesseiDragon/v104/anim', 'pool': '', 'frame_handle': False, 'cam_scale': False, 'project': 'RAM1', 'debug': True, 'scene_timewarp': False}
     ndPyLibExportAnim.ndPyLibExportAnim_caller(argsdic)
+    '''
+    {'abc_check': False,
+        'abc_item': 'abc_Root',
+        'anim_item': 'ctrl_set, root',
+        'asset_name': 'NursedesseiDragon',
+        'asset_path': 'P:/Project/RAM1/assets/chara/Nursedessei/NursedesseiDragon/publish/Setup/RH/maya/current/NursedesseiDragon_Rig_RH.mb',
+        'cam_scale': False,
+        'debug': True,
+        'export_item': {'abc': 'abc_Root', 'anim': 'ctrl_set, root'},
+        'export_type': 'anim',
+        'frame_handle': False,
+        'frame_range': False,
+        'group': '',
+        'input_path': 'P:/Project/RAM1/shots/ep022/s2227/c008/work/k_ueda/s2227c008_anm_v006.ma',
+        'namespace': 'NursedesseiDragon[0-9]*$',
+        'pool': '',
+        'priority': '50',
+        'project': 'RAM1',
+        'publish_ver_anim_path': 'P:/Project/RAM1/shots/ep022/s2227/c008/publish/test_charSet/NursedesseiDragon/v104/anim',
+        'scene_timewarp': False,
+        'sequence': 's2227',
+        'shot': 'c008',
+        'step_value': False,
+        'topnode': 'root'}
+    '''

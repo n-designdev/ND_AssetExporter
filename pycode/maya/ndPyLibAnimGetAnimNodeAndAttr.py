@@ -2,8 +2,6 @@
 
 
 import maya.cmds as cmds
-from ndPyLibStrDeletePrefix import *
-
 
 def ndPyLibAnimGetAnimNodeAndAttr (inForNodes, inMode, isCheckAnimCurve, isCheckConstraint):
     retNodes = []
@@ -14,6 +12,18 @@ def ndPyLibAnimGetAnimNodeAndAttr (inForNodes, inMode, isCheckAnimCurve, isCheck
         cmds.confirmDialog(title='Error...', message='Please select the mode that 0-3 is correct or node is zero.')
         cmds.error('[nd] Please select the mode that 0-3 is correct or node is zero.\n')
     return retNodes
+
+def ndPyLibStrDeletePrefix(inStr):
+    if mc.referenceQuery(inr=inStr)==1:
+        pfxRN = mc.referenceQuery(rfn=inStr)
+        pfx = pfxRN.replace('RN', '')
+        pfxSize = len(pfx)
+        inStrSize = len(inStr)
+        ret = inStr[pfxSize+2:inStrSize]
+    else:
+        ret = inStr
+
+    return ret
 
 def _GetAnimNodeAndAttrFunc (inNode, inMode):
     retNodes = []

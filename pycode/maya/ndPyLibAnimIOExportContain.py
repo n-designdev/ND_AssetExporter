@@ -4,17 +4,18 @@ from ndPyLibAnimGetAnimNodeAndAttr import *
 import maya.cmds as cmds
 import os
 
-def ndPyLibAnimIOExportContain(isFilterCurve, inPfxInfo, inDirPath, inFileName, inForNodes, inForNodesAttr, isCheckAnimCurve, isCheckConstraint, frameRange, bake_anim, scene_timeworp):
-    print '================================================'
-    print "isFilterCurve: {}".format(isFilterCurve)
-    print "inPfxInfo: {}".format(inPfxInfo)
-    print "inDirPath: {}:".format(inDirPath)
-    print "inFileName: {}:".format(inFileName)
-    print "inForNodes: {}".format(inForNodes)
-    print "inForNodesAttr: {}".format(inForNodesAttr)  # Attr直指定
-    print "isCheckAnimCurve: {}".format(isCheckAnimCurve)
-    print "isCheckConstraint: {}".format(isCheckConstraint)
-    print '================================================'
+def ndPyLibAnimIOExportContain_main(**kwargs):
+    #isFilterCurve, inPfxInfo, inDirPath, inFileName, inForNodes, inForNodesAttr, isCheckAnimCurve, isCheckConstraint, frameRange, bake_anim, scene_timewarp):
+    print('================================================')
+    isFilterCurve = kwargs['is_filter'] 
+    inPfxInfo = kwargs['inPfxInfo'] 
+    inDirPath = kwargs['publish_ver_anim_path'] 
+    inFileName = kwargs['anim_file_name'] 
+    inForNodes = kwargs['pick_nodes'] 
+    inForNodesAttr = kwargs['pick_node_and_attrs']
+    isCheckAnimCurve = kwargs['is_check_anim_curve'] 
+    isCheckConstraint = kwargs['is_check_constraint'] 
+    print('================================================')
     retNodes = []
     addCmd = []
 
@@ -55,7 +56,7 @@ def ndPyLibAnimIOExportContain(isFilterCurve, inPfxInfo, inDirPath, inFileName, 
             cmds.select(retNodes[i*2+1], add=True)
 
     # sceneTime warp
-    # if scene_timeworp:
+    # if scene_timewarp:
     #     animNodes = retNodes[1:len(retNodes):2]
     #     bakeList = []
     #     for animNode in animNodes:
@@ -76,8 +77,7 @@ def ndPyLibAnimIOExportContain(isFilterCurve, inPfxInfo, inDirPath, inFileName, 
         print '[nd] Not use filterCurve\n'
 
     # inFileName = inFileName.replace(":","_")
-    inFileName = inFileName.split(":")[-1]
-    fileName = inFileName + '.ma'
+    fileName = inFileName.split(":")[-1]
     filePathName = inDirPath + '/' + fileName
     filePathNamex = os.path.dirname(filePathName)
 

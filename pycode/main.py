@@ -113,8 +113,8 @@ class GUI(QMainWindow):
         self.ui.cam_scale_override_chk.stateChanged.connect(self.cam_scale_override_chk_stateChange)
         self.ui.abc_step_override_chk.stateChanged.connect(self.abc_step_override_chk_stateChange)
 
-        self.ui.custom_framerange_chk.clicked.connect(self.custom_framerange_chk)
-        self.ui.framehundle_chk.clicked.connect(self.framehundle_chk_clicked)
+        self.ui.custom_frame_range_chk.clicked.connect(self.custom_frame_range_chk)
+        self.ui.frame_handle_chk.clicked.connect(self.frame_handle_chk_clicked)
 
         self.ui.open_log_button.clicked.connect(self.open_log_button_clicked)
         self.ui.current_refresh_button.clicked.connect(self.current_refresh_button_clicked)
@@ -180,12 +180,12 @@ class GUI(QMainWindow):
                 self.check_row, self.executed_row)
         self.ui.main_table.setModel(model)
 
-    def framehundle_chk_clicked(self):
-        self.ui.framehundle_value.setEnabled(
-            self.ui.framehundle_chk.isChecked())
+    def frame_handle_chk_clicked(self):
+        self.ui.frame_handle_value.setEnabled(
+            self.ui.frame_handle_chk.isChecked())
 
-    def custom_framerange_chk(self):
-        state = self.ui.custom_framerange_chk.isChecked()
+    def custom_frame_range_chk(self):
+        state = self.ui.custom_frame_range_chk.isChecked()
         self.ui.sFrame.setEnabled(state)
         self.ui.eFrame.setEnabled(state)
 
@@ -377,15 +377,15 @@ class GUI(QMainWindow):
         else:
             abc_step_override = False
 
-        if self.ui.framehundle_chk.isChecked() == True:
-            framehundle = float(self.ui.framehundle_value.text())
+        if self.ui.frame_handle_chk.isChecked() == True:
+            frame_handle = float(self.ui.frame_handle_value.text())
         else:
-            framehundle = False
+            frame_handle = False
 
-        if self.ui.custom_framerange_chk.isChecked() == True:
-            framerange = (self.ui.sFrame.text()) + '-' + (self.ui.eFrame.text())
+        if self.ui.custom_frame_range_chk.isChecked() == True:
+            frame_range = (self.ui.sFrame.text()) + '-' + (self.ui.eFrame.text())
         else:
-            framerange = False
+            frame_range = False
 
         if mode == 'Submit':
             file_number = 1
@@ -408,26 +408,26 @@ class GUI(QMainWindow):
             namespace = row_items[2]
             export_type = row_items[3]
             export_item = row_items[4]
-            topnode = row_items[5]
+            top_node = row_items[5]
             asset_path = row_items[6].replace("\\","/")
 
             argsdic = {
                 'asset_name': asset_name,
                 'namespace': namespace,
                 'export_item': yaml.safe_load(export_item),
-                'topnode': topnode,
-                'assetpath': asset_path,
+                'top_node': top_node,
+                'asset_path': asset_path,
                 'debug': self.debug,
                 'step_value': abc_step_override,
                 'export_type': export_type,
                 'project': self.project,
-                'framerange': framerange,
-                'framehundle': framehundle,
+                'frame_range': frame_range,
+                'frame_handle': frame_handle,
                 'cam_scale': cam_scale,
                 'input_path': self.input_path,
                 'shot': self.ui.shot_line.text(),
                 'sequence': self.ui.cut_line.text(),
-                'scene_timeworp': self.ui.scene_timeworp_check.isChecked(),
+                'scene_timewarp': self.ui.scene_timewarp_check.isChecked(),
                 'abc_check': self.ui.abc_cache_check.isChecked(),
                 'priority': self.ui.priority.text(),
                 'pool': self.ui.poollist.currentText(),

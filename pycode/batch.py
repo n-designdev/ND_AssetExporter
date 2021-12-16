@@ -73,15 +73,13 @@ def animExport(**kwargs):
     )
     cmd = maya_cmd_maker(unique_order, kwargs['input_path'], mayaBatch)
     print(cmd)
-    # import pdb;pdb.set_trace()
     subprocess.run(cmd)
 
 
 def animAttach(**kwargs):
+    env_load(kwargs['project'])
+    mayaBatch = maya_version(kwargs['project'])
     argsdic = kwargs
-    if argsdic['env_load']:
-        env_load(argsdic['project'])
-        mayaBatch = maya_version(argsdic['project'])
     file_name_space = kwargs['file_name_space']
     
     ma_ver_path = kwargs['ma_ver_path']
@@ -100,24 +98,25 @@ def animAttach(**kwargs):
 
 
 def animReplace(**kwargs):
+    env_load(kwargs['project'])
+    mayaBatch = maya_version(kwargs['project'])
     argsdic = kwargs
-    if argsdic['env_load']:
-        env_load(argsdic['project'])
-        mayaBatch = maya_version(argsdic['project'])
     ma_current_path = argsdic['ma_current_path']
-    anim_current_path = argsdic['anim_current_path']
+    publish_current_anim_path = argsdic['publish_current_anim_path']
     file_name_space = argsdic['file_name_space']
     unique_order = (
         'from mayaBasic import *;'
-        'replaceAsset(\'{}\', \'{}_anim\');'.format(anim_current_path, file_name_space) +
+        'replaceAsset(\'{}\', \'{}_anim\');'.format(publish_current_anim_path, file_name_space) +
         'save();'
     )
     cmd = maya_cmd_maker(unique_order, ma_current_path, mayaBatch)
+    print(cmd)
     subprocess.run(cmd)
 
 
 def abcExport(**kwargs):
     env_load(kwargs['project'])
+
     mayaBatch = maya_version(kwargs['project'])
     unique_order = (
             'from ndPyLibExportAbc import ndPyLibExportAbc2;'
@@ -131,7 +130,7 @@ def abcAttach(**kwargs):
     mayaBatch = maya_version(kwargs['project'])
     asset_path = kwargs['asset_path']
     namespace = kwargs['scene_ns']
-    topnode = namespace + ':' + kwargs['topnode']
+    top_node = namespace + ':' + kwargs['top_node']
     outputPath = kwargs['attachPath']
     abcOutput = kwargs['abcOutput']###ここの名前を合わせる
 
@@ -140,7 +139,7 @@ def abcAttach(**kwargs):
             'import maya.cmds as cmds;'
             'saveAs(\'{}\');'.format(outputPath) +
             'loadAsset(\'{}\', \'{}\');'.format(asset_path, namespace) +
-            'selHierarchy=cmds.ls(\'{}\', dag=True);'.format(topnode) +
+            'selHierarchy=cmds.ls(\'{}\', dag=True);'.format(top_node) +
             'attachABC(\'{}\', \'{}\', selHierarchy);'.format(abcOutput, namespace) +
             'saveAs(\'{}\')'.format(outputPath))
     cmd = maya_cmd_maker(unique_order, mayafile=None, mayaBatch=mayaBatch)
@@ -148,8 +147,9 @@ def abcAttach(**kwargs):
 
 
 def repABC(**kwargs):
+    argsdic = kwargs
     scenepath = argsdic['charaOutput']
-    repAbcPath = argsdic['abcOutput'].replace("\\","/")
+    repAbcPath = argsdic['abcOutput']
     env_load(argsdic['project'])
     mayaBatch = maya_version(argsdic['project'])
     unique_order = (

@@ -241,7 +241,7 @@ def ndPyLibExportCam2(args):
 def ndPyLibExportCam3(outputPath, cameraScale=-1, frameHundle=5, frameRange="None"):
     animFiles = ndPyLibExportCam(outputPath, cameraScale, frameHundle, frameRange)
     for animFile in animFiles:
-        ns = animFile.replace('anim_', '').replace('.ma', '')
+        ns = animFile.replace('_anim', '').replace('.ma', '')
         animOutput = opc.publishfullanimpath + '/' + animFile
         charaOutput = opc.publishfullpath + '/' + ns + '.ma'
         argsdic['animOutput'] = animOutput

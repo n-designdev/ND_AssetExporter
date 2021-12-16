@@ -1,44 +1,44 @@
 # -*- coding: utf-8 -*-
 
-import maya.cmds as mc
+import maya.cmds as cmds
 import maya.mel as mel
 import os
 
 def newScene ():
-    mc.file(new=True)
+    cmds.file(new=True)
 
 def saveAs (outputPath):
     ext = os.path.splitext(outputPath)[1]
-    mc.file(rn=outputPath)
+    cmds.file(rn=outputPath)
     if ext == '.ma':
-        mc.file(f=True, s=True, type='mayaAscii')
+        cmds.file(f=True, s=True, type='mayaAscii')
     else:
-        mc.file(f=True, s=True, type='mayaBinary')
+        cmds.file(f=True, s=True, type='mayaBinary')
 
 def save ():
     print 'save!!!'*10
-    mc.file(s=True, f=True)
+    cmds.file(s=True, f=True)
 
 def replaceAsset (assetPath, namespace):
-    mc.warning( 'replace start ')
-    print assetPath, namespace
-    refs = mc.ls(type='reference')
+    cmds.warning( 'replace start ')
+    refs = cmds.ls(type='reference')
     try:
-        print refs
         refs.remove('sharedReferenceNode')
-    except:
-        pass
+    except Exception as e:
+        print e
     try:
-        refs.remove(namespace.replace('_anim','')+':_UNKNOWN_REF_NODE_')
-    except:
-        pass
+        refs.remove(namespace.replace('_animRN','')+':_UNKNOWN_REF_NODE_')
+    except Exception as e:
+        print e
     tgtRN = ''
     for r in refs:
         ns = mel.eval('referenceQuery -ns ' + r)[1:]
+        print ns, namespace, r
         if namespace == ns:
             tgtRN = r
             break
         else:
+            print refs
             if len(refs) == 2:
                 if "_animRN" in refs[0]:
                     tgtRN = r
@@ -46,26 +46,27 @@ def replaceAsset (assetPath, namespace):
             else:
                 print r+' can not replace'
     try:
-        mc.file(assetPath, loadReference=tgtRN)
+        print assetPath, tgtRN
+        cmds.file(assetPath, loadReference=tgtRN)
     except Exception as e:
         print e
         print "replace not done..." 
         return
-    mc.warning('replace end')
+    cmds.warning('replace end')
 
 
 def exportFile (outputPath, topNode):
-    mc.warning('export start')
-    mc.select(topNode)
-    mc.file(outputPath, typ='mayaAscii', f=True, es=True, pr=True)
-    mc.warning('export end')
+    cmds.warning('export start')
+    cmds.select(topNode)
+    cmds.file(outputPath, typ='mayaAscii', f=True, es=True, pr=True)
+    cmds.warning('export end')
 
 def loadAsset (assetPath, namespace):
-    mc.file(assetPath, r=True, namespace=namespace, mergeNamespacesOnClash=False, ignoreVersion=True)
+    cmds.file(assetPath, r=True, namespace=namespace, mergeNamespacesOnClash=False, ignoreVersion=True)
 
 def attachABC (abcPath,namespace,hierarchyList):
-    if not mc.pluginInfo('AbcImport', q=True, l=True):
-        mc.loadPlugin('AbcImport')
+    if not cmds.pluginInfo('AbcImport', q=True, l=True):
+        cmds.loadPlugin('AbcImport')
     hierarchy = ' '.join(hierarchyList)
     mel.eval('AbcImport -mode import -fitTimeRange -debug -connect ' + '\"' + hierarchy + '\" ' + '\"' + abcPath + '\"')
 
@@ -83,23 +84,23 @@ def attachABC (abcPath,namespace,hierarchyList):
 
             print namespace+':pgYetiMaya'+namespace+'Shape.cacheFileName'
 
-            mc.setAttr(namespace+':pgYetiMaya'+namespace+'Shape.cacheFileName', inyeticasch.rstrip('\n'), type='string')
-            mc.setAttr(namespace+':pgYetiMaya'+namespace+'Shape.outputCacheFileName', outyeticasch.rstrip('\n'), type='string')
+            cmds.setAttr(namespace+':pgYetiMaya'+namespace+'Shape.cacheFileName', inyeticasch.rstrip('\n'), type='string')
+            cmds.setAttr(namespace+':pgYetiMaya'+namespace+'Shape.outputCacheFileName', outyeticasch.rstrip('\n'), type='string')
     except:
         pass
         # setAttr - type "string" _LXM:pgYetiMaya_LXMShape.cacheFileName "a"
         # setAttr - type "string" _LXM:pgYetiMaya_LXMShape.outputCacheFileName "b"
 
 def replaceABCPath (repAbcPath):
-    abcNodes = mc.ls(type='AlembicNode')
+    abcNodes = cmds.ls(type='AlembicNode')
     if len(abcNodes) != 0:
-        mc.setAttr(abcNodes[0]+'.abc_File', repAbcPath, type='string')
+        cmds.setAttr(abcNodes[0]+'.abc_File', repAbcPath, type='string')
     print 'x' * 20
 
 def delUnknownNode ():
-    unknownNodes = mc.ls(type='unknown')
+    unknownNodes = cmds.ls(type='unknown')
     if len(unknownNodes) != 0:
-        mc.delete(unknownNodes)
+        cmds.delete(unknownNodes)
 
 def setEnv ():
     os.environ['VRAY_FOR_MAYA2015_MAIN_X64'] = 'Y:\\users\\env\\vray\\maya2015_vray_adv_36004\\maya_vray'
@@ -123,5 +124,5 @@ if __name__ == '__main__':
 
     loadAsset(assetPath, namespace)
 
-    selHierarchy = mc.ls(namespace+':'+topNode, dag=True)
+    selHierarchy = cmds.ls(namespace+':'+topNode, dag=True)
     attachABC(abcPath, selHierarchy)

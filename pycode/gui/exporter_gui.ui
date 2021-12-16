@@ -177,7 +177,7 @@ QScrollBar::handle::horizontal {background:  rgb(90, 90, 90);}
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="custom_framerange_chk">
+       <widget class="QCheckBox" name="custom_frame_range_chk">
         <property name="layoutDirection">
          <enum>Qt::RightToLeft</enum>
         </property>
@@ -221,7 +221,7 @@ QScrollBar::handle::horizontal {background:  rgb(90, 90, 90);}
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="framehundle_chk">
+       <widget class="QCheckBox" name="frame_hundle_chk">
         <property name="enabled">
          <bool>true</bool>
         </property>
@@ -237,7 +237,7 @@ QScrollBar::handle::horizontal {background:  rgb(90, 90, 90);}
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="framehundle_value">
+       <widget class="QLineEdit" name="frame_handle_value">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -264,7 +264,7 @@ QScrollBar::handle::horizontal {background:  rgb(90, 90, 90);}
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_7">
       <item>
-       <widget class="QCheckBox" name="scene_timeworp_check">
+       <widget class="QCheckBox" name="scene_timewarp_check">
         <property name="layoutDirection">
          <enum>Qt::RightToLeft</enum>
         </property>

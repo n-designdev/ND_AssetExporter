@@ -68,7 +68,7 @@ class outputPathConf(object):
             print(e)
 
         vers = os.listdir(self._publish_char_path)
-        if len(vers) == 0:
+        if len(vers) == 1:
             self._current_ver = 'v001'
         else:
             vers.sort()
@@ -99,8 +99,8 @@ class outputPathConf(object):
 
 
     def copy_ver2current(self):
-        distutils.dir_util.copy_tree(self._publish_ver_path, self._publish_current_path)
-        current_info = os.path.join(self._publish_current_path, 'current_info.txt')
+        distutils.dir_util.copy_tree(self.publish_ver_path, self.publish_current_path)
+        current_info = os.path.join(self.publish_current_path, 'current_info.txt')
         with open(current_info, 'w') as f:
             f.write("current ver:"+ str(self._current_ver)+"\n")
 
@@ -158,7 +158,7 @@ class outputPathConf(object):
         return self._shot
 
     @property
-    def publishpath (self):
+    def publish_char_path (self):
         return self._publish_char_path.replace(os.path.sep, '/')
 
     @property
@@ -178,6 +178,14 @@ class outputPathConf(object):
         return self._publish_current_path.replace(os.path.sep, '/')
 
     @property
+    def publish_current_anim_path (self):
+        return self._publish_current_anim_path.replace(os.path.sep, '/')    
+
+    @property
+    def publish_current_abc_path (self):
+        return self._publish_current_abc_path.replace(os.path.sep, '/')
+
+    @property
     def publish_ver_cam_path(self):
         return self._publish_ver_cam_path.replace(os.path.sep, '/')
 
@@ -189,25 +197,15 @@ class outputPathConf(object):
     def current_ver (self):
         return self._current_ver
 
-
-def addTimeLog(char, input_path, test):
-    from datetime import datetime
-    opc = outputPathConf(input_path, char, test)
-    try:
-        opc.setChar(char)
-    except ValueError:
-        return
-    publishpath = opc.publishpath
-    if test is True:
-        publishpath = publishpath.replace("char", "test_char")
-        publishpath = publishpath.replace("Cam", "test_Cam")
-    try:
-        with open(os.path.join(publishpath, 'timelog.txt').replace(os.path.sep, '/'), 'a') as f:
-            f.write(datetime.now().strftime('%Y/%m/%d %H:%M:%S'))
-            f.write(' ' + opc.current_ver)
-            f.write(' ' + input_path)
-            f.write(' ' + os.environ['USERNAME'])
-            f.write('\n')
-    except Exception as e:
-        print(e)
+    def addTimeLog(self):
+        from datetime import datetime
+        try:
+            with open(os.path.join(self.publish_char_path, 'timelog.txt'), 'a') as f:
+                f.write(datetime.now().strftime('%Y/%m/%d %H:%M:%S'))
+                f.write(' ' + self._current_ver)
+                f.write(' ' + self.input_path)
+                f.write(' ' + os.environ['USERNAME'])
+                f.write('\n')
+        except Exception as e:
+            print(e)
     

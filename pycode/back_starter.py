@@ -1,7 +1,8 @@
-# -*- coding: utf-8 -*-
+# -*- codicng: utf-8 -*-
 
 import os,sys
 import yaml
+print(yaml.__file__)
 import shutil
 
 ND_TOOL_PATH = 'Y:/tool/ND_Tools/python;Y:/tool/ND_Tools/DCC/ND_AssetExport_test/pycode/exporter_lib;Y:/tool/ND_Tools/DCC/ND_AssetExport_test/pycode'
@@ -22,7 +23,7 @@ def back_starter_main(**kwargs):
 
     if export_type in ['anim', 'abc']:
         argsdic['anim_item'] = argsdic['export_item']['anim']
-        argsdic["abc_item"] = argsdic["export_item"]['abc']
+        argsdic['abc_item'] = argsdic["export_item"]['abc']
 
     if 'override_shotpath' in argsdic.keys():
         override = True
@@ -46,22 +47,22 @@ def back_starter_main(**kwargs):
             argsdic['file_name_space'] = file_name_space
             anim_ver_path = opc.publish_ver_anim_path + '/' + anim_file_name
             argsdic['anim_ver_path'] = anim_ver_path
-            ma_ver_path = opc.publish_ver_path + '/' + file_name_space + '.ma'
+            ma_ver_path = opc.publish_ver_path + '/' +  file_name_space + '.ma'
             argsdic['ma_ver_path'] = ma_ver_path
-            batch.animAttach(argsdic)
+            batch.animAttach(**argsdic)
 
         opc.copy_ver2current()
 
         for anim_file in anim_files:
-            if animFile[:5] != 'anim_':continue
-            if animFile[-3:] != '.ma':continue
+            if anim_file[:5] != 'anim_':continue
+            if anim_file[-3:] != '.ma':continue
             file_name_space = anim_file_name.replace('anim_', '').replace('.ma', '')
             argsdic['file_name_space'] = file_name_space
-            anim_current_path = opc.publish_current_path + '/' + anim_file_name
-            argsdic['anim_current_path'] = anim_current_path
-            ma_current_path = opc._publish_current_path + '/' + file_name_space + '.ma'
+            publish_current_anim_path = opc.publish_current_anim_path + '/' + anim_file_name
+            argsdic['publish_current_anim_path'] = publish_current_anim_path
+            ma_current_path = opc.publish_current_path + '/' + file_name_space + '.ma'
             argsdic['ma_current_path'] = ma_current_path
-            batch.animReplace(argsdic)
+            batch.animReplace(**argsdic)
     if export_type == 'abc' or abc_check == 'True':
         if abc_check == 'True':
             # opc.setCache(asset_name) #opcからオーバーライドしたほうが良さそう
@@ -117,7 +118,7 @@ def back_starter_main(**kwargs):
                     pass
         opc.makeCurrentDir()
     try:
-        exporter_util.addTimeLog(asset_name, input_path, test=debug_mode)
+        opc.addTimeLog()
     except Exception as e:
         print(e)
         
@@ -142,6 +143,6 @@ def back_starter_main(**kwargs):
 #     back_starter_main(**argsdic)
 
 
-argsdic_str = r'{"asset_name": "NursedesseiDragon", "namespace": "NursedesseiDragon[0-9]*$", "export_item": {"abc": "abc_Root", "anim": "ctrl_set, root"}, "topnode": "root", "assetpath": "P:/Project/RAM1/assets/chara/Nursedessei/NursedesseiDragon/publish/Setup/RH/maya/current/NursedesseiDragon_Rig_RH.mb", "debug": true, "step_value": false, "export_type": "anim", "project": "RAM1", "framerange": false, "framehundle": false, "cam_scale": false, "input_path": "P:/Project/RAM1/shots/ep022/s2227/c008/work/k_ueda/s2227c008_anm_v006.ma", "shot": "c008", "sequence": "s2227", "scene_timeworp": false, "abc_check": false, "priority": "50", "pool": "", "group": ""}'
+argsdic_str = r'{"asset_name": "NursedesseiDragon", "namespace": "NursedesseiDragon[0-9]*$", "export_item": {"abc": "abc_Root", "anim": "ctrl_set, root"}, "top_node": "root", "asset_path": "P:/Project/RAM1/assets/chara/Nursedessei/NursedesseiDragon/publish/Setup/RH/maya/current/NursedesseiDragon_Rig_RH.mb", "debug": true, "step_value": false, "export_type": "anim", "project": "RAM1", "frame_range": false, "frame_handle": false, "cam_scale": false, "input_path": "P:/Project/RAM1/shots/ep022/s2227/c008/work/k_ueda/s2227c008_anm_v006.ma", "shot": "c008", "sequence": "s2227", "scene_timewarp": false, "abc_check": false, "priority": "50", "pool": "", "group": ""}'
 argsdic = yaml.safe_load(argsdic_str)
 back_starter_main(**argsdic)

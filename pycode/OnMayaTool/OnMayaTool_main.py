@@ -29,30 +29,24 @@ class AssetClass():
                     'chara': self.regular_asset_name,
                     'namespace': self.sg_asset["sg_namespace"],
                     'export_item': "anim: "+self.sg_asset["sg_anim_export_list"]+", abc: "+self.sg_asset["sg_abc_export_list"],
-                    'topnode': self.sg_asset["sg_top_node"],
-                    'assetpath': self.sg_asset["sg_asset_path"],
+                    'top_node': self.sg_asset["sg_top_node"],
+                    'asset_path': self.sg_asset["sg_asset_path"],
                     'debug_mode': debug,
-                    'framerange_output': "True",
                     'export_type': self.sg_asset["sg_export_type"],
                     'project': pro_name,
-                    'framerange': "None",
-                    'framehundle': '0',
-                    'framerange_output': 'True',
+                    'frame_range': "None",
+                    'frame_handle': '0',
                     'input_path': str(scene_path),
                     'shot': shot,
                     'sequence': sequence,
-                    'scene_timeworp': "False",
+                    'scene_timewarp': "False",
                     'env_load': "True",
-                    'bake_anim': "True",
                     'abc_check': "False",
                     'Priority': '50',
                     'Pool': 'ram1',
                     'Group': 'mem064',
                     'override_shotpath': override_shotpath,
                     'add_attr': add_attr}
-
-        for key, value in execargs_ls.items():
-            print key, value
 
         if override_exptype is not None:
             execargs_ls["export_type"] = override_exptype
