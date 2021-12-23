@@ -273,7 +273,6 @@ def unmuteAttributes(nodes):
 
 
 def export_anim_main(**kwargs):
-    # publishpath, oFilename, strnamespaceList, strregexArgs, isFilter, bake_anim, strextra_dic, frame_handle, frame_range, scene_timewarp, top_node):
     import pprint
     pprint.pprint(kwargs)
     output_files = []
@@ -362,8 +361,6 @@ def export_anim_main(**kwargs):
         time_value_set_list = []
         ref_files = []
         ref_attrs = []
-        sframe = cmds.playbackOptions(q=True, min=True)
-        eframe = cmds.playbackOptions(q=True, max=True)
         #copy top_objs
         ignore_objs = ['persp','top', 'front', 'side', 'AllRoot']
         top_objs = cmds.ls(assemblies=True)
@@ -447,8 +444,8 @@ def export_anim_main(**kwargs):
             argsdic['pick_node_and_attrs'] = pick_node_and_attrs
             argsdic['frame_range'] = frame_range
             argsdic['scene_timewarp'] = kwargs['scene_timewarp']
-            argsdic['is_check_constraint'] = False
-            argsdic['is_check_anim_curve'] = False
+            argsdic['is_check_constraint'] = True
+            argsdic['is_check_anim_curve'] = True
             ndPyLibAnimIOExportContain.ndPyLibAnimIOExportContain_main(**argsdic)
     return output_files
 

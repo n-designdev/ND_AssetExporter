@@ -64,16 +64,18 @@ def exportFile (outputPath, topNode):
 def loadAsset (assetPath, namespace):
     cmds.file(assetPath, r=True, namespace=namespace, mergeNamespacesOnClash=False, ignoreVersion=True)
 
-def attachABC (abcPath,namespace,hierarchyList):
+def attachABC(abcPath,namespace,hierarchyList):
     if not cmds.pluginInfo('AbcImport', q=True, l=True):
         cmds.loadPlugin('AbcImport')
-    hierarchy = ' '.join(hierarchyList)
+    hierarchy = ''.join(hierarchyList)
+    print abcPath, namespace
     mel.eval('AbcImport -mode import -fitTimeRange -debug -connect ' + '\"' + hierarchy + '\" ' + '\"' + abcPath + '\"')
-
     outputFile = os.path.dirname(os.path.dirname(abcPath))+'/yetimem.txt'
     print "outputFile: {}".format(outputFile)
     print "namespace: {}".format(namespace)
     try:
+        if os.path.exists(outputFile) == False:
+            return
         with open(outputFile, 'r') as fp:
 
             inyeticasch = fp.readline()
@@ -83,19 +85,22 @@ def attachABC (abcPath,namespace,hierarchyList):
             print outyeticasch.rstrip('\n')
 
             print namespace+':pgYetiMaya'+namespace+'Shape.cacheFileName'
-
             cmds.setAttr(namespace+':pgYetiMaya'+namespace+'Shape.cacheFileName', inyeticasch.rstrip('\n'), type='string')
             cmds.setAttr(namespace+':pgYetiMaya'+namespace+'Shape.outputCacheFileName', outyeticasch.rstrip('\n'), type='string')
-    except:
-        pass
+    except Exception as e:
+        print e
+        
         # setAttr - type "string" _LXM:pgYetiMaya_LXMShape.cacheFileName "a"
         # setAttr - type "string" _LXM:pgYetiMaya_LXMShape.outputCacheFileName "b"
 
 def replaceABCPath (repAbcPath):
+    if not cmds.pluginInfo('AbcImport', q=True, l=True):
+        cmds.loadPlugin('AbcImport')
     abcNodes = cmds.ls(type='AlembicNode')
     if len(abcNodes) != 0:
+        cmds.setAttr(abcNodes[0]+'.abc_File', lock=False)
         cmds.setAttr(abcNodes[0]+'.abc_File', repAbcPath, type='string')
-    print 'x' * 20
+    # print 'x' * 20
 
 def delUnknownNode ():
     unknownNodes = cmds.ls(type='unknown')

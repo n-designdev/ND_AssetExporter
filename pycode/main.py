@@ -7,11 +7,11 @@ import importlib
 import yaml
 # ------------------------------
 __version__ = '2.2'
-__author__ = "Kei Ueda"
+__author__ = 'Kei Ueda'
 # ------------------------------
 env_key = 'ND_TOOL_PATH_PYTHON'
 ND_TOOL_PATH = 'Y:/tool/ND_Tools/python;Y:/tool/ND_Tools/DCC/ND_AssetExport_test/pycode/exporter_lib'
-for path in ND_TOOL_PATH.split(";"):
+for path in ND_TOOL_PATH.split(';'):
     path = path.replace('\\', '/')
     if path in sys.path:
         continue
@@ -46,11 +46,12 @@ try:
     import ND_Submitter.env as util_env
     # import ND_Submitter2.env as util_env
 except Exception as e:
+    print(e)
     NoDeadlineMode = True
 else:
     NoDeadlineMode = False
 
-PYPATH = r"C:\Users\k_ueda\AppData\Local\Programs\Python\Python310\python.exe"
+PYPATH = r'C:\Users\k_ueda\AppData\Local\Programs\Python\Python310\python.exe'
 onpath = os.path.dirname(os.path.abspath(__file__)).replace('\\', '/')
 os.chdir(onpath)
 
@@ -70,29 +71,29 @@ class GUI(QMainWindow):
         self.input_path = ''
         #Shotgrid
         self.asset_fields = [
-                "code", "sg_namespace", "sg_export_type",
-                "sg_top_node", "sg_abc_export_list",
-                "sg_anim_export_list", "sg_asset_path",
-                "sequences"]
-        self.shot_fields = ["code", "assets"]
+                'code', 'sg_namespace', 'sg_export_type',
+                'sg_top_node', 'sg_abc_export_list',
+                'sg_anim_export_list', 'sg_asset_path',
+                'sequences']
+        self.shot_fields = ['code', 'assets']
         self.base_fields = [
-                "code", "assets",
-                "sg_namespace", "sg_export_type",
-                "sg_top_node", "sg_abc_export_list",
-                "sg_anim_export_list", "sg_asset_path",
-                "sequences"]
+                'code', 'assets',
+                'sg_namespace', 'sg_export_type',
+                'sg_top_node', 'sg_abc_export_list',
+                'sg_anim_export_list', 'sg_asset_path',
+                'sequences']
         # GUI
         self.headers_item = [
-                "Asset name", "Name space", 
-                "Export Type", "Export Item",
-                "Top Node", "Asset Path"]
+                'Asset name', 'Name space', 
+                'Export Type', 'Export Item',
+                'Top Node', 'Asset Path']
         self.convert_dic = {
-                "Asset name": "code",
-                "Name space": "sg_namespace",
-                "Export Type": "sg_export_type",
-                "Top Node": "sg_top_node",
-                "Asset Path": "sg_asset_path"}
-        self.headers = [""]
+                'Asset name': 'code',
+                'Name space': 'sg_namespace',
+                'Export Type': 'sg_export_type',
+                'Top Node': 'sg_top_node',
+                'Asset Path': 'sg_asset_path'}
+        self.headers = ['']
         self.headers.extend(self.headers_item)
 
         self.tabledata = []
@@ -202,7 +203,7 @@ class GUI(QMainWindow):
         self.export_main(mode='Submit')
 
     def open_log_button_clicked(self):
-        sakura = r"C:\Program Files (x86)\sakura\sakura.exe"
+        sakura = r'C:\Program Files (x86)\sakura\sakura.exe'
         subprocess.Popen([sakura, self.last_log_path])
 
     def contextMenu(self, point):
@@ -248,46 +249,49 @@ class GUI(QMainWindow):
         opc = exporter_util.outputPathConf(self.input_path)
         shot_path = opc.publishshotpath
         if self.debug:
-            current_path = os.path.join(shot_path, "publish", "test_charSet")
+            current_path = os.path.join(shot_path, 'publish', 'test_charSet')
         else:
-            current_path = os.path.join(shot_path, "publish", "charSet")
+            current_path = os.path.join(shot_path, 'publish', 'charSet')
         copy_main.copy_main(current_path)
 
     def open_publish_dir_button_clicked(self):
         import exporter_util
         opc = exporter_util.outputPathConf(self.input_path)
-        shot_path = opc.publishshotpath
-        publish_path = os.path.join(shot_path, "publish")
-        subprocess.call("explorer {}".format(publish_path.replace("/", "\\")))
+        shot_path = opc.shot_path
+        publish_path = os.path.join(shot_path, 'publish')
+        subprocess.call('explorer {}'.format(publish_path.replace('/', '\\')))
 
     def help_button_clicked(self):
         import webbrowser
-        url = "Y:/tool/ND_Tools/DCC/ND_AssetExporter/pycode/help/help.html"
+        url = 'Y:/tool/ND_Tools/DCC/ND_AssetExporter/pycode/help/help.html'
         webbrowser.open_new_tab(url)
 
     def load_user_info(self):
-        filename = "user_info.py"
-        output_dir = "Y:\\users\\"+os.environ.get("USERNAME")+"\\DCC_log\\ND_AssetExporter"
-        output_file = output_dir + "\\" + filename
+        filename = 'user_info.py'
+        output_dir = 'Y:\\users\\'+os.environ.get('USERNAME')+'\\DCC_log\\ND_AssetExporter'
+        output_file = output_dir + '\\' + filename
         if not os.path.exists(output_dir):
             return
         if os.path.exists(output_file):
             sys.path.append(output_dir)
             import user_info
+            print(user_info.path)
             self.drop_func(user_info.path)
         
     def output_user_info(self):
-        filename = "user_info.py"
-        output_dir = "Y:\\users\\"+os.environ.get("USERNAME")+"\\DCC_log\\ND_AssetExporter"
-        output_file = output_dir + "\\" + filename
+        filename = 'user_info.py'
+        output_dir = 'Y:\\users\\'+os.environ.get('USERNAME')+'\\DCC_log\\ND_AssetExporter'
+        output_file = output_dir + '\\' + filename
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
         with open(output_file, mode='w') as f:
-            f.write("path =  \"{}\"\n".format(self.input_path))
+            f.write('path =  \'{}\'\n'.format(self.input_path))
 
     def drop_func(self, urldata):
         if type(urldata)==list:
-            self.input_path = urldata[0].toString().replace("file:///", "")
+            self.input_path = urldata[0].toString().replace('file:///', '')
+        else:
+            self.input_path = urldata
         self.ui.path_line.setText(self.input_path)
         self.ui.stack_area.setCurrentIndex(1)
 
@@ -299,11 +303,11 @@ class GUI(QMainWindow):
         self.ui.pro_line.setText(self.project)
         
         SGBaseClass = shotgun_mod.SGProjectClass(self.project, self.base_fields)
-        SGBaseClass.get_dict("Asset")
-        SGBaseClass.get_dict("Shot")
+        SGBaseClass.get_dict('Asset')
+        SGBaseClass.get_dict('Shot')
         shot_code = ProjectInfoClass.shot_code
-        target_asset_list = SGBaseClass.get_keying_dict("Shot", "code")[shot_code]['assets']
-        all_asset_dics = SGBaseClass.get_keying_dict("Asset", "code")
+        target_asset_list = SGBaseClass.get_keying_dict('Shot', 'code')[shot_code]['assets']
+        all_asset_dics = SGBaseClass.get_keying_dict('Asset', 'code')
 
         # table data作成
         target_asset_dics = []
@@ -311,7 +315,7 @@ class GUI(QMainWindow):
             target_asset_dics.append(
                 all_asset_dics[target_asset_name['name']])
         if len(target_asset_list) == 0:  # ショットのアセット情報が存在しない場合sequencesを見に行く
-            seq_list = SGBaseClass.get_keying_list("Asset", "sequences", "sequence")
+            seq_list = SGBaseClass.get_keying_list('Asset', 'sequences', 'sequence')
             for seq in seq_list:
                 target_asset_list.append(seq['code'])
         is_cam_rig_export = ProjectInfoClass.get_camera_rig_info()
@@ -352,9 +356,9 @@ class GUI(QMainWindow):
             groups.sort()
             pools.sort()
             _setComboBoxList(self.ui.grouplist, groups)
-            _setComboBoxValue(self.ui.grouplist, "mem032")
+            _setComboBoxValue(self.ui.grouplist, 'mem032')
             if main_util.is_arnold(self.project) is True:
-                _setComboBoxValue(self.ui.grouplist, "mem064")
+                _setComboBoxValue(self.ui.grouplist, 'mem064')
             _setComboBoxList(self.ui.poollist, pools)
             _setComboBoxValue(self.ui.poollist, self.project, 'normal')
         elif NoDeadlineMode is True:
@@ -375,7 +379,7 @@ class GUI(QMainWindow):
         if self.ui.abc_step_override_chk.isChecked() == True:
             abc_step_override = float(self.ui.abc_step_value_line.text())
         else:
-            abc_step_override = False
+            abc_step_override = 1.0
 
         if self.ui.frame_handle_chk.isChecked() == True:
             frame_handle = float(self.ui.frame_handle_value.text())
@@ -401,7 +405,7 @@ class GUI(QMainWindow):
 
             if len(row_items)<7:
                 self.executed_row.append(table_row)
-                print("table data not qualified...")
+                print('table data not qualified...')
                 continue
 
             asset_name = row_items[1]
@@ -409,8 +413,7 @@ class GUI(QMainWindow):
             export_type = row_items[3]
             export_item = row_items[4]
             top_node = row_items[5]
-            asset_path = row_items[6].replace("\\","/")
-
+            asset_path = row_items[6].replace('\\','/')
             argsdic = {
                 'asset_name': asset_name,
                 'namespace': namespace,
@@ -433,21 +436,21 @@ class GUI(QMainWindow):
                 'pool': self.ui.poollist.currentText(),
                 'group': self.ui.grouplist.currentText()}
 
-            if "{Empty!}" in argsdic.values():
+            if '{Empty!}' in argsdic.values():
                 continue
 
             if mode == 'Local':
-                log_name = "log_" + datetime.datetime.now().strftime('%Y%m%d_%H%M%S') + asset_name+ ".txt"
-                log_dir = "Y:\\users\\"+os.environ.get("USERNAME")+"\\DCC_log\\ND_AssetExporter"
-                log_path = log_dir + "\\" + log_name
-                current_dir = r"Y:/tool/ND_Tools/DCC/ND_AssetExporter_test/pycode"
+                log_name = 'log_' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S') + asset_name+ '.txt'
+                log_dir = 'Y:\\users\\'+os.environ.get('USERNAME')+'\\DCC_log\\ND_AssetExporter'
+                log_path = log_dir + '\\' + log_name
+                current_dir = r'Y:/tool/ND_Tools/DCC/ND_AssetExporter_test/pycode'
                 if not os.path.exists(log_dir):
                     os.makedirs(log_dir)
                 self.ui.stack_area.setCurrentIndex(2)
                 thread_args = {}
-                thread_args["argsdic"]=argsdic
-                thread_args["log_path"]=log_path
-                thread_args["current_dir"]=current_dir
+                thread_args['argsdic']=argsdic
+                thread_args['log_path']=log_path
+                thread_args['current_dir']=current_dir
                 export_thread = threading.Thread(target=thread_main, kwargs=thread_args)
                 export_thread.start()
 
@@ -464,7 +467,7 @@ class GUI(QMainWindow):
                         timer=0
                         if count==10:
                             count = 0
-                        self.ui.log_area.setPlainText("now working{}".format("."*timer))
+                        self.ui.log_area.setPlainText('now working{}'.format('.'*timer))
                         self.ui.repaint()
                     qApp.processEvents()
                 self.last_log_path = log_path
@@ -483,22 +486,22 @@ class GUI(QMainWindow):
         main_util.TableModelMaker(
                 self.tabledata, self.headers,
                 self.check_row, self.executed_row)
-        print("===============Export End==================")
+        print('===============Export End==================')
 
 
 def thread_main(**kwargs):
     argsdic = json.dumps(kwargs['argsdic'], ensure_ascii=False)
     log_path = kwargs['log_path']
     current_dir = kwargs['current_dir']
-    # python = "Y:\\tool\\MISC\\Python2710_amd64_vs2010\\python.exe"
+    # python = 'Y:\\tool\\MISC\\Python2710_amd64_vs2010\\python.exe'
     python = PYPATH
-    py_path = r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_test\pycode\back_starter.py"
-    with open(log_path, "w+")as f:
+    py_path = r'Y:\tool\ND_Tools\DCC\ND_AssetExporter_test\pycode\back_starter.py'
+    with open(log_path, 'w+')as f:
         # proc = subprocess.run([python, py_path, argsdic], shell=True, stdout=f, cwd=current_dir)
-        print(python, py_path, argsdic)
-        # proc = subprocess.run([python, py_path, argsdic], shell=True, stdout=f , cwd=current_dir)
-        proc = subprocess.run([python, py_path, argsdic], shell=True, stdout=subprocess.PIPE , cwd=current_dir)
-        proc.wait()
+        # print(python, py_path, argsdic)
+        # proc = subprocess.run([python, py_path, argsdic], shell=True, stdout=subprocess.PIPE , cwd=current_dir)
+        proc = subprocess.run([python, py_path, argsdic], shell=True, stdout=f , cwd=current_dir)
+        # proc.wait()
     return
 
 
@@ -506,8 +509,8 @@ def runs(*argv):
     app = QApplication.instance()
     if app is None:
         app = QApplication(sys.argv)
-    skin = "%s/skin.stylesheet" % onpath
-    tx_o = open(skin, "r")
+    skin = '%s/skin.stylesheet' % onpath
+    tx_o = open(skin, 'r')
     tx_r = tx_o.read()
     tx_o.close()
     app.setStyleSheet(tx_r)

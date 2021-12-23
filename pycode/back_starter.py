@@ -32,13 +32,15 @@ def back_starter_main(**kwargs):
 
     opc = exporter_util.outputPathConf(input_path, export_type=export_type, debug=debug)
     opc.set_char(asset_name)
-        
+    opc.ver_inc()
+    argsdic['publish_char_path'] = opc.publish_char_path
+    print(export_type)
     if export_type == 'anim':
         argsdic['publish_ver_anim_path'] = opc.publish_ver_anim_path
         batch.animExport(**argsdic)
         if override == True:
             return
-        anim_files = os.listdir(opc._publish_ver_anim_path)
+        anim_files = os.listdir(opc.publish_ver_anim_path)
         if len(anim_files)==0:
             opc.remove_dir()
             return
@@ -67,56 +69,58 @@ def back_starter_main(**kwargs):
         if abc_check == 'True':
             # opc.setCache(asset_name) #opcからオーバーライドしたほうが良さそう
             pass
-        argsdic["export_item"]=abc_item
-        argsdic['abcOutput'] = opc._publish_ver_abcpath + "/" + asset_name + '.abc'
-        argsdic['abcOutput'] = argsdic['abcOutput'].replace("\\", "/")
-        try:
-            os.makedirs(opc._publish_ver_abcpath)
-        except:
-            pass
-        # batch.abcExport(**argsdic)
-        if override == True:
-            return
-        abcFiles = os.listdir(opc._publish_ver_abcpath)
-        if len(abcFiles) == 0:
+        argsdic['publish_ver_abc_path'] = opc.publish_ver_abc_path
+        batch.abcExport(**argsdic)
+        print(opc.publish_ver_abc_path)
+        abc_files = os.listdir(opc.publish_ver_abc_path)
+        if len(abc_files) == 0:
             opc.remove_dir()
-            print('abc not found')
             return
-        allOutput = []
-        for abc in abcFiles:
-            scene_ns = abc.replace('_abc.abc', '')
-            abcOutput = opc.publish_ver_abcpath+"/"+abc
-            charaOutput = opc.publish_ver_path+"/"+abc.replace(".abc", ".ma")
-            argsdic['scene_ns'] = scene_ns
-            argsdic['attachPath'] = charaOutput #.ma
-            argsdic['abcOutput'] = abcOutput #.abc
+        output_set_list = []
+        for abc_file_name in abc_files:
+            file_name_space = abc_file_name.replace('.abc', '')
+            abc_file = opc.publish_ver_abc_path+"/"+abc_file_name
+            ma_file_name = abc_file_name.replace(".abc", ".ma")
+            ma_file = opc.publish_ver_path+"/"+ma_file_name
+            argsdic['file_namespace'] = file_name_space
+            argsdic['ma_ver_file'] = ma_file #.ma
+            argsdic['abc_ver_file'] = abc_file #.abc
             batch.abcAttach(**argsdic)
-            allOutput.append([abc.replace('.abc', '.ma'), abc])
-        if override_shotpath == False:
-            opc.makeCurrentDir()
-            for output in allOutput:
-                argsdic['charaOutput'] = opc.publishcurrentpath + '/' + output[0]
-                argsdic['abcOutput'] = opc.publishcurrentpath + '/abc/' + output[1]
-                batch.repABC(**argsdic)
+            output_set_list.append([ma_file_name, abc_file_name])
+        opc.copy_ver2current()
+        for output_set in output_set_list:
+            argsdic['ma_current_file'] = opc.publish_current_path + '/' + output_set[0]
+            argsdic['abc_file'] = opc.publish_current_abc_path + '/' + output_set[1]
+            batch.repABC(**argsdic)
     elif export_type == 'camera':
-        opc.setChar(asset_name)
-        argsdic['publishPath'] = opc.publish_ver_path
+        argsdic['publish_ver_path'] = opc.publish_ver_path
         oFilename = opc.sequence + opc.shot + '_cam'
-        argsdic['camOutput'] = '{}/{}.abc'.format(opc.publish_ver_campath, oFilename) #フルパスとファイル名
+        argsdic['ma_cam_path'] =  '{}/{}.ma'.format(opc.publish_ver_path, oFilename)
+        # argsdic['anim_cam_path']= '{}/anim/{}_anim.ma'.format(opc.publish_ver_cam_path, oFilename)
+        argsdic['abc_cam_path'] = '{}/{}.abc'.format(opc.publish_ver_path, oFilename) #フルパスとファイル名
+        argsdic['fbx_cam_path'] = '{}/{}.fbx'.format(opc.publish_ver_path, oFilename) #フルパスとファイル名
         batch.camExport(**argsdic)
-        camFiles = os.listdir(opc.publish_ver_campath)
-        if len(camFiles) == 0:
-            print('camera not found')
-            return
-        for camFile in camFiles:
-            srcFile = os.path.join(opc.publish_ver_path, camFile)
-            if srcFile.split('.')[-1] == 'ma':
-                dstDir = os.path.join(opc.publish_ver_path, '..')
-                try:
-                    shutil.copy(srcFile, dstDir)
-                except:
-                    pass
-        opc.makeCurrentDir()
+
+        # anim_files = os.listdir(argsdic['anim_cam_path'])
+        # if len(anim_files) == 0:
+        #     return
+        # for anim_file in anim_files:
+        #     if '_anim' in cam_file:
+        #         file_ns = cam_file.replace('_anim', '').replace('.ma', '')
+        #         argsdic['file_name_space'] = file_ns
+        #         anim_ver_path = argsdic['anim_cam_path'] + '/' + anim_file_name
+        #         argsdic['anim_ver_path'] = anim_ver_path
+        #         ma_ver_path = opc.publish_ver_path + '/' +  file_name_space + '.ma'
+        #         argsdic['ma_ver_path'] = ma_ver_path
+        #         batch.abcAttach(**argsdic)
+        #     srcFile = os.path.join(opc.publish_ver_path, cam_file)
+            # if srcFile.split('.')[-1] == 'ma':
+            #     dstDir = os.path.join(opc.publish_ver_path, '..')
+            #     try:
+            #         shutil.copy(srcFile, dstDir)
+            #     except:
+            #         pass
+        opc.copy_ver2current()
     try:
         opc.addTimeLog()
     except Exception as e:
@@ -136,13 +140,15 @@ def back_starter_main(**kwargs):
 #     return parsed_dic
 
 
-# if __name__ == '__main__':
-#     argslist = sys.argv[:]
-#     argslist.pop(0) # 先頭はpyファイルなので
-#     argsdic = yaml.safe_load(argslist[0])
-#     back_starter_main(**argsdic)
+if __name__ == '__main__':
+    argslist = sys.argv[:]
+    argslist.pop(0) # 先頭はpyファイルなので
+    argsdic = yaml.safe_load(argslist[0])
+    back_starter_main(**argsdic)
 
 
-argsdic_str = r'{"asset_name": "NursedesseiDragon", "namespace": "NursedesseiDragon[0-9]*$", "export_item": {"abc": "abc_Root", "anim": "ctrl_set, root"}, "top_node": "root", "asset_path": "P:/Project/RAM1/assets/chara/Nursedessei/NursedesseiDragon/publish/Setup/RH/maya/current/NursedesseiDragon_Rig_RH.mb", "debug": true, "step_value": false, "export_type": "anim", "project": "RAM1", "frame_range": false, "frame_handle": false, "cam_scale": false, "input_path": "P:/Project/RAM1/shots/ep022/s2227/c008/work/k_ueda/s2227c008_anm_v006.ma", "shot": "c008", "sequence": "s2227", "scene_timewarp": false, "abc_check": false, "priority": "50", "pool": "", "group": ""}'
-argsdic = yaml.safe_load(argsdic_str)
-back_starter_main(**argsdic)
+# argsdic_str = r'{"asset_name": "NursedesseiDragon", "namespace": "NursedesseiDragon[0-9]*$", "export_item": {"abc": "abc_Root", "anim": "ctrl_set, root, ctrl_allWorld"}, "top_node": "root", "asset_path": "P:/Project/RAM1/assets/chara/Nursedessei/NursedesseiDragon/publish/Setup/RH/maya/current/NursedesseiDragon_Rig_RH.mb", "debug": true, "step_value": 1.0, "export_type": "anim", "project": "RAM1", "frame_range": False, "frame_handle": false, "cam_scale": false, "input_path": "P:/Project/RAM1/shots/ep022/s2227/c008/work/k_ueda/s2227c008_anm_v006.ma", "shot": "c008", "sequence": "s2227", "scene_timewarp": True, "abc_check": false, "priority": "50", "pool": "", "group": ""}'
+# # argsdic_str = r'{"asset_name": "camera", "namespace": "False", "export_item": {"abc": "abc_Root", "anim": "ctrl_set, root"}, "top_node": "root", "asset_path": "P:/Project/RAM1/assets/chara/Nursedessei/NursedesseiDragon/publish/Setup/RH/maya/current/NursedesseiDragon_Rig_RH.mb", "debug": true, "step_value": 1.0, "export_type": "camera", "project": "RAM1", "frame_range": False, "frame_handle": false, "cam_scale": false, "input_path": "P:/Project/RAM1/shots/ep022/s2227/c008/work/k_ueda/s2227c008_anm_v006.ma", "shot": "c008", "sequence": "s2227", "scene_timewarp": false, "abc_check": false, "priority": "50", "pool": "", "group": ""}'
+# argsdic = yaml.safe_load(argsdic_str)
+# back_starter_main(**argsdic)
+

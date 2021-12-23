@@ -14,8 +14,8 @@ def ndPyLibAnimGetAnimNodeAndAttr (inForNodes, inMode, isCheckAnimCurve, isCheck
     return retNodes
 
 def ndPyLibStrDeletePrefix(inStr):
-    if mc.referenceQuery(inr=inStr)==1:
-        pfxRN = mc.referenceQuery(rfn=inStr)
+    if cmds.referenceQuery(inr=inStr)==1:
+        pfxRN = cmds.referenceQuery(rfn=inStr)
         pfx = pfxRN.replace('RN', '')
         pfxSize = len(pfx)
         inStrSize = len(inStr)
@@ -90,7 +90,7 @@ def ndPyLibAnimGetAnimNodeAndAttrFunc (inForNodes, inMode, isCheckAnimCurve, isC
         if isCheckAnimCurve and len(retNodes) <= 0:
             listNoAnimCurveNode.append(checkNode)
             listNoAnimCurveNodeCnt += 1
-            mc.setKeyframe(checkNode, breakdown=0, hierarchy='none', controlPoints=0, shape=0)
+            cmds.setKeyframe(checkNode, breakdown=0, hierarchy='none', controlPoints=0, shape=0)
             retNodes = _GetAnimNodeAndAttrFunc(checkNode, inMode)
             if len(retNodes) <= 0:
                 print '[nd] Error No Animation Node.\n'

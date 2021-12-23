@@ -166,7 +166,7 @@ def tabledata_maker(headers, convert_dic, target_assets):
                         continue
                     else:
                         td_row.append('{Empty!}')
-                        td_row.append('{Empty!}')
+                        # td_row.append('{Empty!}')
                     anim_item = target_asset["sg_anim_export_list"]
                     abc_item = target_asset["sg_abc_export_list"]
                     # td_row.append("{{anim:{}, abc:{}}})".format(anim_item, abc_item))
@@ -174,6 +174,7 @@ def tabledata_maker(headers, convert_dic, target_assets):
                     export_item_dic['anim']=anim_item
                     export_item_dic['abc'] =abc_item
                     td_row.append(yaml.safe_dump(export_item_dic))
+                    # td_row.append("{{anim:{}, abc:{}}}".format(anim_item, abc_item))
                     continue
                 if target_asset[sg_code] is None:
                     td_row.append("{Empty!}")
