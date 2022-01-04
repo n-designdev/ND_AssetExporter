@@ -87,14 +87,16 @@ def export_abc_main(**kwargs):
             if match != None:
                 tg_ns_list.append(scene_ns)
 
+
     tg_nodes_dic = {}
-    
     if 'add_attr' in kwargs.keys():
         import pymel.core as pm
+        #キーがシェイプ名、値がそのシェイプのフェースアトリビュート値のリストのペアである辞書を宣言
         dictAttributes = {}
-        context = "/shop/maya/"
+        context = "/mat/"
         for eachSG in pm.ls(type="shadingEngine"):
-            # print eachSG
+            if eachSG.split(':')[0] not in scene_ns_list:
+                continue
             members = pm.sets(eachSG,q=True,nodesOnly=False)
             #SGにオブジェクト/コンポーネントが割り当てられていなければスキップする
             if len(members)==0:
@@ -114,13 +116,9 @@ def export_abc_main(**kwargs):
                 #SGがオブジェクトに紐付けられている場合の処理
                 if type(eachMember) == pm.nodetypes.Mesh:
                     dictAttributes[eachMember]={"shader":[],"rest":[]}
-                    numFaces = pm.getAttr("{}.face".format(eachMember), size=True)
-                    # numFaces = pm.polyEvaluate(eachMember, f=1)
-                    dictAttributes[eachMember]["shader"] = [context+shaderName]*numFaces
-                    # numVertices = pm.getAttr("{}.verts".format(eachMember), size=True)
-                    numVertices = pm.polyEvaluate(eachMember, v=True)
-                    for vtxIndex in range(numVertices):
-                        position = pm.pointPosition(eachMember+".vtx["+str(vtxIndex)+"]",world=True)
+                    dictAttributes[eachMember]["shader"] = [context+eachSG]*eachMember.numFaces()
+                    for vtxIndex in range(eachMember.numVertices()):
+                        position = pm.pointPosition(eachMember+".vtx["+str(vtxIndex)+"]",world=True).get()
                         dictAttributes[eachMember]["rest"].append( [position[0],position[1],position[2]] )
                 #SGがフェースに紐付けられている場合の処理
                 elif eachMember._ComponentLabel__ == "f":
@@ -131,16 +129,12 @@ def export_abc_main(**kwargs):
                         dictAttributes[shape]["shader"]= [""]*eachMember.totalSize()
                         for vtxIndex in range(shape.numVertices()):
                             dictAttributes[shape]["rest"].append( pm.pointPosition(shape+".vtx["+str(vtxIndex)+"]",world=True) )
-                            # dictAttributes[shape]["rest"].append(None)
                     #該当するリストのインデックスにシェーダ名を書き込む
                     for index in eachMember.indices():
-                        dictAttributes[shape]["shader"][index] = context+shaderName
-                        
+                        dictAttributes[shape]["shader"][index] = context+eachSG#shaderName
         restAttributeName = "rest"
         shaderAttributeName = "shop_materialpath"
-        print "###############"
         for eachShape in dictAttributes:
-            print eachShape
             #Rest Positionアトリビュートを追加
             if not pm.attributeQuery(restAttributeName+"_AbcGeomScope",node=eachShape,exists=True):
                 pm.addAttr(eachShape, dataType="string", longName=restAttributeName+"_AbcGeomScope")
@@ -155,7 +149,7 @@ def export_abc_main(**kwargs):
             if not pm.attributeQuery(shaderAttributeName,node=eachShape,exists=True):
                 pm.addAttr(eachShape,dataType="stringArray",longName=shaderAttributeName)
             pm.setAttr(eachShape+"."+shaderAttributeName,dictAttributes[eachShape]["shader"])
-    
+            
 
     for tg_ns in tg_ns_list:
         tg_nodes_dic[tg_ns] = getAllNodes(tg_ns, kwargs['abc_item'])
@@ -205,11 +199,13 @@ def export_abc_main(**kwargs):
         strAbc = strAbc + '-step '
         strAbc = strAbc + str(kwargs['step_value']) + ' '
         strAbc = strAbc + '-root '
-        strAbc = strAbc + top_node + ' '
+        # strAbc = strAbc + top_node + ' '
+        for tg_node in tg_nodes:
+            strAbc = strAbc  + tg_node + ' ' 
         strAbc = strAbc + '-file '
         strAbc = strAbc + abc_file_path
         if 'add_attr' in kwargs.keys():
-            strAbc = strAbc + '-attr ' + kwargs['add_attr']
+            strAbc = strAbc + ' -attr ' + kwargs['add_attr']
 
         print('AbcExport -j {}'.format(strAbc))
         mel.eval('AbcExport -verbose -j \"{}\"'.format(strAbc))

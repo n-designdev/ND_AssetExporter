@@ -5,6 +5,10 @@ import maya.cmds as cmds
 sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_test\pycode")
 sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_test\pycode\maya")
 import exporter_util; reload(exporter_util)
+try:
+    from import_lib import *
+except:
+    pass
 
 
 def ls_asset_code(AssetClass_list):
@@ -43,7 +47,7 @@ class AssetClass():
                     'top_node': self.sg_asset['sg_top_node'],
                     'asset_path': self.sg_asset['sg_asset_path'],
                     'step_value': 1.0,
-                    'frame_range': [1200, 1220],
+                    # 'frame_range': [1200, 1220],
                     'frame_handle': 0,
                     'scene_timewarp': False}
         
@@ -52,10 +56,13 @@ class AssetClass():
 
         if export_type=='anim':
             from maya_lib.ndPyLibExportAnim import export_anim_main
+            # reload(export_anim_main)
             export_anim_main(**argsdic)
         if export_type=='abc':
-            from maya_lib.ndPyLibExportAbc import export_abc_main
-            export_abc_main(**argsdic)
+            # from maya_lib.ndPyLibExportAbc import export_abc_main
+            import maya_lib.ndPyLibExportAbc as ndPyLibExportAbc
+            reload(ndPyLibExportAbc)
+            ndPyLibExportAbc.export_abc_main(**argsdic)
 
 def ls_asset_class():
     sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_test\pycode")
