@@ -94,7 +94,7 @@ class outputPathConf(object):
             self.current_ver = next_ver
         try:
             if not os.path.isdir(self.publish_ver_path):
-                os.mkdir(self.publish_ver_path)
+                os.makedirs(self.publish_ver_path)
                 if self.export_type == "anim":
                     if not os.path.isdir(self.publish_ver_anim_path):
                         os.makedirs(self.publish_ver_anim_path)

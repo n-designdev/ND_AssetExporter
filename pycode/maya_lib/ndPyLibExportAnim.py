@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# coding:utf-8
 from __future__ import print_function
 import os, sys
 import re, glob
@@ -30,19 +30,25 @@ def get_reference_file(obj):
 
 def reference_ma(ma, ns):
     # cmds.file(ma, reference=True, ns=ns, force=False, pmt=True)
-    cmds.file(ma, i=True, ns=ns)
+    cmds.file(ma, i=True, ns=ns, force=True)
 
 
 def getNamespace():
     namespaces = cmds.namespaceInfo(lon=True)
     _nestedNS = []
     for ns in namespaces:
-        nestedNS = cmds.namespaceInfo(ns, lon=True)
-        if nestedNS != None:
-            _nestedNS += nestedNS
+        try:
+            nestedNS = cmds.namespaceInfo(ns, lon=True)
+            if nestedNS != None:
+                _nestedNS += nestedNS
+        except:
+            continue
     namespaces += _nestedNS
-    namespaces.remove('UI')
-    namespaces.remove('shared')
+    try:
+        namespaces.remove('UI')
+        namespaces.remove('shared')
+    except:
+        pass
     return namespaces
 
 
@@ -298,14 +304,25 @@ def export_anim_main(**kwargs):
         f.write(str(cmds.getAttr("defaultResolution.width"))+"\n")
         f.write(str(cmds.getAttr("defaultResolution.height"))+"\n")
 
-    input_ns_list = kwargs['namespace'].split(';')
+    input_ns_list = kwargs['namespace'][0].replace(' ', '').rstrip(',').split(',')
     regex_obj_list = [i for i in kwargs['export_item']['anim'].replace(' ','').split(',') if not '.' in i]  # 通常のエクスポート対象 
+    print('#####################')
+    print(regex_obj_list)
+    print('#####################')
     regex_obj_and_attr_list = [i for i in kwargs['export_item']['anim'].split(',') if '.' in i] # アトリビュートを直接指定
+    print('$$$$$$$$$$$$$')
+    print(scene_ns_list)
+    print(input_ns_list)
+    print('$$$$$$$$$$$$$')
+
     for scene_ns in scene_ns_list:
         for input_ns in input_ns_list:
-            match = re.match(input_ns, scene_ns)           
+            input_ns = input_ns.replace(' ', '')
+            print(input_ns, scene_ns)
+            match = re.match(input_ns, scene_ns)         
             if match != None:
                 all_nodes += getAllnodes(scene_ns, regex_obj_list)
+                print(all_nodes)
             for regex_obj_and_attr in regex_obj_and_attr_list:
                 obj_and_attr = scene_ns+':'+ regex_obj_and_attr
                 if cmds.objExists(obj_and_attr):
@@ -313,12 +330,12 @@ def export_anim_main(**kwargs):
     character_set = cmds.ls(type='character')
     if len(character_set) != 0:
         cmds.delete(character_set)
-
+    all_nodes = list(set(all_nodes))
     for node in all_nodes:
         try:
             cmds.select(node, add=True)
-        except:
-            pass
+        except Exception as e:
+            print(e)
     baseAnimationLayer = cmds.animLayer(q=True, r=True)
     if baseAnimationLayer!=None and len(cmds.ls(sl=True))!=0 :
         animLayers = cmds.ls(type='animLayer')
@@ -357,30 +374,41 @@ def export_anim_main(**kwargs):
             sub_attrs.extend(list(set(cmds.listConnections(node, s=True, type="constraint"))))
     attrs.extend(sub_attrs)
 
+    print('##########################')
+    print(attrs)
+    print('##########################')
+
     if kwargs['scene_timewarp']==True:
         time_value_set_list = []
         ref_files = []
         ref_attrs = []
         #copy top_objs
-        ignore_objs = ['persp','top', 'front', 'side', 'AllRoot']
-        top_objs = cmds.ls(assemblies=True)
-        top_objs = list(set(top_objs)-set(ignore_objs))
-        for top_obj in top_objs:
+        ignore_objs = ['persp','top', 'front', 'side']
+        # top_objs = cmds.ls(assemblies=True)
+        # top_objs = list(set(top_objs)-set(ignore_objs))
+        # for top_obj in top_objs:
+        for scene_ns in scene_ns_list:
+            top_obj = '{}:root'.format(scene_ns)
+            if not cmds.objExists(top_obj):
+                continue
             if cmds.referenceQuery(top_obj, inr=True):
-                obj_ns = top_obj.split(":")[0]
-                for scene_ns in scene_ns_list:
-                    if re.match(scene_ns, obj_ns) != None:
-                        ref_file = get_reference_file(top_obj)        
-                        reference_ma(ref_file, "tmp_"+obj_ns)
-                        ref_files.append([obj_ns, ref_file])
-                        for obj in cmds.listRelatives(top_obj, ad=True):
-                            try:
-                                if cmds.listAttr(obj, keyable=True)!=None:
-                                    for attr in cmds.listAttr(obj, keyable=True):
-                                        ref_attrs.append(obj+"."+attr)
-                            except:
-                                pass
-                        continue
+                ref_file = get_reference_file(top_obj)    
+                try:    
+                    reference_ma(ref_file, "tmp_"+scene_ns)
+                    ref_files.append([scene_ns, ref_file])
+                
+                    for obj in cmds.listRelatives(top_obj, ad=True):
+                        try:
+                            if cmds.listAttr(obj, keyable=True)!=None:
+                                for attr in cmds.listAttr(obj, keyable=True):
+                                    ref_attrs.append(obj+"."+attr)
+                        except Exception as e:
+                            print(e)
+                            
+                except Exception as e:
+                    print(e)
+                # continue
+        cmds.setAttr("time1.enableTimewarp", 0)
         #store timewarp
         for t in range(int(sframe),int(eframe+1)):
             cmds.currentTime(t)
@@ -392,11 +420,16 @@ def export_anim_main(**kwargs):
                         value = cmds.getAttr(attr, time=warp_time)  
                         time_value_set_list.append([t, attr, value])
                 except Exception as e:
-                    pass
+                    print(attr)
+                    print(e)
         for ref in ref_files:
             ns = ref[0]
             ref_file = ref[1]
-            cmds.file(ref_file, rr=True)
+            # cmds.file(ref_file.replace('/', '\\'), rr=True)
+            try:
+                cmds.file(ref_file, rr=True)
+            except:
+                pass
         for ns_obj in cmds.ls("tmp_*:*"):
             try:
                 cmds.rename(ns_obj, ns_obj.replace("tmp_", ":"))
@@ -415,13 +448,14 @@ def export_anim_main(**kwargs):
             try:
                 cmds.setAttr(attr, value)
                 cmds.setKeyframe(attr)
-            except:
-                pass
+            except Exception as e:
+                print(e)
     else:
         # for obj_and_attr in attrs:
         #     if cmds.objExists(obj_and_attr) == True:
         #         cmds.select(obj_and_attr, add=True)
         cmds.select(attrs, add=True)
+        print(sframe, eframe)
         cmds.bakeResults(t=(sframe, eframe), dic=True)
         eulerfilter(attrs)
 
@@ -452,6 +486,8 @@ def export_anim_main(**kwargs):
 
 def ndPyLibExportAnim_caller(args):
     export_anim_main(**args)
+    import pprint
+    pprint.pprint(args)
     print("ndPylibExportAnim End")
 
 if __name__ == '__main__':

@@ -61,7 +61,8 @@ def maya_version(project):
 
     ryear = renderinfo[0]
     # return  'C:\\Program Files\\Autodesk\\Maya2019'+'\\bin\\mayabatch.exe'
-    return  'C:\\Program Files\\Autodesk\\Maya'+ryear+'\\bin\\mayabatch.exe'
+    # return  'C:\\Program Files\\Autodesk\\Maya'+ryear+'\\bin\\mayabatch.exe'
+    return  'C:\\Program Files\\Autodesk\\Maya2020\\bin\\mayabatch.exe'
 
 
 def animExport(**kwargs):
@@ -74,7 +75,10 @@ def animExport(**kwargs):
     )
     cmd = maya_cmd_maker(unique_order, mayafile=kwargs['input_path'], mayaBatch=mayaBatch)
     print(cmd)
-    subprocess.run(cmd)
+    import pprint
+    pprint.pprint(cmd)
+    subprocess.call(cmd)
+
 
 
 def animAttach(**kwargs):
@@ -95,7 +99,7 @@ def animAttach(**kwargs):
         'loadAsset(\'{}\', \'{}_anim\');'.format(anim_ver_path, file_name_space) +
         'saveAs(\'{}\')'.format(ma_ver_path))
     cmd = maya_cmd_maker(unique_order, mayaBatch=mayaBatch)
-    subprocess.run(cmd)
+    subprocess.call(cmd)
 
 
 def animReplace(**kwargs):
@@ -112,7 +116,7 @@ def animReplace(**kwargs):
     )
     cmd = maya_cmd_maker(unique_order, mayafile=ma_current_path, mayaBatch=mayaBatch)
     print(cmd)
-    subprocess.run(cmd)
+    subprocess.call(cmd)
 
 
 def abcExport(**kwargs):
@@ -123,7 +127,7 @@ def abcExport(**kwargs):
             'from ndPyLibExportAbc import ndPyLibExportAbc_caller;'
             'ndPyLibExportAbc_caller({})'.format(argsdic))
     cmd = maya_cmd_maker(unique_order, mayafile=kwargs['input_path'], mayaBatch=mayaBatch)
-    subprocess.run(cmd)
+    subprocess.call(cmd)
 
 
 def abcAttach(**kwargs):
@@ -146,7 +150,7 @@ def abcAttach(**kwargs):
             'saveAs(\'{}\')'.format(ma_ver_file))
     cmd = maya_cmd_maker(unique_order, mayaBatch=mayaBatch)
     print(cmd)
-    subprocess.run(cmd)
+    subprocess.call(cmd)
     print(cmd)
 
 
@@ -164,7 +168,7 @@ def repABC(**kwargs):
             'save();')
     cmd = maya_cmd_maker(unique_order, mayafile=ma_current_path, mayaBatch=mayaBatch)
     print(cmd)
-    subprocess.run(cmd)
+    subprocess.call(cmd)
 
 
 def camExport(**kwargs):
@@ -175,7 +179,7 @@ def camExport(**kwargs):
         'from ndPyLibExportCam import export_cam_main;'
         'export_cam_main(**{})'.format(argsdic))
     cmd = maya_cmd_maker(unique_order, kwargs['input_path'], mayaBatch)
-    subprocess.run(cmd)
+    subprocess.call(cmd)
 
 
 # x =['C:\\Program Files\\Autodesk\\Maya2020\\bin\\mayabatch.exe', '-command', 'python("import sys\\;sys.path.append(\\\'y:/tool/ND_Tools/DCC/ND_AssetExporter_test/pycode/maya\\\')\\;from maya_lib.mayaBasic import *\\;import maya.cmds as cmds\\;saveAs(\\\'P:/Project/RAM1/shots/ep022/s2227/c008/publish/test_charSet/NursedesseiDragon/v015/NursedesseiDragon.ma\\\')\\;loadAsset(\\\'P:/Project/RAM1/assets/chara/Nursedessei/NursedesseiDragon/publish/Setup/RH/maya/current/NursedesseiDragon_Rig_RH.mb\\\', \\\'NursedesseiDragon\\\')\\;selHierarchy=cmds.ls(\\\'NursedesseiDragon:root\\\', dag=True)\\;attachABC(\\\'P:/Project/RAM1/shots/ep022/s2227/c008/publish/test_charSet/NursedesseiDragon/v015/abc/NursedesseiDragon_abc.abc\\\', \\\'NursedesseiDragon\\\', selHierarchy)\\;saveAs(\\\'P:/Project/RAM1/shots/ep022/s2227/c008/publish/test_charSet/NursedesseiDragon/v015/NursedesseiDragon.ma\\\')")']

@@ -47,7 +47,7 @@ def ndPyLibAnimIOExportContain_main(**kwargs):
         if cmds.objExists(retNodes[i*2+1]) == 1:
             buf = retNodes[i*2+1].split(':')
             if len(buf) == 2:
-                print retNodes[i*2], buf[1]
+                # print retNodes[i*2], buf[1]
                 try:
                     rn = cmds.rename(retNodes[i*2+1], buf[1])
                 except:
@@ -74,7 +74,8 @@ def ndPyLibAnimIOExportContain_main(**kwargs):
     if isFilterCurve:
         cmds.filterCurve()
     else:
-        print '[nd] Not use filterCurve\n'
+        # print '[nd] Not use filterCurve\n'
+        pass
 
     # inFileName = inFileName.replace(":","_")
     fileName = inFileName.split(":")[-1]
@@ -123,8 +124,8 @@ def ndPyLibAnimIOExportContain_main(**kwargs):
     org = inDirPath + '/' + fileName
     tmp = inDirPath + '/' + tmpFile
 
-    print "org:{}".format(org)
-    print "tmp:{}".format(tmp)
+    # print "org:{}".format(org)
+    # print "tmp:{}".format(tmp)
     os.remove(org)
     os.rename(tmp, org)
 

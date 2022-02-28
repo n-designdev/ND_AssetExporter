@@ -33,8 +33,6 @@ except:
 import subprocess
 # import shotgun_api3
 
-pythonBatch = 'Y:\\tool\\MISC\\Python2710_amd64_vs2010\\python.exe'
-
 class ProjectInfo():
     def __init__(self, url):
         import exporter_lib.path as util_path
@@ -89,12 +87,18 @@ class TableModelMaker(QAbstractTableModel):
             column = index.column()
             if column == 0:
                 if row in self.executed_row:
-                    x = "✔"
-                    value = x
+                    x = "◎"
+                    try:
+                        value = x.decode("utf-8", errors="ignore")
+                    except:
+                        value = x
                 else:
                     if row in self.check_row:
                         x = "◎"
-                        value = x
+                        try:
+                            value = x.decode("utf-8", errors="ignore")
+                        except:
+                            value = x
                     else:
                         value = self.table_data[row][column]
             else:
@@ -239,7 +243,7 @@ def is_arnold(project):
     app_launcher_path = "config\\env\\includes\\app_launchers.yml"
     project_app_launcher = "%s\\ND_sgtoolkit_%s\\%s" % (toolkit_path, project_name, app_launcher_path)
     f = open(project_app_launcher, "r")
-    data = yaml.yaml_load(f)
+    data = yaml.load(f)
     f.close()
     for version in data["launch_maya"]["versions"]:
         if "(_MtoA_)" in version:
@@ -252,7 +256,9 @@ class DeadlineMod():
         self.target_py = "Y:/tool/ND_Tools/DCC/ND_AssetExporter_test/pycode/back_starter.py"
         #infoFile
         self.argsdict = kwargs
-        self.executer = r"C:\Users\k_ueda\AppData\Local\Programs\Python\Python310\python.exe"
+        # self.executer = r"C:\Users\k_ueda\AppData\Local\Programs\Python\Python310\python.exe"
+        self.executer = 'Y:\\tool\\MISC\\Python2710_amd64_vs2010\\python.exe'
+
         self.stg_dir = "Y:/tool/ND_Tools/DCC/ND_AssetExporter_test/pycode"
         self.tmp_dir = os.environ.get('TEMP', 'E:/TEMP')
         self.job_dict = self.job_content()

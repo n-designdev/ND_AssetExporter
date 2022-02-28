@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
+
 import os
 import sys
 import time
 import importlib
 import yaml
+try:
+    from importlib import reload
+except:
+    pass
 # ------------------------------
 __version__ = '2.2'
 __author__ = 'Kei Ueda'
@@ -39,9 +44,9 @@ except ModuleNotFoundError:
     from PySide6.QtUiTools import QUiLoader
 # ------------------------------------
 
-import main_util; importlib.reload(main_util)
-import shotgun_mod; importlib.reload(shotgun_mod)
-import util; importlib.reload(util)
+import main_util; reload(main_util)
+import shotgun_mod; reload(shotgun_mod)
+import util; reload(util)
 try:
     import ND_Submitter.env as util_env
     # import ND_Submitter2.env as util_env
@@ -51,7 +56,8 @@ except Exception as e:
 else:
     NoDeadlineMode = False
 
-PYPATH = r'C:\Users\k_ueda\AppData\Local\Programs\Python\Python310\python.exe'
+# PYPATH = r'C:\Users\k_ueda\AppData\Local\Programs\Python\Python310\python.exe'
+PYPATH = 'Y:\\tool\\MISC\\Python2710_amd64_vs2010\\python.exe'
 onpath = os.path.dirname(os.path.abspath(__file__)).replace('\\', '/')
 os.chdir(onpath)
 
@@ -168,7 +174,7 @@ class GUI(QMainWindow):
         self.ui.main_table.setModel(model)
 
     def allcheck_btn_clicked(self):
-        self.check_row = range(len(self.tabledata))
+        self.check_row = list(range(len(self.tabledata)))
         model = main_util.TableModelMaker(
                 self.tabledata, self.headers,
                 self.check_row, self.executed_row)
@@ -416,7 +422,9 @@ class GUI(QMainWindow):
             asset_path = row_items[6].replace('\\','/')
             argsdic = {
                 'asset_name': asset_name,
-                'namespace': namespace,
+                # 'namespace': [yaml.safe_load(namespace.replace(':', '\:').replace('[', '\[').replace(']', '\]'))],
+                'namespace': [namespace],
+                # 'namespace': 'a',
                 'export_item': yaml.safe_load(export_item),
                 'top_node': top_node,
                 'asset_path': asset_path,
@@ -500,8 +508,11 @@ def thread_main(**kwargs):
         # proc = subprocess.run([python, py_path, argsdic], shell=True, stdout=f, cwd=current_dir)
         # print(python, py_path, argsdic)
         # proc = subprocess.run([python, py_path, argsdic], shell=True, stdout=subprocess.PIPE , cwd=current_dir)
-        proc = subprocess.run([python, py_path, argsdic], shell=True, stdout=f , cwd=current_dir)
-        # proc.wait()
+        try:
+            proc = subprocess.run([python, py_path, argsdic], shell=False, cwd=current_dir)
+        except:
+            proc = subprocess.Popen([python, py_path, argsdic], shell=True, cwd=current_dir)
+            proc.wait()
     return
 
 

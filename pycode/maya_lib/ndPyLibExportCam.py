@@ -78,34 +78,80 @@ def bake_cam(sframe, eframe, cam_scale):
         from_cam.append(cams[i])
         from_cam.append(cams[i+1])
 
+    # scene time warp
+    if cmds.objExists('time1') == True:
+        scene_time_warp = False
+    else:
+        scene_time_warp = False
+    cmds.setAttr("time1.enableTimewarp", True)
+
+    if scene_time_warp == True:
+        print '%%%%%%%%%%%%%%'
+        for i in range(0, len(cams), 2):
+
+            time_set_list = []
+            time_value_set_list = []
+
+            for t in range(int(sframe),int(eframe+1)):
+                cmds.currentTime(t)
+                warp_time = cmds.getAttr("time1.outTime", time=t)
+                time_set_list.append([t, warp_time])
+
+            for time_set in time_set_list:
+                t = time_set[0]
+                warp_time = time_set[1]
+                cmds.currentTime(warp_time)
+                try:
+                    attrsTrans = cmds.xform(from_cam[i],q=True,ws=True,t=True)
+                    attrsRot = cmds.xform(from_cam[i],q=True,ws=True,ro=True)
+                    time_value_set_list.append([t, attrsTrans, attrsRot])
+                except Exception as e:
+                    print e
+            # cmds.setAttr("time1.enableTimewarp", 1)
+
+            for time_list in time_value_set_list:
+                frame = time_list[0]
+                attrsTrans = time_list[1]
+                attrsRot = time_list[2]
+                cmds.currentTime(frame)
+                cmds.setKeyframe(to_cam[int(i)],t=frame, v=attrsTrans[0], at='tx')
+                cmds.setKeyframe(to_cam[int(i)],t=frame, v=attrsTrans[1], at='ty')
+                cmds.setKeyframe(to_cam[int(i)],t=frame, v=attrsTrans[2], at='tz')
+                cmds.setKeyframe(to_cam[int(i)],t=frame, v=attrsRot[0], at='rx')
+                cmds.setKeyframe(to_cam[int(i)],t=frame, v=attrsRot[1], at='ry')
+                cmds.setKeyframe(to_cam[int(i)],t=frame, v=attrsRot[2], at='rz')
+
+    else:
+        for t in range(int(sframe),int(eframe+1)):
+            for i in range(0, len(cams), 2):
+                cmds.currentTime(t)
+
+                attrsTrans = cmds.xform(from_cam[i],q=True,ws=True,t=True)
+                attrsRot = cmds.xform(from_cam[i],q=True,ws=True,ro=True)
+
+                cmds.setKeyframe(to_cam[int(i)],t=cmds.currentTime(q=True), v=attrsTrans[0], at='tx')
+                cmds.setKeyframe(to_cam[int(i)],t=cmds.currentTime(q=True), v=attrsTrans[1], at='ty')
+                cmds.setKeyframe(to_cam[int(i)],t=cmds.currentTime(q=True), v=attrsTrans[2], at='tz')
+                cmds.setKeyframe(to_cam[int(i)],t=cmds.currentTime(q=True), v=attrsRot[0], at='rx')
+                cmds.setKeyframe(to_cam[int(i)],t=cmds.currentTime(q=True), v=attrsRot[1], at='ry')
+                cmds.setKeyframe(to_cam[int(i)],t=cmds.currentTime(q=True), v=attrsRot[2], at='rz')
+
+                # cmds.camera(cam, e=True, aspectRatio=cmds.getAttr('defaultResolution.deviceAspectRatio'))
+                # cmds.camera(cam, e=True, filmFit=cmds.getAttr('{}.filmFit'.format(from_cam[i])))
+                cmds.setAttr("{}.filmFit".format(to_cam[i]), cmds.getAttr('{}.filmFit'.format(from_cam[1])))
     for t in range(int(sframe),int(eframe+1)):
         for i in range(0, len(cams), 2):
             cmds.currentTime(t)
+        if int(cam_scale) !=0:
+            cmds.setKeyframe(to_cam[i+1],t=cmds.currentTime(q=True), v=float(cam_scale), at='.cs')
+        else:
+            camScale = cmds.getAttr(from_cam[i+1]+'.cameraScale')
+            cmds.setKeyframe(to_cam[i+1],t=cmds.currentTime(q=True), v=camScale, at='.cs')
 
-            attrsTrans = cmds.xform(from_cam[i],q=True,ws=True,t=True)
-            attrsRot = cmds.xform(from_cam[i],q=True,ws=True,ro=True)
-
-            cmds.setKeyframe(to_cam[int(i)],t=cmds.currentTime(q=True), v=attrsTrans[0], at='tx')
-            cmds.setKeyframe(to_cam[int(i)],t=cmds.currentTime(q=True), v=attrsTrans[1], at='ty')
-            cmds.setKeyframe(to_cam[int(i)],t=cmds.currentTime(q=True), v=attrsTrans[2], at='tz')
-            cmds.setKeyframe(to_cam[int(i)],t=cmds.currentTime(q=True), v=attrsRot[0], at='rx')
-            cmds.setKeyframe(to_cam[int(i)],t=cmds.currentTime(q=True), v=attrsRot[1], at='ry')
-            cmds.setKeyframe(to_cam[int(i)],t=cmds.currentTime(q=True), v=attrsRot[2], at='rz')
-
-            # cmds.camera(cam, e=True, aspectRatio=cmds.getAttr('defaultResolution.deviceAspectRatio'))
-            # cmds.camera(cam, e=True, filmFit=cmds.getAttr('{}.filmFit'.format(from_cam[i])))
-            cmds.setAttr("{}.filmFit".format(to_cam[i]), cmds.getAttr('{}.filmFit'.format(from_cam[1])))
-
-            if int(cam_scale) !=-1:
-                cmds.setKeyframe(to_cam[i+1],t=cmds.currentTime(q=True), v=float(cam_scale), at='.cs')
-            else:
-                camScale = cmds.getAttr(from_cam[i+1]+'.cam_scale')
-                cmds.setKeyframe(to_cam[i+1],t=cmds.currentTime(q=True), v=camScale, at='.cs')
-
-            for thisAttr in shapeAttrs:
-                cmds.setKeyframe(to_cam[i+1],t=cmds.currentTime(q=True), v=cmds.getAttr(from_cam[i+1]+'.'+thisAttr), at='.'+thisAttr)
-                # anim = cmds.listConnections(from_cam[i+1]+'.'+thisAttr)
-                # if anim is not None and len(anim) > 0:
+        for thisAttr in shapeAttrs:
+            cmds.setKeyframe(to_cam[i+1],t=cmds.currentTime(q=True), v=cmds.getAttr(from_cam[i+1]+'.'+thisAttr), at='.'+thisAttr)
+            # anim = cmds.listConnections(from_cam[i+1]+'.'+thisAttr)
+            # if anim is not None and len(anim) > 0:
 
     for i in range(0, len(cams), 2):
         cmds.setAttr(to_cam[1]+'.'+thisAttr, cmds.getAttr(from_cam[1]+'.'+thisAttr))
@@ -188,7 +234,7 @@ def export_cam_main(**kwargs):
     publish_ver_path = kwargs['publish_ver_path']
 
     if not os.path.exists(publish_ver_path):
-        os.mkdir(publish_ver_path)
+        os.makedirs(publish_ver_path)
 
     cmds.file(kwargs['ma_cam_path'], force=True, options='v=0', typ='mayaAscii', pr=True, es=True)
 
