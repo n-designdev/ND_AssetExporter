@@ -14,8 +14,6 @@ for path in ND_TOOL_PATH.split(';'):
     sys.path.append(path)
 # ------------------------------------
 
-# import ND_lib.shotgun.sg_util as sg_util
-import exporter_lib.sg_util as sg_util
 import exporter_lib.path as util_path
 import exporter_lib.env as util_env
 try:
@@ -267,17 +265,17 @@ class DeadlineMod():
     def job_content(self):
         job_dict = {}
         job_dict["Frames"] = 1
-        job_dict["Group"] = self.argsdict['Group']
+        job_dict["Group"] = self.argsdict['group']
         job_dict["MachineName"] = os.environ.get("COMPUTERNAME")
-        job_dict["Name"] = "ND_AssetExporter_{Pool}_{shot}{sequence}_{chara}".format(**self.argsdict) # シーンの情報を入れる
+        job_dict["Name"] = "ND_AssetExporter_{pool}_{shot}{sequence}_{asset_name}".format(**self.argsdict) # シーンの情報を入れる
         job_dict["OverrideTaskExtraInfoNames"] = False
         job_dict["Plugin"] = "CommandLine"
-        job_dict["Pool"] = self.argsdict['Pool']
-        job_dict["Priority"] = str(self.argsdict['Priority'])
+        job_dict["Pool"] = self.argsdict['pool']
+        job_dict["Priority"] = str(self.argsdict['priority'])
         job_dict["SecondaryPool"] = "normal"
         job_dict["UserName"] = os.environ.get("USERNAME")
         # job_dict["Whitelist"] = "ws023"
-        job_dict["BatchName"] = "Exporter_{Pool}_{shot}{sequence}".format(**self.argsdict)
+        job_dict["BatchName"] = "Exporter_{pool}_{shot}{sequence}".format(**self.argsdict)
         return job_dict
 
     def info_content(self):

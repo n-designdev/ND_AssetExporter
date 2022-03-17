@@ -52,10 +52,22 @@ def getNamespace():
     return namespaces
 
 
+def get_rec_sets(set):
+    set_items = cmds.sets(set, q=True)
+    result = []
+    for set_item in set_items:
+        if cmds.objectType(set_item) == 'objectSet':
+            result.extend(get_rec_sets(set_item))
+        else:
+            result.append(set_item)
+    return result
+
+
 def getAllnodes(namespace, regexArgs):
     if len(regexArgs) == 0:
         regexArgs = ['*']
     nodes = []
+
     for regex in regexArgs:
         if "[None]:" in regex:
             objs.extend(regex.split("[None]:")[-1])
@@ -76,21 +88,16 @@ def getAllnodes(namespace, regexArgs):
             if namespace != '':
                 regexN += namespace + ':'
             regexN = regexN + regex
+            if cmds.objExists(regexN) is False:
+                continue
             objs = cmds.ls(regexN, type='transform')
             objs += cmds.ls(regexN, type='locator')
             objs += cmds.ls(regexN, type="joint")
             objs += cmds.ls(regexN, shapes=True)
-            try:
-                objSets = cmds.sets(regexN, q=True)
-                objSets = cmds.sets(regexN, q=True)
-            except:
-                objSets = []
-            if objSets is None:
-                objSets = []
             if len(objs) != 0:
                 nodes += objs
-            if len(objSets) != 0:
-                nodes += objSets
+            if cmds.objectType(regexN) == 'objectSet':
+                nodes.extend(get_rec_sets(regexN))
     nodes = list(set(nodes))
     nodeShort = []
     for node in nodes:
@@ -306,36 +313,34 @@ def export_anim_main(**kwargs):
 
     input_ns_list = kwargs['namespace'][0].replace(' ', '').rstrip(',').split(',')
     regex_obj_list = [i for i in kwargs['export_item']['anim'].replace(' ','').split(',') if not '.' in i]  # 通常のエクスポート対象 
-    print('#####################')
-    print(regex_obj_list)
-    print('#####################')
     regex_obj_and_attr_list = [i for i in kwargs['export_item']['anim'].split(',') if '.' in i] # アトリビュートを直接指定
-    print('$$$$$$$$$$$$$')
-    print(scene_ns_list)
-    print(input_ns_list)
-    print('$$$$$$$$$$$$$')
+
+    tg_ns_list = []
 
     for scene_ns in scene_ns_list:
         for input_ns in input_ns_list:
-            input_ns = input_ns.replace(' ', '')
-            print(input_ns, scene_ns)
-            match = re.match(input_ns, scene_ns)         
+            match = re.match(input_ns, scene_ns)
             if match != None:
-                all_nodes += getAllnodes(scene_ns, regex_obj_list)
-                print(all_nodes)
-            for regex_obj_and_attr in regex_obj_and_attr_list:
-                obj_and_attr = scene_ns+':'+ regex_obj_and_attr
-                if cmds.objExists(obj_and_attr):
-                    node_and_attrs.append(obj_and_attr)
+                tg_ns_list.append(scene_ns)
+
+    for tg_ns in tg_ns_list:
+        all_nodes += getAllnodes(tg_ns, regex_obj_list)
+        print(all_nodes)
+        for regex_obj_and_attr in regex_obj_and_attr_list:
+            obj_and_attr = scene_ns+':'+ regex_obj_and_attr
+            if cmds.objExists(obj_and_attr):
+                node_and_attrs.append(obj_and_attr)
     character_set = cmds.ls(type='character')
     if len(character_set) != 0:
         cmds.delete(character_set)
     all_nodes = list(set(all_nodes))
+
     for node in all_nodes:
         try:
             cmds.select(node, add=True)
         except Exception as e:
             print(e)
+
     baseAnimationLayer = cmds.animLayer(q=True, r=True)
     if baseAnimationLayer!=None and len(cmds.ls(sl=True))!=0 :
         animLayers = cmds.ls(type='animLayer')
@@ -344,6 +349,10 @@ def export_anim_main(**kwargs):
         cmds.animLayer(baseAnimationLayer, e=True, sel=True)
         cmds.bakeResults(t=(sframe, eframe), sb=True, ral=True, dic=True, pok=True, sm=True)
     # cmds.select(cl=True)
+
+    print('$$$$$$$$$$$$$$$$$$$')
+    print(all_nodes)
+    print('$$$$$$$$$$$$$$$$$$$')
 
     attrs = getNoKeyAttributes(all_nodes)
 
@@ -451,12 +460,12 @@ def export_anim_main(**kwargs):
             except Exception as e:
                 print(e)
     else:
-        # for obj_and_attr in attrs:
-        #     if cmds.objExists(obj_and_attr) == True:
-        #         cmds.select(obj_and_attr, add=True)
-        cmds.select(attrs, add=True)
+        for obj_and_attr in attrs:
+            if cmds.objExists(obj_and_attr) == True:
+                cmds.select(obj_and_attr, add=True)
+        # cmds.select(attrs, add=True)
         print(sframe, eframe)
-        cmds.bakeResults(t=(sframe, eframe), dic=True)
+        cmds.bakeResults(at=attrs, t=(sframe, eframe), dic=True)
         eulerfilter(attrs)
 
     for scene_ns in scene_ns_list:

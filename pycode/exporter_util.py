@@ -42,7 +42,6 @@ class outputPathConf(object):
             self.root_dir = "Cam"
         if self.debug == True:
             self.root_dir = "test_" + self.root_dir
-
         dic = util_path.get_path_dic(self.input_path)
         self.pro_name = dic['project_name']
         self.shot = dic['shot']

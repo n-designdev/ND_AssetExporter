@@ -11,12 +11,12 @@ for path in ND_TOOL_PATH.split(';'):
     sys.path.append(path)
 #------------------------------------
 #Shotgunのスクリプトキーを取得
-import exporter_lib.sg_scriptkey as sg_scriptkey
+import ND_lib.sg_scriptkey as sg_scriptkey
 sg = sg_scriptkey.scriptKey()
 #------------------------------------
 #shotgun_api3
 #https://github.com/shotgunsoftware/python-api
-import exporter_lib.shotgun_api3.shotgun as shotgun
+import ND_lib.shotgun_api3.shotgun as shotgun
 
 """
 Shotgunから情報を取得する

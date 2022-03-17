@@ -22,16 +22,21 @@ def maya_cmd_maker(unique_order, mayafile=None, mayaBatch=None):
     return cmd
 
 
-def env_load(project):
-    ND_TOOL_PATH_default = "Y:/tool/ND_Tools/python"
-    env_key = "ND_TOOL_PATH_PYTHON"
-    ND_TOOL_PATH = os.environ.get(env_key, ND_TOOL_PATH_default)
-    for path in ND_TOOL_PATH.split(';'):
-        path = path.replace('\\', '/')
-        if path in sys.path: continue
-        sys.path.append(path)
-    import env_loader
-    env_loader.run(project, fork=True)
+def env_load(project, is_env_load):
+    print '###env_load###'
+    print is_env_load
+    print '###env_load###'
+    if is_env_load is True:
+        print 'isisiss'
+        ND_TOOL_PATH_default = "Y:/tool/ND_Tools/python"
+        env_key = "ND_TOOL_PATH_PYTHON"
+        ND_TOOL_PATH = os.environ.get(env_key, ND_TOOL_PATH_default)
+        for path in ND_TOOL_PATH.split(';'):
+            path = path.replace('\\', '/')
+            if path in sys.path: continue
+            sys.path.append(path)
+        import env_loader
+        env_loader.run(project, fork=True)
 
 
 def maya_version(project):
@@ -66,7 +71,7 @@ def maya_version(project):
 
 
 def animExport(**kwargs):
-    env_load(kwargs['project'])
+    env_load(kwargs['project'], kwargs['env_load'])
     mayaBatch = maya_version(kwargs['project'])
     unique_order = (
         # 'from maya_lib.mayaBasic import *;'
@@ -82,7 +87,7 @@ def animExport(**kwargs):
 
 
 def animAttach(**kwargs):
-    env_load(kwargs['project'])
+    env_load(kwargs['project'], kwargs['env_load'])
     mayaBatch = maya_version(kwargs['project'])
     argsdic = kwargs
     file_name_space = kwargs['file_name_space']
@@ -103,7 +108,7 @@ def animAttach(**kwargs):
 
 
 def animReplace(**kwargs):
-    env_load(kwargs['project'])
+    env_load(kwargs['project'], kwargs['env_load'])
     mayaBatch = maya_version(kwargs['project'])
     argsdic = kwargs
     ma_current_path = argsdic['ma_current_path']
@@ -120,7 +125,7 @@ def animReplace(**kwargs):
 
 
 def abcExport(**kwargs):
-    env_load(kwargs['project'])
+    env_load(kwargs['project'], kwargs['env_load'])
     argsdic = kwargs
     mayaBatch = maya_version(kwargs['project'])
     unique_order = (
@@ -131,7 +136,7 @@ def abcExport(**kwargs):
 
 
 def abcAttach(**kwargs):
-    env_load(kwargs['project'])
+    env_load(kwargs['project'], kwargs['env_load'])
     mayaBatch = maya_version(kwargs['project'])
     mayaBatch = 'C:\\Program Files\\Autodesk\\Maya2020\\bin\\mayabatch.exe'
     asset_path = kwargs['asset_path']
@@ -155,12 +160,11 @@ def abcAttach(**kwargs):
 
 
 def repABC(**kwargs):
-    env_load(kwargs['project'])
+    env_load(kwargs['project'], kwargs['env_load'])
     mayaBatch = maya_version(kwargs['project'])
     argsdic = kwargs
     ma_current_path = argsdic['ma_current_file']
     abc_current_path = argsdic['ma_current_file']
-    env_load(argsdic['project'])
     mayaBatch = 'C:\\Program Files\\Autodesk\\Maya2020\\bin\\mayabatch.exe'
     unique_order = (
             'from maya_lib.mayaBasic import *;'
@@ -173,7 +177,7 @@ def repABC(**kwargs):
 
 def camExport(**kwargs):
     argsdic = kwargs
-    env_load(argsdic['project'])
+    env_load(argsdic['project'], kwargs['env_load'])
     mayaBatch = 'C:\\Program Files\\Autodesk\\Maya2020\\bin\\mayabatch.exe'
     unique_order = (
         'from ndPyLibExportCam import export_cam_main;'

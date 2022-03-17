@@ -90,8 +90,8 @@ def search_type(path, root_path, project_name, type_root, full_path=True):
     return re.search(pattern, path)
 
 def get_project_root_path(project_name):
-    import exporter_lib.sg_util as sg_util
-    import exporter_lib.sgtk_util as sgtk_util
+    import ND_lib.shotgun.sg_util as sg_util
+    import ND_lib.sgtk_util as sgtk_util
     root_dic = sgtk_util.get_project_root_dic(project_name)
 
     if 1 >= len(root_dic.keys()):
@@ -108,8 +108,10 @@ def get_path_dic(path, project_name=""):
     arg:str   return:dict
     """
     try:
-        import exporter_lib.sg_util as sg_util
-        import exporter_lib.sgtk_util as sgtk_util
+        import ND_lib.shotgun.sg_util as sg_util
+        # import exporter_lib.sgtk_util as sgtk_util
+        import ND_lib.shotgun.sgtk_util as sgtk_util
+
     except Exception as e:
         print(e)
         return {}

@@ -14,10 +14,9 @@ for path in ND_TOOL_PATH.split(';'):
         continue
     sys.path.append(path)
 
-import exporter_lib.shotgun_api3.shotgun as shotgun
-import exporter_lib.sg_scriptkey as sg_scriptkey
-import exporter_lib.sg_util as sg_util
-import exporter_lib.path as util_path
+import ND_lib.shotgun.shotgun_api3.shotgun as shotgun
+import ND_lib.shotgun.sg_scriptkey as sg_scriptkey
+import ND_lib.shotgun.sg_util as sg_util
 
 reload(shotgun)
 sg = sg_scriptkey.scriptKey()

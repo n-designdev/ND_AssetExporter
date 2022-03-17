@@ -436,13 +436,14 @@ class GUI(QMainWindow):
                 'frame_handle': frame_handle,
                 'cam_scale': cam_scale,
                 'input_path': self.input_path,
-                'shot': self.ui.shot_line.text(),
-                'sequence': self.ui.cut_line.text(),
+                'shot': str(self.ui.shot_line.text()),
+                'sequence': str(self.ui.cut_line.text()),
                 'scene_timewarp': self.ui.scene_timewarp_check.isChecked(),
                 'abc_check': self.ui.abc_cache_check.isChecked(),
-                'priority': self.ui.priority.text(),
-                'pool': self.ui.poollist.currentText(),
-                'group': self.ui.grouplist.currentText()}
+                'priority': str(self.ui.priority.text()),
+                'pool': str(self.ui.poollist.currentText()),
+                'group': str(self.ui.grouplist.currentText()),
+                'env_load':self.ui.env_load_chk.isChecked()}
 
             if '{Empty!}' in argsdic.values():
                 continue
@@ -487,7 +488,7 @@ class GUI(QMainWindow):
             self.executed_row.append(table_row)
 
         if mode == 'Submit':
-            main_util.submit_to_deadlineJobs(jobFileslist)
+            main_util.submit_to_deadlineJobs(jobfiles_list)
 
         self.ui.stack_area.setCurrentIndex(1)
         self.executed_row = list(set(self.executed_row))
@@ -507,12 +508,15 @@ def thread_main(**kwargs):
     with open(log_path, 'w+')as f:
         # proc = subprocess.run([python, py_path, argsdic], shell=True, stdout=f, cwd=current_dir)
         # print(python, py_path, argsdic)
-        # proc = subprocess.run([python, py_path, argsdic], shell=True, stdout=subprocess.PIPE , cwd=current_dir)
         try:
-            proc = subprocess.run([python, py_path, argsdic], shell=False, cwd=current_dir)
-        except:
-            proc = subprocess.Popen([python, py_path, argsdic], shell=True, cwd=current_dir)
+            proc = subprocess.Popen([python, py_path, argsdic], shell=True, stdout=f, cwd=current_dir)
+
+            # proc = subprocess.run([python, py_path, argsdic], shell=False, cwd=current_dir)
+        # except:
+            # proc = subprocess.Popen([python, py_path, argsdic], shell=True, cwd=current_dir)
             proc.wait()
+        except:
+            pass
     return
 
 

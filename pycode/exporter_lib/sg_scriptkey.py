@@ -7,7 +7,7 @@ def scriptKey():
 #shotgun_api3
 #https://github.com/shotgunsoftware/python-api
 
-    import exporter_lib.shotgun_api3 as shotgun_api3
+    import ND_lib.shotgun_api3 as shotgun_api3
 
 #------------------
     SERVER_URL = 'https://nd.shotgunstudio.com'

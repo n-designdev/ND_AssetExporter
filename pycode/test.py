@@ -9,4 +9,6 @@ x = ['C:/Program Files/Autodesk/Maya2019/bin/mayabatch.exe',
 import re
 x = '[a-zA-Z0-9:_]*vernierNmlGF[A-Z0-9]*'
 y = 'vernierNmlGF'
-print(re.match(x, y))
+
+scene_ns_list = [u'GutsHawkNml', u'cameraGEMINI4K', u'cloudSea', u'gutsFalconFighter', u'skyNml', u'vernierNmlGF', u'vernierNmlGF1']
+input_ns_list = ['[a-zA-Z0-9:_]*vernierNml[A-Z0-9]*', '[a-zA-Z0-9:_]*vernierNmlGF[A-Z0-9]*']

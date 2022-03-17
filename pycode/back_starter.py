@@ -2,19 +2,16 @@
 
 import os,sys
 import yaml
-print(yaml.__file__)
-import shutil
 
-ND_TOOL_PATH = 'Y:/tool/ND_Tools/python;Y:/tool/ND_Tools/DCC/ND_AssetExport_test/pycode/exporter_lib;Y:/tool/ND_Tools/DCC/ND_AssetExport_test/pycode'
+ND_TOOL_PATH = 'Y:/tool/ND_Tools/python;Y:/tool/ND_Tools/DCC;Y:/tool/ND_Tools/python;Y:/tool/ND_Tools/DCC/ND_AssetExport_test/pycode/exporter_lib;Y:/tool/ND_Tools/DCC/ND_AssetExport_test/pycode'
 for path in ND_TOOL_PATH.split(";"):
     sys.path.append(path)
 import exporter_util
-import batch
-
-
+import ND_AssetExporter_test.pycode.batch as batch
 def back_starter_main(**kwargs):
     # argsdic = yaml.safe_load(kwargs) #kwargsはポインタなので直接代入しない
     argsdic = kwargs
+
     input_path = argsdic['input_path']
     asset_name = argsdic['asset_name']
     export_type = argsdic['export_type']
@@ -143,8 +140,11 @@ def back_starter_main(**kwargs):
 if __name__ == '__main__':
     argslist = sys.argv[:]
     argslist.pop(0) # 先頭はpyファイルなので
-    argsdic = yaml.safe_load(argslist[0])
-    back_starter_main(**argsdic)
+    # argsdic = yaml.safe_load(argslist[0])
+    str_dict = ''.join(argslist)
+    import pprint
+    pprint.pprint(yaml.load(str_dict))
+    back_starter_main(**yaml.load(str_dict))
 
 
 # argsdic_str = r'{"asset_name": "NursedesseiDragon", "namespace": "NursedesseiDragon[0-9]*$", "export_item": {"abc": "abc_Root", "anim": "ctrl_set, root, ctrl_allWorld"}, "top_node": "root", "asset_path": "P:/Project/RAM1/assets/chara/Nursedessei/NursedesseiDragon/publish/Setup/RH/maya/current/NursedesseiDragon_Rig_RH.mb", "debug": true, "step_value": 1.0, "export_type": "anim", "project": "RAM1", "frame_range": False, "frame_handle": false, "cam_scale": false, "input_path": "P:/Project/RAM1/shots/ep022/s2227/c008/work/k_ueda/s2227c008_anm_v006.ma", "shot": "c008", "sequence": "s2227", "scene_timewarp": True, "abc_check": false, "priority": "50", "pool": "", "group": ""}'

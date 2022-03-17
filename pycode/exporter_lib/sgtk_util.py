@@ -15,7 +15,7 @@ for path in ND_TOOL_PATH.split(';'):
     if path in sys.path: continue
     sys.path.append(path)
 #------------------------------------
-import exporter_lib.sg_util as sg_util
+import ND_lib.shotgun.sg_util as sg_util
 
 def append_sgtk_to_sys(project_name):
     """

@@ -293,6 +293,22 @@ QScrollBar::handle::horizontal {background:  rgb(90, 90, 90);}
        </widget>
       </item>
       <item>
+       <widget class="QCheckBox" name="env_load_chk">
+        <property name="layoutDirection">
+         <enum>Qt::RightToLeft</enum>
+        </property>
+        <property name="text">
+         <string>env_load</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+        <property name="tristate">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="horizontalSpacer_3">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>

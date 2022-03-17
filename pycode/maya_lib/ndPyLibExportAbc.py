@@ -83,7 +83,7 @@ def export_abc_main(**kwargs):
     scene_ns_list = getNamespace()
     for scene_ns in scene_ns_list:
         for input_ns in input_ns_list:
-            match = re.match(scene_ns, input_ns)
+            match = re.match(input_ns, scene_ns)
             if match != None:
                 tg_ns_list.append(scene_ns)
 
