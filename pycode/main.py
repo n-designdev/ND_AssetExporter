@@ -294,6 +294,9 @@ class GUI(QMainWindow):
             f.write('path =  \'{}\'\n'.format(self.input_path))
 
     def drop_func(self, urldata):
+        self.check_row = []
+        self.executed_row = []
+        self.tabledata = []
         if type(urldata)==list:
             self.input_path = urldata[0].toString().replace('file:///', '')
         else:
@@ -435,7 +438,7 @@ class GUI(QMainWindow):
                 'frame_range': frame_range,
                 'frame_handle': frame_handle,
                 'cam_scale': cam_scale,
-                'input_path': self.input_path,
+                'input_path': str(self.input_path),
                 'shot': str(self.ui.shot_line.text()),
                 'sequence': str(self.ui.cut_line.text()),
                 'scene_timewarp': self.ui.scene_timewarp_check.isChecked(),

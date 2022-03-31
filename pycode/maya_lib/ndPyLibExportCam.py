@@ -142,27 +142,24 @@ def bake_cam(sframe, eframe, cam_scale):
     for t in range(int(sframe),int(eframe+1)):
         for i in range(0, len(cams), 2):
             cmds.currentTime(t)
-        if int(cam_scale) !=0:
-            cmds.setKeyframe(to_cam[i+1],t=cmds.currentTime(q=True), v=float(cam_scale), at='.cs')
-        else:
-            camScale = cmds.getAttr(from_cam[i+1]+'.cameraScale')
-            cmds.setKeyframe(to_cam[i+1],t=cmds.currentTime(q=True), v=camScale, at='.cs')
+            if int(cam_scale) !=0:
+                cmds.setKeyframe(to_cam[i+1],t=cmds.currentTime(q=True), v=float(cam_scale), at='.cs')
+            else:
+                camScale = cmds.getAttr(from_cam[i]+'.cameraScale')
+                cmds.setKeyframe(to_cam[i+1],t=cmds.currentTime(q=True), v=camScale, at='.cs')
 
-        for thisAttr in shapeAttrs:
-            cmds.setKeyframe(to_cam[i+1],t=cmds.currentTime(q=True), v=cmds.getAttr(from_cam[i+1]+'.'+thisAttr), at='.'+thisAttr)
+            for thisAttr in shapeAttrs:
+                print from_cam[i], to_cam[i], cmds.getAttr(from_cam[i]+'.'+thisAttr)
+                cmds.setKeyframe(to_cam[i],t=cmds.currentTime(q=True), v=cmds.getAttr(from_cam[i]+'.'+thisAttr), at='.'+thisAttr)
             # anim = cmds.listConnections(from_cam[i+1]+'.'+thisAttr)
             # if anim is not None and len(anim) > 0:
 
     for i in range(0, len(cams), 2):
-        cmds.setAttr(to_cam[1]+'.'+thisAttr, cmds.getAttr(from_cam[1]+'.'+thisAttr))
+        cmds.setAttr(to_cam[i]+'.'+thisAttr, cmds.getAttr(from_cam[i]+'.'+thisAttr))
 
     for i in range(0, len(cams), 2):
 
-        for thisAttr in shapeAttrs:
-            try:
-                cmds.setAttr(from_cam[i]+'.'+thisAttr, lock=False)
-            except:
-                pass
+        cmds.setAttr(from_cam[i]+'.'+thisAttr, lock=False)
 
         cmds.setAttr(to_cam[i+1]+'.renderable', True)
         cmds.setAttr(to_cam[i+1]+'.renderable', lock=False)
@@ -184,8 +181,7 @@ def bake_cam(sframe, eframe, cam_scale):
         cmds.setAttr(to_cam[i]+'.ro',lock=True)
 
         bake_cams.append(to_cam[i])
-        bake_cams.append(to_cam[i+1])
-        bake_cams.append(cams[int(i)])
+        bake_cams.append(from_cam[i])
 
         mel.eval('setAttr '+to_cam[i+1]+'.bestFitClippingPlanes true')
     Euler_filter(to_cam[0:len(to_cam):2])
@@ -222,13 +218,9 @@ def export_cam_main(**kwargs):
         cmds.delete('cam_grp')
 
     cmds.group(em=True, n='cam_grp')
-    to_cam = []
-    for i in range(0, len(cams), 3):
-        to_cam.append(cams[i])
-        to_cam.append(cams[i+1])
-        to_cam.append(cams[i+2])
-        cmds.parent(to_cam[i],'cam_grp')
-        cmds.rename(to_cam[i],to_cam[i+2].split("|")[-1])
+    for i in range(0, len(cams), 2):
+        cmds.parent(cams[i],'cam_grp')
+        cmds.rename(cams[i],cams[i+1].split("|")[-1])
 
     cmds.select('cam_grp')
     publish_ver_path = kwargs['publish_ver_path']
