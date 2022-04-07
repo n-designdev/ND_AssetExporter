@@ -4,7 +4,7 @@ import maya.cmds as cmds
 sys.path.append(r"Y:\tool\ND_Tools\DCC")
 sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_test\pycode")
 sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_test\pycode\maya")
-import ND_AssetExporter_test.pycode.exporter_util as exporter_util; reload(exporter_util)
+import ND_AssetExporter_test.pycode.util_exporter as util_exporter; reload(util_exporter)
 try:
     from import_lib import *
 except:
@@ -31,7 +31,7 @@ class AssetClass():
 
         if override_shotpath == None:
             scene_path = cmds.file(q=True, sn=True)
-            opc = exporter_util.outputPathConf(scene_path, export_type=export_type)
+            opc = util_exporter.outputPathConf(scene_path, export_type=export_type)
             publish_ver_anim_path = opc.publish_ver_anim_path
             publish_ver_abc_path = opc.publsh_ver_abc_path
         else:
@@ -67,14 +67,14 @@ class AssetClass():
 def ls_asset_class():
     import shotgun_mod
     import maya_mod; reload(maya_mod)
-    PathClass = exporter_util.outputPathConf(cmds.file(q=True,sceneName=True))
+    PathClass = util_exporter.outputPathConf(cmds.file(q=True,sceneName=True))
     
     project = PathClass.pro_name
     base_fieldcodes = ["code", "sg_namespace", "sg_export_type",
                         "sg_top_node", "sg_abc_export_list",
                         "sg_anim_export_list", "sg_asset_path",
                         "sequences", "shots", "assets"]
-    ProSGClass = shotgun_mod.SGProjectClass(project, base_fieldcodes)
+    ProSGClass = util_exporter.SGProjectClass(project, base_fieldcodes)
     AssetSG_list = ProSGClass.get_dict("Asset")
     asset_list = []
     for sg_asset in AssetSG_list:
@@ -99,14 +99,14 @@ def ls_asset_class():
 def get_asset_class_dict():
     import shotgun_mod
     import maya_mod; reload(maya_mod)
-    PathClass = exporter_util.outputPathConf(cmds.file(q=True,sceneName=True))
+    PathClass = util_exporter.outputPathConf(cmds.file(q=True,sceneName=True))
     
     project = PathClass.pro_name
     base_fieldcodes = ["code", "sg_namespace", "sg_export_type",
                         "sg_top_node", "sg_abc_export_list",
                         "sg_anim_export_list", "sg_asset_path",
                         "sequences", "shots", "assets"]
-    ProSGClass = shotgun_mod.SGProjectClass(project, base_fieldcodes)
+    ProSGClass = util_exporter.SGProjectClass(project, base_fieldcodes)
     AssetSG_list = ProSGClass.get_dict("Asset")
     asset_list = []
     for sg_asset in AssetSG_list:

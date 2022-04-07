@@ -1,26 +1,20 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function
+# from __future__ import print_function
 
 import os
 import sys
 import time
 import importlib
 import yaml
-try:
-    from importlib import reload
-except:
-    pass
+from imp import reload
 # ------------------------------
-__version__ = '2.2'
+__version__ = '3.0'
 __author__ = 'Kei Ueda'
 # ------------------------------
 env_key = 'ND_TOOL_PATH_PYTHON'
-ND_TOOL_PATH = 'Y:/tool/ND_Tools/python;Y:/tool/ND_Tools/DCC/ND_AssetExport_test/pycode/exporter_lib'
-for path in ND_TOOL_PATH.split(';'):
-    path = path.replace('\\', '/')
-    if path in sys.path:
-        continue
-    sys.path.append(path)
+ND_TOOL_PATH = 'Y:/tool/ND_Tools/DCC/ND_AssetExporter_dev'
+sys.path.append(ND_TOOL_PATH)
+
 # ------------------------------
 import datetime
 import subprocess
@@ -44,8 +38,7 @@ except ModuleNotFoundError:
     from PySide6.QtUiTools import QUiLoader
 # ------------------------------------
 
-import main_util; reload(main_util)
-import shotgun_mod; reload(shotgun_mod)
+import util_exporter; reload(util_exporter)
 import util; reload(util)
 try:
     import ND_Submitter.env as util_env
@@ -74,6 +67,7 @@ class GUI(QMainWindow):
         self.setWindowTitle('%s %s' % (self.WINDOW, __version__))
 
         self.input_path = ''
+        self.log_txt = ''
         #Shotgrid
         self.asset_fields = [
                 'code', 'sg_namespace', 'sg_export_type',
@@ -152,7 +146,7 @@ class GUI(QMainWindow):
         for selected_row in self.ui.main_table.selectedIndexes():
             self.check_row.append(selected_row.row())
         self.check_row = list(set(self.check_row))
-        model = main_util.TableModelMaker(
+        model = util_exporter.ExporterTableModel(
             self.tabledata, self.headers,
             self.check_row, self.executed_row)
         self.ui.main_table.setModel(model)
@@ -167,21 +161,21 @@ class GUI(QMainWindow):
                 self.check_row.remove(_index)
             except:
                 pass
-        model = main_util.TableModelMaker(
+        model = util_exporter.ExporterTableModel(
                 self.tabledata, self.headers,
                 self.check_row)
         self.ui.main_table.setModel(model)
 
     def allcheck_btn_clicked(self):
         self.check_row = list(range(len(self.tabledata)))
-        model = main_util.TableModelMaker(
+        model = util_exporter.ExporterTableModel(
                 self.tabledata, self.headers,
                 self.check_row, self.executed_row)
         self.ui.main_table.setModel(model)
 
     def alluncheck_btn_clicked(self):
         self.check_row = []
-        model = main_util.TableModelMaker(
+        model = util_exporter.ExporterTableModel(
                 self.tabledata, self.headers,
                 self.check_row, self.executed_row)
         self.ui.main_table.setModel(model)
@@ -236,7 +230,7 @@ class GUI(QMainWindow):
         else:
             check_rows.append(clicked_row)
         self.check_row = list(set(check_rows))
-        model = main_util.TableModelMaker(
+        model = util_exporter.ExporterTableModel(
             self.tabledata, self.headers, self.check_row, self.executed_row)
         self.ui.main_table.setModel(model)
 
@@ -249,8 +243,8 @@ class GUI(QMainWindow):
 
     def current_refresh_button_clicked(self):
         import copy_tool.copy_main as copy_main
-        import exporter_util
-        opc = exporter_util.outputPathConf(self.input_path)
+        import util_exporter
+        opc = util_exporter.outputPathConf(self.input_path)
         shot_path = opc.publishshotpath
         if self.debug:
             current_path = os.path.join(shot_path, 'publish', 'test_charSet')
@@ -259,8 +253,8 @@ class GUI(QMainWindow):
         copy_main.copy_main(current_path)
 
     def open_publish_dir_button_clicked(self):
-        import exporter_util
-        opc = exporter_util.outputPathConf(self.input_path)
+        import util_exporter
+        opc = util_exporter.outputPathConf(self.input_path)
         shot_path = opc.shot_path
         publish_path = os.path.join(shot_path, 'publish')
         subprocess.call('explorer {}'.format(publish_path.replace('/', '\\')))
@@ -302,14 +296,13 @@ class GUI(QMainWindow):
         self.ui.path_line.setText(self.input_path)
         self.ui.stack_area.setCurrentIndex(1)
 
-        # shotgridからダウンロード
-        ProjectInfoClass = main_util.ProjectInfo(self.input_path)
+        ProjectInfoClass = util_exporter.ProjectInfo(self.input_path)
         self.ui.shot_line.setText(ProjectInfoClass.shot)
         self.ui.cut_line.setText(ProjectInfoClass.sequence)
         self.project = ProjectInfoClass.project_name
         self.ui.pro_line.setText(self.project)
         
-        SGBaseClass = shotgun_mod.SGProjectClass(self.project, self.base_fields)
+        SGBaseClass = util_exporter.SGProjectClass(self.project, self.base_fields)
         SGBaseClass.get_dict('Asset')
         SGBaseClass.get_dict('Shot')
         shot_code = ProjectInfoClass.shot_code
@@ -326,8 +319,8 @@ class GUI(QMainWindow):
             for seq in seq_list:
                 target_asset_list.append(seq['code'])
         is_cam_rig_export = ProjectInfoClass.get_camera_rig_info()
-        self.tabledata = main_util.tabledata_maker(self.headers_item, self.convert_dic, target_asset_dics)
-        self.tabledata = main_util.add_camera_row(self.headers_item, self.tabledata, is_cam_rig_export)
+        self.tabledata = util_exporter.tabledata_builder(self.headers_item, self.convert_dic, target_asset_dics)
+        self.tabledata = util_exporter.add_camera_row(self.headers_item, self.tabledata, is_cam_rig_export)
 
         def _setComboBoxList(qtcombobox, itemlist):
             qtcombobox.clear()
@@ -342,7 +335,7 @@ class GUI(QMainWindow):
                         combo_index = qtcombobox.findText(subvalue)
             qtcombobox.setCurrentIndex(combo_index)
 
-        model = main_util.TableModelMaker(self.tabledata, self.headers)
+        model = util_exporter.ExporterTableModel(self.tabledata, self.headers)
         self.ui.main_table.setContextMenuPolicy(Qt.CustomContextMenu)
         self.ui.main_table.customContextMenuRequested.connect(self.main_table_rclicked)
         self.ui.main_table.setModel(model)
@@ -352,7 +345,6 @@ class GUI(QMainWindow):
         self.ui.export_submit_btn.setEnabled(True)
         self.output_user_info()
 
-        # その他GUI        
         if NoDeadlineMode is False:
             groups = util_env.deadline_group
             pools = util_env.deadline_pool
@@ -364,7 +356,7 @@ class GUI(QMainWindow):
             pools.sort()
             _setComboBoxList(self.ui.grouplist, groups)
             _setComboBoxValue(self.ui.grouplist, 'mem032')
-            if main_util.is_arnold(self.project) is True:
+            if util_exporter.is_arnold(self.project) is True:
                 _setComboBoxValue(self.ui.grouplist, 'mem064')
             _setComboBoxList(self.ui.poollist, pools)
             _setComboBoxValue(self.ui.poollist, self.project, 'normal')
@@ -383,20 +375,20 @@ class GUI(QMainWindow):
         else:
             cam_scale = False
 
-        if self.ui.abc_step_override_chk.isChecked() == True:
-            abc_step_override = float(self.ui.abc_step_value_line.text())
-        else:
-            abc_step_override = 1.0
-
-        if self.ui.frame_handle_chk.isChecked() == True:
+        if self.ui.frame_handle_chk.isChecked():
             frame_handle = float(self.ui.frame_handle_value.text())
         else:
             frame_handle = False
 
-        if self.ui.custom_frame_range_chk.isChecked() == True:
+        if self.ui.custom_frame_range_chk.isChecked():
             frame_range = (self.ui.sFrame.text()) + '-' + (self.ui.eFrame.text())
         else:
             frame_range = False
+
+        if self.ui.abc_step_override_chk.isChecked():
+            abc_step_override = float(self.ui.abc_step_value_line.text())
+        else:
+            abc_step_override = 1.0
 
         if mode == 'Submit':
             file_number = 1
@@ -466,10 +458,9 @@ class GUI(QMainWindow):
 
                 count = 0
                 timer = 0
-
                 dt_now = datetime.datetime.now()
-
                 print(dt_now)
+                log_txt = log_txt + '\n{} ; start time {}\n'.format(asset_name, dt_now)
                 # 2019-02-04 21:04:15.412854
                 while True:
                     if len(threading.enumerate())==1:
@@ -481,23 +472,23 @@ class GUI(QMainWindow):
                         timer=0
                         if count==10:
                             count = 0
-                        self.ui.log_area.setPlainText('start time {}\nnow working{}'.format(dt_now,'.'*timer))
+                        self.ui.log_area.setPlainText('{}now working{}'.format(log_txt, '.'*timer))
                         self.ui.repaint()
                     qApp.processEvents()
                 self.last_log_path = log_path
                 self.ui.open_log_button.setEnabled(True)
             elif mode == 'Submit':
-                DLclass = main_util.DeadlineMod(**argsdic)
+                DLclass = util_exporter.DeadlineMod(**argsdic)
                 jobfiles_list.append(DLclass.make_submit_files(file_number))
                 file_number += 1
             self.executed_row.append(table_row)
 
         if mode == 'Submit':
-            main_util.submit_to_deadlineJobs(jobfiles_list)
+            util_exporter.submit_to_deadlineJobs(jobfiles_list)
 
         self.ui.stack_area.setCurrentIndex(1)
         self.executed_row = list(set(self.executed_row))
-        main_util.TableModelMaker(
+        util_exporter.ExporterTableModel(
                 self.tabledata, self.headers,
                 self.check_row, self.executed_row)
         print('===============Export End==================')
@@ -522,7 +513,7 @@ def runs(*argv):
     app = QApplication.instance()
     if app is None:
         app = QApplication(sys.argv)
-    skin = '%s/skin.stylesheet' % onpath
+    skin = r'{}/pycode/gui/skin.stylesheet'.format(ND_TOOL_PATH).replace('/', '\\')
     tx_o = open(skin, 'r')
     tx_r = tx_o.read()
     tx_o.close()
