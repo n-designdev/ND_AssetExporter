@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
-
+try:
+    from importlib import reload
+except Exception as e:
+    pass
+    
 env_key = 'ND_TOOL_PATH_PYTHON'
 ND_TOOL_PATH = os.environ.get(env_key, 'Y:/tool/ND_Tools/python')
 for path in ND_TOOL_PATH.split(';'):
@@ -13,7 +17,6 @@ for path in ND_TOOL_PATH.split(';'):
 import ND_lib.shotgun.shotgun_api3.shotgun as shotgun
 import ND_lib.shotgun.sg_scriptkey as sg_scriptkey
 import ND_lib.shotgun.sg_util as sg_util
-import ND_lib.util.path as util_path
 
 reload(shotgun)
 sg = sg_scriptkey.scriptKey()

@@ -1,0 +1,1032 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>986</width>
+    <height>764</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QDialog{background-color: rgb(38, 38, 38); color: rgb(200, 200, 200);}
+QMainWindow{background-color: rgb(38, 38, 38); color: rgb(200, 200, 200);}
+QMenuBar{background-color: rgb(18, 18, 38); color: rgb(200, 200, 200);}
+QMenuBar::item{background-color: rgb(18, 18, 38); color: rgb(200, 200, 200);}
+QMenu::item:selected{background-color: rgb(0, 100, 100); color: rgb(200, 200, 200);}
+QLabel{color: rgb(200, 200, 200)}
+QMenu{background-color: rgb(60, 60, 60); color: rgb(220, 220, 220)}
+#QPushButton{background-color: rgb(20, 20, 20); color: rgb(200, 200, 200);border-style: outset}
+#QPushButton:pressed{background-color: rgb(180, 180, 180)}
+
+QPushButton{
+padding: 0.5em 1em;
+text-decoration: none;
+background: #353535; color: #FFF;
+}
+
+QDateTimeEdit{background-color:   rgb(50, 50, 50); color: rgb(200, 200, 200);}
+
+QLineEdit{background-color:   rgb(50, 50, 50); color: rgb(200, 200, 200);}
+QPlainTextEdit{background-color:   rgb(50, 50, 50); color: rgb(200, 200, 200);}
+QListWidget{background-color: rgb(18, 18, 38); color: rgb(200, 200, 200);}
+QListWidget::item::selected{background-color: rgb(150, 150, 150); color: rgb(30, 30, 30);}
+QComboBox{background-color:   rgb(18, 18, 38); color: rgb(200, 200, 200);}
+QSpinBox{background-color:   rgb(50, 50, 50); color: rgb(200, 200, 200);}
+QTextEdit{background-color:   rgb(18, 18, 38); color: rgb(200, 200, 200);}
+QComboBox{background-color:   rgb(50, 50, 50); color: rgb(200, 200, 200);}
+QRadioButton{background-color:   rgba(50, 50, 50, 0%); color: rgb(200, 200, 200);}
+QTableWidget{background-color:   rgb(48, 48, 48); color: rgb(200, 200, 200);  alternate-background-color: rgb(68, 68, 68)}
+QProgressBar{text-align: center}
+QTableWidget&gt;QHeaderView::section{background-color:  rgb(68, 68, 68); color: rgb(200, 200, 200);border: 1px solid black	}
+QTableWidget::item::selected{background-color:   rgb(120, 120, 80); color: rgb(200, 200, 200);}
+QCheckBox{background-color:   rgba(18, 18, 38, 0%); color: rgb(200, 200, 200);}
+QGroupBox{background-color:   rgb(80, 80, 80); color: rgb(200, 200, 200);border: 1px solid gray;}
+
+QGroupBox::title { background-color: transparent; subcontrol-position: top left;padding:3 5px;}
+
+QTreeWidget&gt;QHeaderView::section{background-color:  rgb(42, 42, 42); color: rgb(200, 200, 200);}
+QTreeWidget{background-color:   rgb(48, 48, 48); color: rgb(200, 200, 200);  alternate-background-color: rgb(18, 18, 38)}
+QTreeWidget::item::selected{background-color:   rgb(80, 80, 80); color: rgb(200, 200, 200);}
+QTabWidget::pane {
+    border: 2px;
+    top: 0.1em;
+    position: absolute;
+    background-color: rgb(38, 42, 52)
+
+    }
+
+QTabBar:tab {
+    border: 1px solid #8d7c7c;
+    padding: 2px 6px 2px 6px;}
+QTabBar::tab:selected, QTabBar::tab:hover, QTabBar::checkable {
+     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                 stop: 0 #fafafa, stop: 0.4 #f4f4f4,
+                                 stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);
+ }
+QTabBar {
+    background: #222;
+    color: rgb(242, 133, 66);
+    border-radius: 0;
+    border: 2px solid #222;
+}
+
+
+QScrollBar::vertical {border: 0px; background: rgb(220, 220, 200); width: 10px;}
+QScrollBar::add-page::vertical {background:  rgb(54, 54, 54); subcontrol-position: top; subcontrol-origin: margin;}
+QScrollBar::sub-page::vertical {background:  rgb(54, 54, 54); subcontrol-position: top; subcontrol-origin: margin;}
+QScrollBar::handle::vertical {background:  rgb(90, 90, 90);}
+
+QScrollBar::horizontal {border: 0px; background: rgb(220, 220, 200); height: 10px;}
+QScrollBar::add-page::horizontal {background:  rgb(54, 54, 54); subcontrol-position: top; subcontrol-origin: margin;}
+QScrollBar::sub-page::horizontal {background:  rgb(54, 54, 54); subcontrol-position: top; subcontrol-origin: margin;}
+QScrollBar::handle::horizontal {background:  rgb(90, 90, 90);}
+</string>
+  </property>
+  <property name="animated">
+   <bool>true</bool>
+  </property>
+  <property name="documentMode">
+   <bool>true</bool>
+  </property>
+  <property name="tabShape">
+   <enum>QTabWidget::Triangular</enum>
+  </property>
+  <property name="dockOptions">
+   <set>QMainWindow::AnimatedDocks</set>
+  </property>
+  <property name="unifiedTitleAndToolBarOnMac">
+   <bool>false</bool>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout_8">
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QCheckBox" name="cam_scale_override_chk">
+        <property name="layoutDirection">
+         <enum>Qt::RightToLeft</enum>
+        </property>
+        <property name="text">
+         <string>camera scale override</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="cam_scale_override_velue_line">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>1.2</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="abc_step_override_chk">
+        <property name="layoutDirection">
+         <enum>Qt::RightToLeft</enum>
+        </property>
+        <property name="text">
+         <string>abc step override</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="abc_step_value_line">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>1.0</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QCheckBox" name="debug_chk">
+        <property name="layoutDirection">
+         <enum>Qt::RightToLeft</enum>
+        </property>
+        <property name="text">
+         <string>debug</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="custom_frame_range_chk">
+        <property name="layoutDirection">
+         <enum>Qt::RightToLeft</enum>
+        </property>
+        <property name="text">
+         <string>FrameRangeCustom</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_7">
+        <property name="text">
+         <string>sFrame</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="sFrame">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>eFrame</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="eFrame">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="frame_handle_chk">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="layoutDirection">
+         <enum>Qt::RightToLeft</enum>
+        </property>
+        <property name="text">
+         <string>FrameHandle</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="frame_handle_value">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>5</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_4">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_7">
+      <item>
+       <widget class="QCheckBox" name="scene_timewarp_check">
+        <property name="layoutDirection">
+         <enum>Qt::RightToLeft</enum>
+        </property>
+        <property name="text">
+         <string>scene timewarp</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="abc_cache_check">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="layoutDirection">
+         <enum>Qt::RightToLeft</enum>
+        </property>
+        <property name="text">
+         <string>abc cache</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="env_load_chk">
+        <property name="layoutDirection">
+         <enum>Qt::RightToLeft</enum>
+        </property>
+        <property name="text">
+         <string>env_load</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+        <property name="tristate">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_3">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="restore_last_file_button">
+        <property name="text">
+         <string>load last maya file</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="help_button">
+        <property name="text">
+         <string>?</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="dd_area">
+      <property name="acceptDrops">
+       <bool>true</bool>
+      </property>
+      <property name="flat">
+       <bool>false</bool>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="sizeConstraint">
+        <enum>QLayout::SetDefaultConstraint</enum>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QWidget" name="widget" native="true">
+         <property name="acceptDrops">
+          <bool>true</bool>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_5">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QStackedWidget" name="stack_area">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="acceptDrops">
+             <bool>true</bool>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="currentIndex">
+             <number>1</number>
+            </property>
+            <widget class="QWidget" name="DDpage">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="acceptDrops">
+              <bool>true</bool>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_3">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QGroupBox" name="groupBox">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="acceptDrops">
+                 <bool>true</bool>
+                </property>
+                <property name="title">
+                 <string/>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignJustify|Qt::AlignVCenter</set>
+                </property>
+                <layout class="QGridLayout" name="gridLayout">
+                 <property name="leftMargin">
+                  <number>2</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>2</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>2</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>2</number>
+                 </property>
+                 <item row="0" column="1">
+                  <spacer name="verticalSpacer_2">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                   </property>
+                   <property name="sizeType">
+                    <enum>QSizePolicy::Expanding</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="1" column="0">
+                  <spacer name="horizontalSpacer">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="2" column="1">
+                  <spacer name="verticalSpacer">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                   </property>
+                   <property name="sizeType">
+                    <enum>QSizePolicy::Expanding</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QLabel" name="label">
+                   <property name="text">
+                    <string>D &amp; D</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="2">
+                  <spacer name="horizontalSpacer_2">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="mainBox">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="acceptDrops">
+              <bool>true</bool>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_7">
+              <item>
+               <layout class="QVBoxLayout" name="verticalLayout">
+                <property name="spacing">
+                 <number>3</number>
+                </property>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_4">
+                  <item>
+                   <layout class="QVBoxLayout" name="verticalLayout_4">
+                    <property name="spacing">
+                     <number>6</number>
+                    </property>
+                    <item>
+                     <widget class="QPushButton" name="check_selected_btn">
+                      <property name="text">
+                       <string>Check Selected</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="uncheck_selected_btn">
+                      <property name="text">
+                       <string>UnChecked Selected</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="allcheck_btn">
+                      <property name="text">
+                       <string>All ItemCheck</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="alluncheck_btn">
+                      <property name="text">
+                       <string>All Item Uncheck</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="label_6">
+                      <property name="text">
+                       <string>Project</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLineEdit" name="pro_line">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>10000</width>
+                        <height>10000</height>
+                       </size>
+                      </property>
+                      <property name="frame">
+                       <bool>true</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="label_4">
+                      <property name="text">
+                       <string>Shot</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLineEdit" name="shot_line">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="label_5">
+                      <property name="text">
+                       <string>Cut</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLineEdit" name="cut_line">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <spacer name="verticalSpacer_4">
+                      <property name="orientation">
+                       <enum>Qt::Vertical</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>40</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="current_refresh_button">
+                      <property name="text">
+                       <string>Current Refresh Tool</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <spacer name="verticalSpacer_3">
+                      <property name="orientation">
+                       <enum>Qt::Vertical</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>40</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="label_10">
+                      <property name="text">
+                       <string>priority</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLineEdit" name="priority">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="text">
+                       <string>50</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="label_11">
+                      <property name="text">
+                       <string>Pool</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QComboBox" name="poollist"/>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="label_12">
+                      <property name="text">
+                       <string>Group</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QComboBox" name="grouplist"/>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="open_publish_dir_button">
+                      <property name="text">
+                       <string>Open Publish Dirs</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="open_log_button">
+                      <property name="enabled">
+                       <bool>false</bool>
+                      </property>
+                      <property name="text">
+                       <string>Open Log</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                  <item>
+                   <widget class="QTableView" name="main_table">
+                    <property name="enabled">
+                     <bool>true</bool>
+                    </property>
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <pointsize>8</pointsize>
+                     </font>
+                    </property>
+                    <property name="acceptDrops">
+                     <bool>true</bool>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QDialog{background-color: rgb(38, 38, 38); color: rgb(200, 200, 200);}
+QMainWindow{background-color: rgb(38, 38, 38); color: rgb(200, 200, 200);}
+QMenuBar{background-color: rgb(18, 18, 38); color: rgb(200, 200, 200);}
+QMenuBar::item{background-color: rgb(18, 18, 38); color: rgb(200, 200, 200);}
+QMenu::item:selected{background-color: rgb(0, 100, 100); color: rgb(200, 200, 200);}
+QLabel{color: rgb(200, 200, 200)}
+QMenu{background-color: rgb(60, 60, 60); color: rgb(220, 220, 220)}
+#QPushButton{background-color: rgb(20, 20, 20); color: rgb(200, 200, 200);border-style: outset}
+#QPushButton:pressed{background-color: rgb(180, 180, 180)}
+
+QPushButton{
+padding: 0.5em 1em;
+text-decoration: none;
+background: #353535; color: #FFF;
+}
+
+QDateTimeEdit{background-color:   rgb(50, 50, 50); color: rgb(200, 200, 200);}
+
+QLineEdit{background-color:   rgb(50, 50, 50); color: rgb(200, 200, 200);}
+QPlainTextEdit{background-color:   rgb(50, 50, 50); color: rgb(200, 200, 200);}
+QListWidget{background-color: rgb(18, 18, 38); color: rgb(200, 200, 200);}
+QListWidget::item::selected{background-color: rgb(150, 150, 150); color: rgb(30, 30, 30);}
+QComboBox{background-color:   rgb(18, 18, 38); color: rgb(200, 200, 200);}
+QSpinBox{background-color:   rgb(50, 50, 50); color: rgb(200, 200, 200);}
+QTextEdit{background-color:   rgb(18, 18, 38); color: rgb(200, 200, 200);}
+QComboBox{background-color:   rgb(50, 50, 50); color: rgb(200, 200, 200);}
+QRadioButton{background-color:   rgba(50, 50, 50, 0%); color: rgb(200, 200, 200);}
+QTableWidget{background-color:   rgb(48, 48, 48); color: rgb(200, 200, 200);  alternate-background-color: rgb(68, 68, 68)}
+QProgressBar{text-align: center}
+QTableWidget&gt;QHeaderView::section{background-color:  rgb(68, 68, 68); color: rgb(200, 200, 200);border: 1px solid black	}
+QTableWidget::item::selected{background-color:   rgb(120, 120, 80); color: rgb(200, 200, 200);}
+QCheckBox{background-color:   rgba(18, 18, 38, 0%); color: rgb(200, 200, 200);}
+QGroupBox{background-color:   rgb(80, 80, 80); color: rgb(200, 200, 200);border: 1px solid gray;}
+
+QGroupBox::title { background-color: transparent; subcontrol-position: top left;padding:3 5px;}
+
+QTreeWidget&gt;QHeaderView::section{background-color:  rgb(42, 42, 42); color: rgb(200, 200, 200);}
+QTreeWidget{background-color:   rgb(48, 48, 48); color: rgb(200, 200, 200);  alternate-background-color: rgb(18, 18, 38)}
+QTreeWidget::item::selected{background-color:   rgb(80, 80, 80); color: rgb(200, 200, 200);}
+QTabWidget::pane {
+    border: 2px;
+    top: 0.1em;
+    position: absolute;
+    background-color: rgb(38, 42, 52)
+
+    }
+
+QTabBar:tab {
+    border: 1px solid #8d7c7c;
+    padding: 2px 6px 2px 6px;}
+QTabBar::tab:selected, QTabBar::tab:hover, QTabBar::checkable {
+     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                 stop: 0 #fafafa, stop: 0.4 #f4f4f4,
+                                 stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);
+ }
+QTabBar {
+    background: #222;
+    color: rgb(242, 133, 66);
+    border-radius: 0;
+    border: 2px solid #222;
+}
+
+
+QScrollBar::vertical {border: 0px; background: rgb(220, 220, 200); width: 10px;}
+QScrollBar::add-page::vertical {background:  rgb(54, 54, 54); subcontrol-position: top; subcontrol-origin: margin;}
+QScrollBar::sub-page::vertical {background:  rgb(54, 54, 54); subcontrol-position: top; subcontrol-origin: margin;}
+QScrollBar::handle::vertical {background:  rgb(90, 90, 90);}
+
+QScrollBar::horizontal {border: 0px; background: rgb(220, 220, 200); height: 10px;}
+QScrollBar::add-page::horizontal {background:  rgb(54, 54, 54); subcontrol-position: top; subcontrol-origin: margin;}
+QScrollBar::sub-page::horizontal {background:  rgb(54, 54, 54); subcontrol-position: top; subcontrol-origin: margin;}
+QScrollBar::handle::horizontal {background:  rgb(90, 90, 90);}
+</string>
+                    </property>
+                    <property name="frameShape">
+                     <enum>QFrame::Panel</enum>
+                    </property>
+                    <property name="frameShadow">
+                     <enum>QFrame::Plain</enum>
+                    </property>
+                    <property name="editTriggers">
+                     <set>QAbstractItemView::NoEditTriggers</set>
+                    </property>
+                    <property name="showDropIndicator" stdset="0">
+                     <bool>false</bool>
+                    </property>
+                    <property name="dragEnabled">
+                     <bool>false</bool>
+                    </property>
+                    <property name="dragDropOverwriteMode">
+                     <bool>false</bool>
+                    </property>
+                    <property name="alternatingRowColors">
+                     <bool>true</bool>
+                    </property>
+                    <property name="selectionBehavior">
+                     <enum>QAbstractItemView::SelectRows</enum>
+                    </property>
+                    <property name="textElideMode">
+                     <enum>Qt::ElideRight</enum>
+                    </property>
+                    <property name="gridStyle">
+                     <enum>Qt::DashLine</enum>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>false</bool>
+                    </property>
+                    <property name="cornerButtonEnabled">
+                     <bool>false</bool>
+                    </property>
+                    <attribute name="horizontalHeaderCascadingSectionResizes">
+                     <bool>false</bool>
+                    </attribute>
+                    <attribute name="horizontalHeaderDefaultSectionSize">
+                     <number>90</number>
+                    </attribute>
+                    <attribute name="horizontalHeaderMinimumSectionSize">
+                     <number>1</number>
+                    </attribute>
+                    <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+                     <bool>false</bool>
+                    </attribute>
+                    <attribute name="horizontalHeaderStretchLastSection">
+                     <bool>true</bool>
+                    </attribute>
+                    <attribute name="verticalHeaderCascadingSectionResizes">
+                     <bool>true</bool>
+                    </attribute>
+                    <attribute name="verticalHeaderDefaultSectionSize">
+                     <number>20</number>
+                    </attribute>
+                    <attribute name="verticalHeaderMinimumSectionSize">
+                     <number>1</number>
+                    </attribute>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_3">
+                  <property name="spacing">
+                   <number>0</number>
+                  </property>
+                 </layout>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="page">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_6">
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_6">
+                <item>
+                 <widget class="QPlainTextEdit" name="log_area">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_10">
+      <item>
+       <widget class="QPushButton" name="export_local_btn">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>メイリオ</family>
+          <pointsize>11</pointsize>
+          <weight>50</weight>
+          <italic>false</italic>
+          <bold>false</bold>
+          <underline>false</underline>
+          <strikeout>false</strikeout>
+          <kerning>true</kerning>
+         </font>
+        </property>
+        <property name="text">
+         <string>Local Export</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="export_submit_btn">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>メイリオ</family>
+          <pointsize>11</pointsize>
+          <weight>50</weight>
+          <italic>false</italic>
+          <bold>false</bold>
+          <underline>false</underline>
+          <strikeout>false</strikeout>
+          <kerning>true</kerning>
+         </font>
+        </property>
+        <property name="text">
+         <string>Submit to Deadline</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="path_line">
+        <property name="font">
+         <font>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <action name="actionGo_to_shotgun">
+   <property name="text">
+    <string>go to shotgun</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

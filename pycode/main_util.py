@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 import os,sys
 import ast
+import yaml
+import shutil
+import distutils.dir_util
 # ------------------------------
 env_key = 'ND_TOOL_PATH_PYTHON'
 ND_TOOL_PATH = os.environ.get(env_key, 'Y:/tool/ND_Tools/python')
@@ -11,25 +14,26 @@ for path in ND_TOOL_PATH.split(';'):
     sys.path.append(path)
 # ------------------------------------
 
-import ND_lib.shotgun.sg_util as sg_util
-import ND_lib.util.path as util_path
-import ND_lib.env as util_env
+import exporter_lib.path as util_path
+import exporter_lib.env as util_env
 try:
-    from PySide2.QtGui import *
-    from PySide2.QtCore import *
-    from PySide2.QtUiTools import QUiLoader
-    from PySide2.QtWidgets import *
-except:
-    from PySide.QtGui import *
+    import PySide.QtCore as QtCore
+    import PySide.QtGui as QtGui
     from PySide.QtCore import *
+    from PySide.QtGui import *
     from PySide.QtUiTools import QUiLoader
+except:
+    import PySide6.QtCore as QtCore
+    import PySide6.QtGui as QtGui
+    from PySide6.QtCore import *
+    from PySide6.QtGui import *
+    from PySide6.QtUiTools import QUiLoader
 import subprocess
-
-pythonBatch = 'Y:\\tool\\MISC\\Python2710_amd64_vs2010\\python.exe'
+# import shotgun_api3
 
 class ProjectInfo():
     def __init__(self, url):
-        import ND_lib.util.path as util_path
+        import exporter_lib.path as util_path
         url_parsedict = util_path.get_path_dic(url)
         self.path = url_parsedict['path']
         self.path_type = url_parsedict['path_type']
@@ -81,12 +85,18 @@ class TableModelMaker(QAbstractTableModel):
             column = index.column()
             if column == 0:
                 if row in self.executed_row:
-                    x = "✔"
-                    value = x.decode("utf-8", errors="ignore")
+                    x = "◎"
+                    try:
+                        value = x.decode("utf-8", errors="ignore")
+                    except:
+                        value = x
                 else:
                     if row in self.check_row:
                         x = "◎"
-                        value = x.decode("utf-8", errors="ignore")
+                        try:
+                            value = x.decode("utf-8", errors="ignore")
+                        except:
+                            value = x
                     else:
                         value = self.table_data[row][column]
             else:
@@ -150,14 +160,23 @@ def tabledata_maker(headers, convert_dic, target_assets):
                         td_row.append("abc_anim")
                         anim_item = target_asset["sg_anim_export_list"]
                         abc_item = target_asset["sg_abc_export_list"]
-                        td_row.append("{{anim:{}, abc:{}}})".format(anim_item, abc_item))
+                        # td_row.append("{{anim:{}, abc:{}}})".format(anim_item, abc_item))
+                        export_item_dic = {}
+                        export_item_dic['anim']=anim_item
+                        export_item_dic['abc'] =abc_item
+                        td_row.append(yaml.safe_dump(export_item_dic))
                         continue
                     else:
                         td_row.append('{Empty!}')
-                        td_row.append('{Empty!}')
+                        # td_row.append('{Empty!}')
                     anim_item = target_asset["sg_anim_export_list"]
                     abc_item = target_asset["sg_abc_export_list"]
-                    td_row.append("{{anim:{}, abc:{}}})".format(anim_item, abc_item))
+                    # td_row.append("{{anim:{}, abc:{}}})".format(anim_item, abc_item))
+                    export_item_dic = {}
+                    export_item_dic['anim']=anim_item
+                    export_item_dic['abc'] =abc_item
+                    td_row.append(yaml.safe_dump(export_item_dic))
+                    # td_row.append("{{anim:{}, abc:{}}}".format(anim_item, abc_item))
                     continue
                 if target_asset[sg_code] is None:
                     td_row.append("{Empty!}")
@@ -184,35 +203,21 @@ def add_camera_row(headers_item, tabledata, camera_rig_export):
     return tabledata
 
 
-def argsmaker(new_arg, args=None):
-    if not args:
-        return new_arg
-    else:
-        return args + ' ' + new_arg
-
-
-def execExporter(**kwargs):
-    args = argsmaker(pythonBatch)
-    args = argsmaker('back_starter.py', args)
-    args = argsmaker(str(kwargs), args)
-    subprocess.call(args, shell=True)
-
-
 def execExporter_maya(**kwargs):
     import back_starter
     reload(back_starter)
     back_starter.back_starter(kwargs=kwargs["kwargs"])
 
 
-def spsymbol_remover(litteral, itemtype):
-    import re
-    if itemtype == 'key':
-        litteral = re.sub(',| |:|\'|{|}', '', litteral)
-        litteral = litteral.rstrip(',')
-    elif itemtype == 'value':
-        litteral = litteral.rstrip(',')
-        litteral = re.sub(' |\'|{|}', '', litteral)
-    return litteral
+# def spsymbol_remover(litteral, itemtype):
+#     import re
+#     if itemtype == 'key':
+#         litteral = re.sub(',| |:|\'|{|}', '', litteral)
+#         litteral = litteral.rstrip(',')
+#     elif itemtype == 'value':
+#         litteral = litteral.rstrip(',')
+#         litteral = re.sub(' |\'|{|}', '', litteral)
+#     return litteral
 
 
 def dictlist_parse(dictlist):
@@ -229,9 +234,9 @@ def dictlist_parse(dictlist):
     return argsdict
 
 
-def check_arnold(project):
+def is_arnold(project):
     import yaml
-    project_name = "RAM1"
+    project_name = project
     toolkit_path = "Y:\\tool\\ND_Tools\\shotgun"
     app_launcher_path = "config\\env\\includes\\app_launchers.yml"
     project_app_launcher = "%s\\ND_sgtoolkit_%s\\%s" % (toolkit_path, project_name, app_launcher_path)
@@ -246,11 +251,13 @@ def check_arnold(project):
 class DeadlineMod():
     def __init__(self, **kwargs):
         #jobFile
-        self.target_py = "Y:/tool/ND_Tools/DCC/ND_AssetExporter/pycode/main_util.py"
+        self.target_py = "Y:/tool/ND_Tools/DCC/ND_AssetExporter_test/pycode/back_starter.py"
         #infoFile
         self.argsdict = kwargs
-        self.executer = "Y:/tool/MISC/Python2710_amd64_vs2010/python.exe"
-        self.stg_dir = "Y:/tool/ND_Tools/DCC/ND_AssetExporter/pycode"
+        # self.executer = r"C:\Users\k_ueda\AppData\Local\Programs\Python\Python310\python.exe"
+        self.executer = 'Y:\\tool\\MISC\\Python2710_amd64_vs2010\\python.exe'
+
+        self.stg_dir = "Y:/tool/ND_Tools/DCC/ND_AssetExporter_test/pycode"
         self.tmp_dir = os.environ.get('TEMP', 'E:/TEMP')
         self.job_dict = self.job_content()
         self.info_dict = self.info_content()
@@ -258,17 +265,17 @@ class DeadlineMod():
     def job_content(self):
         job_dict = {}
         job_dict["Frames"] = 1
-        job_dict["Group"] = self.argsdict['Group']
+        job_dict["Group"] = self.argsdict['group']
         job_dict["MachineName"] = os.environ.get("COMPUTERNAME")
-        job_dict["Name"] = "ND_AssetExporter_{Pool}_{shot}{sequence}_{chara}".format(**self.argsdict) # シーンの情報を入れる
+        job_dict["Name"] = "ND_AssetExporter_{pool}_{shot}{sequence}_{asset_name}".format(**self.argsdict) # シーンの情報を入れる
         job_dict["OverrideTaskExtraInfoNames"] = False
         job_dict["Plugin"] = "CommandLine"
-        job_dict["Pool"] = self.argsdict['Pool']
-        job_dict["Priority"] = str(self.argsdict['Priority'])
+        job_dict["Pool"] = self.argsdict['pool']
+        job_dict["Priority"] = str(self.argsdict['priority'])
         job_dict["SecondaryPool"] = "normal"
         job_dict["UserName"] = os.environ.get("USERNAME")
         # job_dict["Whitelist"] = "ws023"
-        job_dict["BatchName"] = "Exporter_{Pool}_{shot}{sequence}".format(**self.argsdict)
+        job_dict["BatchName"] = "Exporter_{pool}_{shot}{sequence}".format(**self.argsdict)
         return job_dict
 
     def info_content(self):
@@ -315,13 +322,12 @@ class DeadlineMod():
         command = '{deadline_cmd} "{job_file}" "{info_file}"'.format(**vars())
         process = subprocess.Popen(command, stdout=subprocess.PIPE)
         lines_iterator = iter(process.stdout.readline, b"")
-        print lines_iterator
         for line in lines_iterator:
-            print(line)
             if 'JobID' in line:
                 jobid = line.replace('JobID=', '')
             sys.stdout.flush()
         return jobid
+
 
 def submit_to_deadlineJobs(jobs, farm="Deadline", version="10"):
     arg_file_path = '{}/args.txt'.format(util_env.env_temp)
@@ -339,14 +345,30 @@ def submit_to_deadlineJobs(jobs, farm="Deadline", version="10"):
     return lines_iterator
 
 
-if __name__ == '__main__':
-    import sys
-    import subprocess
-    _strargv = sys.argv
-    _strargv.pop(0)
+def addTimeLog(char, input_path, debug):
+    from datetime import datetime
+    opc = outputPathConf(input_path, char, debug)
+    print("#####addTimeLog#####")
+    print("chara: {}".format(char))
+    print("input_path: {}".format(input_path))
     try:
-        argsdict = ast.literal_eval(_strargv[0])
-    except:
-        argsdict = dictlist_parse(_strargv)
-    execExporter(**argsdict)
+        opc.setChar(char)
+    except ValueError:
+        print("AddTimeLog Error!!")
+        return
+    publishpath = opc.publishpath
+    if debug is True:
+        publishpath = publishpath.replace("char", "test_char")
+        publishpath = publishpath.replace("Cam", "test_Cam")
+    with open(os.path.join(publishpath, 'timelog.txt').replace(os.path.sep, '/'), 'a') as f:
+        f.write(datetime.now().strftime('%Y/%m/%d %H:%M:%S'))
+        f.write(' ' + opc.currentVer)
+        f.write(' ' + input_path)
+        f.write(' ' + os.environ['USERNAME'])
+        f.write('\n')
+
+if __name__ == '__main__':
+    py_file = sys.argv[0] 
+    argsdic = yaml.safe_load(sys.argv[1])
+    execExporter(argsdic)
     sys.exit()
