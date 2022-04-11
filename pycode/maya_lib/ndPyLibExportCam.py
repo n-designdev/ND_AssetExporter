@@ -21,12 +21,7 @@ def Euler_filter(obj_list):
 
 
 def search_cam():
-    for cache_obj in cmds.ls(type='cacheFile'):
-        cmds.hide(cache_obj)
-
-    top_nodes = cmds.ls(assemblies=True)
-    hidden_objs = cmds.hide(top_nodes, rh=True)
-  
+    #  cacheをハイドしてみる
     cam_shapes = cmds.ls(ca=True)
     try:
         cam_shapes.remove('frontShape')
@@ -206,27 +201,37 @@ def ndPyLibPlatform(text):
 
 
 def export_manual(info_dic):
-    argsdic = {}
-    argsdic['ma_cam_path'] = '{}/{}.ma'.format(
+    info_dic['ma_cam_path'] = '{}/{}.ma'.format(
         info_dic['outputdir'], info_dic['file_name'])
     # argsdic['anim_cam_path']= '{}/anim/{}_anim.ma'.format(opc.publish_ver_cam_path, oFilename)
     # フルパスとファイル名
-    argsdic['abc_cam_path'] = '{}/{}.abc'.format(
+    info_dic['abc_cam_path'] = '{}/{}.abc'.format(
         info_dic['outputdir'], info_dic['file_name'])
     # フルパスとファイル名
-    argsdic['fbx_cam_path'] = '{}/{}.fbx'.format(
+    info_dic['fbx_cam_path'] = '{}/{}.fbx'.format(
         info_dic['outputdir'], info_dic['file_name'])
+    # export_cam_main(
+    #     'ma_cam_path' = info_dic['ma_cam_path'],
+    #     'abc_cam_path' = info_dic['abc_cam_path'],
+    #     'fbx_cam_path' = info_dic['fbx_cam_path'],
+    #     'cam_scale' = info_dic['cam_scale'],
+    #     'frame_handle' = info_dic['frame_handle'],
+    #     'frame_range' = info_dic['frame_range']
+    # )
     export_cam_main(info_dic)
-    
-
 
 def export_cam_main(kwargs):
-    for cache_obj in cmds.ls(type='cacheFile'):
-        cmds.hide(cache_obj)
-
     top_nodes = cmds.ls(assemblies=True)
-    hidden_objs = cmds.hide(top_nodes, rh=True)
-  
+    cache_nodes = cmds.ls(type='cacheFile')
+    hidden_objs = []
+    # hidden_objs.extend(cmds.hide(top_nodes, rh=True))
+    # hidden_objs.extend(cmds.hide(cache_nodes, rh=True))
+    ignore_attrs = []
+    if hidden_objs is not None:
+        for obj in hidden_objs:
+            ignore_attrs.append('{}Shape.visibility'.format(obj.lstrip('|')))
+            ignore_attrs.append('{}.visibility'.format(obj.lstrip('|')))
+
     if kwargs['frame_range'] != False and kwargs['frame_range']!=None:
         sframe = float(kwargs['frame_range'].split(',')[0])
         eframe = float(kwargs['frame_range'].split(',')[1])
@@ -281,3 +286,8 @@ def export_cam_main(kwargs):
     print ('AbcExport -j ' + strAbc)
     mel.eval('AbcExport -verbose -j ' + '"' + strAbc + '"')
     cmds.file(kwargs['ma_cam_path'], force=True, options='v=0', typ='mayaAscii', pr=True, es=True)
+    # cmds.showHidden(hidden_objs)
+
+
+def ndPylibExportCam_caller(**kwargs):
+    export_cam_main(kwargs)

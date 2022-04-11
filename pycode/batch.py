@@ -85,7 +85,6 @@ def animExport(**kwargs):
     subprocess.call(cmd)
 
 
-
 def animAttach(**kwargs):
     env_load(kwargs['project'], kwargs['env_load'])
     mayaBatch = maya_version(kwargs['project'])
@@ -180,8 +179,8 @@ def camExport(**kwargs):
     env_load(argsdic['project'], kwargs['env_load'])
     mayaBatch = 'C:\\Program Files\\Autodesk\\Maya2020\\bin\\mayabatch.exe'
     unique_order = (
-        'from ndPyLibExportCam import export_cam_main;'
-        'export_cam_main(**{})'.format(argsdic))
+        'from ndPyLibExportCam import ndPylibExportCam_caller;'
+        'ndPylibExportCam_caller(**{})'.format(argsdic))
     cmd = maya_cmd_maker(unique_order, kwargs['input_path'], mayaBatch)
     subprocess.call(cmd)
 

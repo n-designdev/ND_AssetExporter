@@ -1,3 +1,4 @@
+from imp import reload
 import sys, os
 import yaml
 import maya.cmds as cmds
@@ -6,11 +7,6 @@ sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter\pycode\maya_lib\on_maya"
 sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_dev\pycode")
 sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_dev\pycode\maya")
 import ND_AssetExporter_dev.pycode.shell_lib.util_exporter as util_exporter; reload(util_exporter)
-try:
-    from import_lib import *
-except:
-    pass
-
 
 def ls_asset_code(AssetClass_list):
     result_list = []

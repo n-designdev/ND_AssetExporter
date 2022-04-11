@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os,sys
+from imp import reload
 import re
 import yaml
 import shutil
@@ -35,14 +36,21 @@ try:
     from PySide.QtGui import *
     from PySide.QtUiTools import QUiLoader
 except:
-    try:
-        import PySide6.QtCore as QtCore
-        import PySide6.QtGui as QtGui
-        from PySide6.QtCore import *
-        from PySide6.QtGui import *
-        from PySide6.QtUiTools import QUiLoader
-    except:
-        pass
+    # try:
+    #     import PySide6.QtCore as QtCore
+    #     import PySide6.QtGui as QtGui
+    #     from PySide6.QtCore import *
+    #     from PySide6.QtGui import *
+    #     from PySide6.QtWidgets import *
+    #     from PySide6.QtUiTools import QUiLoader
+    # except Exception as e:
+    import PySide2.QtCore as QtCore
+    import PySide2.QtGui as QtGui
+    from PySide2.QtCore import *
+    from PySide2.QtGui import *
+    from PySide2.QtWidgets import *
+    from PySide2.QtUiTools import QUiLoader
+        
 
 import subprocess
 # import shotgun_api3
