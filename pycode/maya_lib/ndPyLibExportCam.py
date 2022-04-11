@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from distutils.log import info
 import os
 
 import maya.cmds as cmds
@@ -202,17 +203,31 @@ def ndPyLibPlatform(text):
     otsr = otsr+'['+prefix+']'+text+'\n'
 
     print(otsr)
-#end of ndPyLibPlatform
 
 
-def export_cam_main(**kwargs):
+def export_manual(info_dic):
+    argsdic = {}
+    argsdic['ma_cam_path'] = '{}/{}.ma'.format(
+        info_dic['outputdir'], info_dic['file_name'])
+    # argsdic['anim_cam_path']= '{}/anim/{}_anim.ma'.format(opc.publish_ver_cam_path, oFilename)
+    # フルパスとファイル名
+    argsdic['abc_cam_path'] = '{}/{}.abc'.format(
+        info_dic['outputdir'], info_dic['file_name'])
+    # フルパスとファイル名
+    argsdic['fbx_cam_path'] = '{}/{}.fbx'.format(
+        info_dic['outputdir'], info_dic['file_name'])
+    export_cam_main(info_dic)
+    
+
+
+def export_cam_main(kwargs):
     for cache_obj in cmds.ls(type='cacheFile'):
         cmds.hide(cache_obj)
 
     top_nodes = cmds.ls(assemblies=True)
     hidden_objs = cmds.hide(top_nodes, rh=True)
   
-    if kwargs['frame_range'] != False:
+    if kwargs['frame_range'] != False and kwargs['frame_range']!=None:
         sframe = float(kwargs['frame_range'].split(',')[0])
         eframe = float(kwargs['frame_range'].split(',')[1])
     else:
@@ -235,17 +250,19 @@ def export_cam_main(**kwargs):
         cmds.rename(cams[i],cams[i+1].split("|")[-1])
 
     cmds.select('cam_grp')
-    publish_ver_path = kwargs['publish_ver_path']
 
-    if not os.path.exists(publish_ver_path):
-        os.makedirs(publish_ver_path)
+    try:
+        publish_ver_path = kwargs['publish_ver_path']
+        if not os.path.exists(publish_ver_path):
+            os.makedirs(publish_ver_path)
+        sceneConfpath = os.path.join(publish_ver_path, '..', 'sceneConf.txt')
+        with open(sceneConfpath, 'w') as f:
+            f.write(str(sframe)+'\n')
+            f.write(str(eframe)+'\n')
+    except:
+        pass
 
     cmds.file(kwargs['ma_cam_path'], force=True, options='v=0', typ='mayaAscii', pr=True, es=True)
-
-    sceneConfpath = os.path.join(publish_ver_path, '..', 'sceneConf.txt')
-    with open(sceneConfpath, 'w') as f:
-        f.write(str(sframe)+'\n')
-        f.write(str(eframe)+'\n')
 
     if cmds.pluginInfo('fbxmaya', q=True, l=True) == 0:
         cmds.loadPlugin('fbxmaya')
@@ -264,21 +281,3 @@ def export_cam_main(**kwargs):
     print ('AbcExport -j ' + strAbc)
     mel.eval('AbcExport -verbose -j ' + '"' + strAbc + '"')
     cmds.file(kwargs['ma_cam_path'], force=True, options='v=0', typ='mayaAscii', pr=True, es=True)
-
-
-def ndPylibExportCam_caller(kwargs):
-    export_cam_main(**kwargs)
-
-
-    
-def ndPyLibExportCam3(outputPath, cameraScale=-1, frameHundle=5, frameRange="None"):
-    animFiles = ndPyLibExportCam(outputPath, cameraScale, frameHundle, frameRange)
-    for animFile in animFiles:
-        ns = animFile.replace('_anim', '').replace('.ma', '')
-        animOutput = opc.publishfullanimpath + '/' + animFile
-        charaOutput = opc.publishfullpath + '/' + ns + '.ma'
-        argsdic['animOutput'] = animOutput
-        argsdic['charaOutput'] = charaOutput
-        argsdic['ns'] = ns
-        batch.animAttach(**argsdic)
-

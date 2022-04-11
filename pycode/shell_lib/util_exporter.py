@@ -15,14 +15,16 @@ for path in ND_TOOL_PATH.split(';'):
 
 import ND_lib.util.path as util_path
 import ND_lib.env as util_env
+import ND_lib.shotgun.sg_scriptkey as sg_scriptkey
 import ND_lib.shotgun.shotgun_api3.shotgun as shotgun
 import ND_lib.shotgun.sg_util as sg_util
+sg = sg_scriptkey.scriptKey()
 # ------------------------------
 EXPORTER_PATH = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))).replace('\\', '/'))
-if EXPORTER_PATH.split('/') == 'ND_AssetExporter':
+if EXPORTER_PATH.split('/')[-1] == 'ND_AssetExporter':
     TOOLNAME = 'ND_AssetExporter'
-if EXPORTER_PATH.split('/') == 'ND_AssetExporter_dev':
+if EXPORTER_PATH.split('/')[-1] == 'ND_AssetExporter_dev':
     TOOLNAME = 'ND_AssetExporter_dev'
 
 # ND_TOOL_PATH = "Y:/tool/ND_Tools/DCC/ND_AssetExporter_dev/pycode"
@@ -33,11 +35,14 @@ try:
     from PySide.QtGui import *
     from PySide.QtUiTools import QUiLoader
 except:
-    import PySide6.QtCore as QtCore
-    import PySide6.QtGui as QtGui
-    from PySide6.QtCore import *
-    from PySide6.QtGui import *
-    from PySide6.QtUiTools import QUiLoader
+    try:
+        import PySide6.QtCore as QtCore
+        import PySide6.QtGui as QtGui
+        from PySide6.QtCore import *
+        from PySide6.QtGui import *
+        from PySide6.QtUiTools import QUiLoader
+    except:
+        pass
 
 import subprocess
 # import shotgun_api3

@@ -8,7 +8,7 @@ import importlib
 import yaml
 from imp import reload
 # ------------------------------
-__version__ = '3.0'
+__version__ = '4.0'
 __author__ = 'Kei Ueda'
 # ------------------------------
 EXPORTER_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__))).replace('\\', '/')
@@ -38,7 +38,7 @@ except ModuleNotFoundError:
     from PySide6.QtUiTools import QUiLoader
 # ------------------------------------
 
-import util_exporter; reload(util_exporter)
+import shell_lib.util_exporter as util_exporter; reload(util_exporter)
 import util; reload(util)
 try:
     import ND_Submitter.env as util_env
