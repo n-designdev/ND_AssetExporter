@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 #------------------------------
+import ND_appEnv.lib.util.env_io as util_env
 __version__ = "0.0.1"
 __copyright__ = "Copyright (C) 2016, N-Design"
 __author__ = "Masato Hirabayashi"
@@ -24,7 +25,6 @@ for path in ND_TOOL_PATH.split(';'):
 
 #------------------------------
 import ND_appEnv.env as env_param
-import exporter_lib.env_io as util_env
 
 
 #-----------------------------------
@@ -83,6 +83,6 @@ def run(args, **kwargs):
     options = dict(zip(keys, values))
 
     #-----------------------------------
-    envDict = util_env.loadConf(filePath, **options)
+    # envDict = util_env.loadConf(filePath, **options)
     # env = util_env.getEnvDict(envDict, env=os.environ, expand=True)
 

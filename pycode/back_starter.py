@@ -2,16 +2,17 @@
 
 import os,sys
 import yaml
-
-ND_TOOL_PATH = 'Y:/tool/ND_Tools/python;Y:/tool/ND_Tools/DCC;Y:/tool/ND_Tools/python;Y:/tool/ND_Tools/DCC/ND_AssetExport_test/pycode/exporter_lib;Y:/tool/ND_Tools/DCC/ND_AssetExport_test/pycode'
+sys.path.append(r"Y:\users\env\maya\scripts\Python\site-packages")
+ND_TOOL_PATH = 'Y:/tool/ND_Tools/python;Y:/tool/ND_Tools/DCC;Y:/tool/ND_Tools/python;Y:/tool/ND_Tools/DCC/ND_AssetExport_dev/pycode/exporter_lib;Y:/tool/ND_Tools/DCC/ND_AssetExport_dev/pycode'
 for path in ND_TOOL_PATH.split(";"):
     sys.path.append(path)
 import util_exporter
-import ND_AssetExporter_test.pycode.batch as batch
+import ND_AssetExporter_dev.pycode.batch as batch
 def back_starter_main(**kwargs):
     # argsdic = yaml.safe_load(kwargs) #kwargsはポインタなので直接代入しない
     argsdic = kwargs
-
+    import pprint
+    pprint.pprint(argsdic)
     input_path = argsdic['input_path']
     asset_name = argsdic['asset_name']
     export_type = argsdic['export_type']

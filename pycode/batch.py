@@ -4,6 +4,7 @@ import os
 import subprocess
 import yaml
 
+
 onpath = os.path.dirname(os.path.abspath(__file__)).replace('\\','/')
 
 def maya_cmd_maker(unique_order, mayafile=None, mayaBatch=None):
@@ -23,11 +24,10 @@ def maya_cmd_maker(unique_order, mayafile=None, mayaBatch=None):
 
 
 def env_load(project, is_env_load):
-    print '###env_load###'
-    print is_env_load
-    print '###env_load###'
+    print('###env_load###')
+    print(is_env_load)
+    print('###env_load###')
     if is_env_load is True:
-        print 'isisiss'
         ND_TOOL_PATH_default = "Y:/tool/ND_Tools/python"
         env_key = "ND_TOOL_PATH_PYTHON"
         ND_TOOL_PATH = os.environ.get(env_key, ND_TOOL_PATH_default)
@@ -35,8 +35,8 @@ def env_load(project, is_env_load):
             path = path.replace('\\', '/')
             if path in sys.path: continue
             sys.path.append(path)
-        import env_loader
-        env_loader.run(project, fork=True)
+        import shell_lib.env_loader
+        shell_lib.env_loader.run(project, fork=True)
 
 
 def maya_version(project):

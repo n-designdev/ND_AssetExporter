@@ -413,6 +413,7 @@ class GUI(QMainWindow):
             export_item = row_items[4]
             top_node = row_items[5]
             asset_path = row_items[6].replace('\\','/')
+            print(asset_name)
             argsdic = {
                 'asset_name': asset_name,
                 # 'namespace': [yaml.safe_load(namespace.replace(':', '\:').replace('[', '\[').replace(']', '\]'))],
@@ -445,7 +446,7 @@ class GUI(QMainWindow):
                 log_name = 'log_' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S') + asset_name+ '.txt'
                 log_dir = 'Y:\\users\\'+os.environ.get('USERNAME')+'\\DCC_log\\ND_AssetExporter'
                 log_path = log_dir + '\\' + log_name
-                current_dir = r'Y:/tool/ND_Tools/DCC/ND_AssetExporter_test/pycode'
+                current_dir = r'Y:/tool/ND_Tools/DCC/ND_AssetExporter_dev/pycode'
                 if not os.path.exists(log_dir):
                     os.makedirs(log_dir)
                 self.ui.stack_area.setCurrentIndex(2)
@@ -460,7 +461,7 @@ class GUI(QMainWindow):
                 timer = 0
                 dt_now = datetime.datetime.now()
                 print(dt_now)
-                log_txt = log_txt + '\n{} ; start time {}\n'.format(asset_name, dt_now)
+                self.log_txt = self.log_txt + '\n{} ; start time {}\n'.format(asset_name, dt_now)
                 # 2019-02-04 21:04:15.412854
                 while True:
                     if len(threading.enumerate())==1:
@@ -472,7 +473,7 @@ class GUI(QMainWindow):
                         timer=0
                         if count==10:
                             count = 0
-                        self.ui.log_area.setPlainText('{}now working{}'.format(log_txt, '.'*timer))
+                        self.ui.log_area.setPlainText('now working{}'.format('.'*timer))
                         self.ui.repaint()
                     qApp.processEvents()
                 self.last_log_path = log_path
@@ -499,7 +500,9 @@ def thread_main(**kwargs):
     log_path = kwargs['log_path']
     current_dir = kwargs['current_dir']
     python = PYPATH
-    py_path = r'Y:\tool\ND_Tools\DCC\ND_AssetExporter_test\pycode\back_starter.py'
+    py_path = r'Y:\tool\ND_Tools\DCC\ND_AssetExporter_dev\pycode\back_starter.py'
+    import pprint
+    pprint.pprint(argsdic)
     with open(log_path, 'w+')as f:
         try:
             proc = subprocess.Popen([python, py_path, argsdic], shell=True, stdout=f, cwd=current_dir)

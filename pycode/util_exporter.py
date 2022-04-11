@@ -14,6 +14,8 @@ for path in ND_TOOL_PATH.split(';'):
     sys.path.append(path)
 
 import ND_lib.util.path as util_path
+import ND_lib.shotgun.sg_scriptkey as sg_scriptkey
+sg = sg_scriptkey.scriptKey()
 import ND_lib.env as util_env
 import ND_lib.shotgun.shotgun_api3.shotgun as shotgun
 import ND_lib.shotgun.sg_util as sg_util
@@ -253,13 +255,13 @@ class ProjectInfo():
 class DeadlineMod():
     def __init__(self, **kwargs):
         #jobFile
-        self.target_py = "Y:/tool/ND_Tools/DCC/ND_AssetExporter_test/pycode/back_starter.py"
+        self.target_py = "Y:/tool/ND_Tools/DCC/ND_AssetExporter_dev/pycode/back_starter.py"
         #infoFile
         self.argsdict = kwargs
         # self.executer = r"C:\Users\k_ueda\AppData\Local\Programs\Python\Python310\python.exe"
         self.executer = 'Y:\\tool\\MISC\\Python2710_amd64_vs2010\\python.exe'
 
-        self.stg_dir = "Y:/tool/ND_Tools/DCC/ND_AssetExporter_test/pycode"
+        self.stg_dir = "Y:/tool/ND_Tools/DCC/ND_AssetExporter_dev/pycode"
         self.tmp_dir = os.environ.get('TEMP', 'E:/TEMP')
         self.job_dict = self.job_content()
         self.info_dict = self.info_content()
