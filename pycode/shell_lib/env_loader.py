@@ -83,6 +83,6 @@ def run(args, **kwargs):
     options = dict(zip(keys, values))
 
     #-----------------------------------
-    # envDict = util_env.loadConf(filePath, **options)
+    envDict = util_env.loadConf(filePath, **options)
     # env = util_env.getEnvDict(envDict, env=os.environ, expand=True)
 

@@ -2,9 +2,9 @@ import sys, os
 import yaml
 import maya.cmds as cmds
 sys.path.append(r"Y:\tool\ND_Tools\DCC")
-sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_test\pycode")
-sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_test\pycode\maya")
-import ND_AssetExporter_test.pycode.util_exporter as util_exporter; reload(util_exporter)
+sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_dev\pycode")
+sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_dev\pycode\maya")
+import ND_AssetExporter_dev.pycode.util_exporter as util_exporter; reload(util_exporter)
 try:
     from import_lib import *
 except:
@@ -130,7 +130,7 @@ def get_asset_class_dict():
 
 
 if __name__ == "__main__":
-    sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_test\pycode")
+    sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_dev\pycode")
     import maya_lib.on_maya.on_maya_main as on_maya_main; reload(on_maya_main)
     # AssetClass_list = on_maya_main.ls_asset_class()
 

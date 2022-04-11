@@ -4,6 +4,9 @@ import re
 import yaml
 import shutil
 import distutils.dir_util
+EXPORTER_PATH = os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__))).replace('\\', '/')
+# ND_TOOL_PATH = "Y:/tool/ND_Tools/DCC/ND_AssetExporter_dev/pycode"
 # ------------------------------
 env_key = 'ND_TOOL_PATH_PYTHON'
 ND_TOOL_PATH = os.environ.get(env_key, 'Y:/tool/ND_Tools/python')

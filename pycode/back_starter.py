@@ -2,12 +2,10 @@
 
 import os,sys
 import yaml
-sys.path.append(r"Y:\users\env\maya\scripts\Python\site-packages")
-ND_TOOL_PATH = 'Y:/tool/ND_Tools/python;Y:/tool/ND_Tools/DCC;Y:/tool/ND_Tools/python;Y:/tool/ND_Tools/DCC/ND_AssetExport_dev/pycode/exporter_lib;Y:/tool/ND_Tools/DCC/ND_AssetExport_dev/pycode'
-for path in ND_TOOL_PATH.split(";"):
-    sys.path.append(path)
+EXPORTER_PATH = os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__))).replace('\\', '/')
 import util_exporter
-import ND_AssetExporter_dev.pycode.batch as batch
+import batch
 def back_starter_main(**kwargs):
     # argsdic = yaml.safe_load(kwargs) #kwargsはポインタなので直接代入しない
     argsdic = kwargs

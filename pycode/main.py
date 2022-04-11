@@ -11,9 +11,9 @@ from imp import reload
 __version__ = '3.0'
 __author__ = 'Kei Ueda'
 # ------------------------------
-env_key = 'ND_TOOL_PATH_PYTHON'
-ND_TOOL_PATH = 'Y:/tool/ND_Tools/DCC/ND_AssetExporter_dev'
-sys.path.append(ND_TOOL_PATH)
+EXPORTER_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__))).replace('\\', '/')
+# ND_TOOL_PATH = "Y:/tool/ND_Tools/DCC/ND_AssetExporter_dev/pycode"
+sys.path.append(EXPORTER_PATH)
 
 # ------------------------------
 import datetime
@@ -50,7 +50,9 @@ else:
 
 # PYPATH = r'C:\Users\k_ueda\AppData\Local\Programs\Python\Python310\python.exe'
 PYPATH = 'Y:\\tool\\MISC\\Python2710_amd64_vs2010\\python.exe'
+# PYPATH = "Y:/tool/ND_Tools/DCC/ND_AssetExporter_dev/pycode"
 onpath = os.path.dirname(os.path.abspath(__file__)).replace('\\', '/')
+print(onpath)
 os.chdir(onpath)
 
 class GUI(QMainWindow):
@@ -446,7 +448,7 @@ class GUI(QMainWindow):
                 log_name = 'log_' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S') + asset_name+ '.txt'
                 log_dir = 'Y:\\users\\'+os.environ.get('USERNAME')+'\\DCC_log\\ND_AssetExporter'
                 log_path = log_dir + '\\' + log_name
-                current_dir = r'Y:/tool/ND_Tools/DCC/ND_AssetExporter_dev/pycode'
+                current_dir = EXPORTER_PATH + '/pycode'
                 if not os.path.exists(log_dir):
                     os.makedirs(log_dir)
                 self.ui.stack_area.setCurrentIndex(2)
@@ -461,7 +463,7 @@ class GUI(QMainWindow):
                 timer = 0
                 dt_now = datetime.datetime.now()
                 print(dt_now)
-                self.log_txt = self.log_txt + '\n{} ; start time {}\n'.format(asset_name, dt_now)
+                self.log_txt = self.log_txt + '{} ; start time {}\n'.format(asset_name, dt_now)
                 # 2019-02-04 21:04:15.412854
                 while True:
                     if len(threading.enumerate())==1:
@@ -473,7 +475,7 @@ class GUI(QMainWindow):
                         timer=0
                         if count==10:
                             count = 0
-                        self.ui.log_area.setPlainText('now working{}'.format('.'*timer))
+                        self.ui.log_area.setPlainText('{}now working{}'.format(self.log_txt,'--'*timer+'\n'))
                         self.ui.repaint()
                     qApp.processEvents()
                 self.last_log_path = log_path
@@ -500,7 +502,7 @@ def thread_main(**kwargs):
     log_path = kwargs['log_path']
     current_dir = kwargs['current_dir']
     python = PYPATH
-    py_path = r'Y:\tool\ND_Tools\DCC\ND_AssetExporter_dev\pycode\back_starter.py'
+    py_path = r'{}\pycode\back_starter.py'.format(EXPORTER_PATH)
     import pprint
     pprint.pprint(argsdic)
     with open(log_path, 'w+')as f:
@@ -516,7 +518,8 @@ def runs(*argv):
     app = QApplication.instance()
     if app is None:
         app = QApplication(sys.argv)
-    skin = r'{}/pycode/gui/skin.stylesheet'.format(ND_TOOL_PATH).replace('/', '\\')
+    skin = r'{}/pycode/gui/skin.stylesheet'.format(
+        EXPORTER_PATH).replace('/', '\\')
     tx_o = open(skin, 'r')
     tx_r = tx_o.read()
     tx_o.close()

@@ -7,9 +7,9 @@ import sys
 import re
 import glob
 sys.path.append(r"Y:\users\env\maya\scripts\Python\site-packages")
-sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_test\pycode")
-sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_test\pycode\maya")
-sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_test\pycode\maya_lib")
+sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_dev\pycode")
+sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_dev\pycode\maya")
+sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_dev\pycode\maya_lib")
 
 try:
     from importlib import reload
@@ -385,11 +385,7 @@ def export_anim_main(**kwargs):
 
     if len(attrs) != 0:
         attrs = list(set(attrs)-set(ignore_attrs))
-        print('#############')
-        for attr in attrs:
-            print(attr)
         cmds.setKeyframe(attrs, t=sframe, insertBlend=True)
-        print('#############')
 
     attrs += getConstraintAttributes(all_nodes)
     attrs += getMotionPathAttributes(all_nodes)
@@ -483,7 +479,7 @@ def export_anim_main(**kwargs):
         for obj_and_attr in attrs:
             if cmds.objExists(obj_and_attr) == True:
                 cmds.select(obj_and_attr, add=True)
-        # cmds.select(attrs, add=True)
+        cmds.select(attrs, add=True)
         print(sframe, eframe)
         cmds.bakeResults(at=attrs, t=(sframe, eframe), dic=True)
         eulerfilter(attrs)
@@ -525,7 +521,7 @@ def ndPyLibExportAnim_caller(args):
 
 
 if __name__ == '__main__':
-    sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_test\pycode\maya")
+    sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_dev\pycode\maya")
     import ndPyLibExportAnim
     reload(ndPyLibExportAnim)
     # argsdic = {'input_path': 'P:/Project/RAM1/shots/ep022/s2227/c008/work/k_ueda/s2227c008_anm_v006.ma', 'sequence': 's2227', 'export_type': 'anim', 'abc_check': False, 'step_value': False, 'abc_item': 'abc_Root', 'shot': 'c008', 'group': '', 'anim_item': 'ctrl_set, root', 'namespace': 'NursedesseiDragon[0-9]*$', 'priority': '50', 'top_node': 'root', 'asset_path': 'P:/Project/RAM1/assets/chara/Nursedessei/NursedesseiDragon/publish/Setup/RH/maya/current/NursedesseiDragon_Rig_RH.mb', 'export_item': {'anim': 'ctrl_set, root', 'abc': 'abc_Root'}, 'asset_name': 'NursedesseiDragon', 'frame_range': False, 'publish_ver_anim_path': 'P:/Project/RAM1/shots/ep022/s2227/c008/publish/test_charSet/NursedesseiDragon/v104/anim', 'pool': '', 'frame_handle': False, 'cam_scale': False, 'project': 'RAM1', 'debug': True, 'scene_timewarp': False}
