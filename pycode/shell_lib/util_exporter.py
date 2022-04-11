@@ -18,7 +18,14 @@ import ND_lib.env as util_env
 import ND_lib.shotgun.shotgun_api3.shotgun as shotgun
 import ND_lib.shotgun.sg_util as sg_util
 # ------------------------------
+EXPORTER_PATH = os.path.dirname(os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__))).replace('\\', '/'))
+if EXPORTER_PATH.split('/') == 'ND_AssetExporter':
+    TOOLNAME = 'ND_AssetExporter'
+if EXPORTER_PATH.split('/') == 'ND_AssetExporter_dev':
+    TOOLNAME = 'ND_AssetExporter_dev'
 
+# ND_TOOL_PATH = "Y:/tool/ND_Tools/DCC/ND_AssetExporter_dev/pycode"
 try:
     import PySide.QtCore as QtCore
     import PySide.QtGui as QtGui
@@ -231,7 +238,7 @@ class outputPathConf(object):
 
 class ProjectInfo():
     def __init__(self, url):
-        import ND_lib.util.pathas util_path
+        import ND_lib.util.path as util_path
         url_parsedict = util_path.get_path_dic(url)
         self.path = url_parsedict['path']
         self.path_type = url_parsedict['path_type']
@@ -253,13 +260,12 @@ class ProjectInfo():
 class DeadlineMod():
     def __init__(self, **kwargs):
         #jobFile
-        self.target_py = "Y:/tool/ND_Tools/DCC/ND_AssetExporter_dev/pycode/back_starter.py"
+        self.target_py = "Y:/tool/ND_Tools/DCC/{}/pycode/back_starter.py".format(TOOLNAME)
         #infoFile
         self.argsdict = kwargs
         # self.executer = r"C:\Users\k_ueda\AppData\Local\Programs\Python\Python310\python.exe"
         self.executer = 'Y:\\tool\\MISC\\Python2710_amd64_vs2010\\python.exe'
-
-        self.stg_dir = "Y:/tool/ND_Tools/DCC/ND_AssetExporter_dev/pycode"
+        self.stg_dir = "Y:/tool/ND_Tools/DCC/{}/pycode".format(TOOLNAME)
         self.tmp_dir = os.environ.get('TEMP', 'E:/TEMP')
         self.job_dict = self.job_content()
         self.info_dict = self.info_content()

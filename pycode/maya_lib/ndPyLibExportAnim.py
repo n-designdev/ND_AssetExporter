@@ -1,22 +1,12 @@
 # coding:utf-8
 from __future__ import print_function
+from imp import reload
 import maya.cmds as cmds
-import ndPyLibAnimIOExportContain
 import os
 import sys
 import re
 import glob
-sys.path.append(r"Y:\users\env\maya\scripts\Python\site-packages")
-sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_dev\pycode")
-sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_dev\pycode\maya")
-sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_dev\pycode\maya_lib")
-
-try:
-    from importlib import reload
-except:
-    pass
-reload(ndPyLibAnimIOExportContain)
-
+# sys.path.append(r"Y:\users\env\maya\scripts\Python\site-packages")
 
 def eulerfilter(attr_list):
     for attr in attr_list:
@@ -303,6 +293,14 @@ def unmuteAttributes(nodes):
 
 
 def export_anim_main(**kwargs):
+    if kwargs['debug'] == False:
+        TOOLNAME = 'ND_AssetExporter'
+    else:
+        TOOLNAME = 'ND_AssetExporter_dev'
+    sys.path.append(r"Y:\tool\ND_Tools\DCC\{}\pycode\maya_lib".format(TOOLNAME))
+    import ndPyLibAnimIOExportContain
+    reload(ndPyLibAnimIOExportContain)
+
     import pprint
     pprint.pprint(kwargs)
 

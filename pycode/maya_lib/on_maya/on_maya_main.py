@@ -4,7 +4,7 @@ import maya.cmds as cmds
 sys.path.append(r"Y:\tool\ND_Tools\DCC")
 sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_dev\pycode")
 sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_dev\pycode\maya")
-import ND_AssetExporter_dev.pycode.util_exporter as util_exporter; reload(util_exporter)
+import ND_AssetExporter_dev.pycode.shell_lib.util_exporter as util_exporter; reload(util_exporter)
 try:
     from import_lib import *
 except:

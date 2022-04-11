@@ -2,10 +2,10 @@
 
 import os,sys
 import yaml
-EXPORTER_PATH = os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__))).replace('\\', '/')
-import util_exporter
+import shell_lib.util_exporter as util_exporter
 import batch
+# reload(util_exporter)
+# reload(batch)
 def back_starter_main(**kwargs):
     # argsdic = yaml.safe_load(kwargs) #kwargsはポインタなので直接代入しない
     argsdic = kwargs
