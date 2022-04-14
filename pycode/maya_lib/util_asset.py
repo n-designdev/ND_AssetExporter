@@ -99,14 +99,15 @@ def ls_asset_class():
 
     for sg_asset in asset_list:
         found_namespaces = []
-        sg_namespace = sg_asset["sg_namespace"]
-        for scene_namespace in scene_namespaces:
-            if re.match(sg_namespace, scene_namespace) is not None:
-                found_namespaces.append(sg_asset["code"])
-        if len(found_namespaces) != 0:
+        sg_namespaces = sg_asset["sg_namespace"].split(',')
+        for sg_namespace in sg_namespaces:
+            for scene_namespace in scene_namespaces:
+                if re.match(sg_namespace, scene_namespace) is not None:
+                    found_namespaces.append(sg_asset["code"])
+            if len(found_namespaces) != 0:
             # for ProSG_dict in ProSG_list:
-            class_list.append(AssetClass(found_namespaces,
-                              sg_asset["code"], sg_asset))
+                class_list.append(AssetClass(found_namespaces,
+                                    sg_asset["code"], sg_asset))
     return class_list
 
 
@@ -131,20 +132,21 @@ def get_asset_class_dict():
 
     for sg_asset in asset_list:
         found_namespaces = []
-        sg_namespace = sg_asset["sg_namespace"]
-        for scene_namespace in scene_namespaces:
-            if re.match(sg_namespace, scene_namespace) is not None:
-                found_namespaces.append(sg_asset["code"])
-        if len(found_namespaces) != 0:
-            # for ProSG_dict in ProSG_list:
-            class_dict[sg_asset['code']] = AssetClass(
-                found_namespaces, sg_asset["code"], sg_asset)
+        sg_namespaces = sg_asset["sg_namespace"].split(',')
+        for sg_namespace in sg_namespaces:
+            for scene_namespace in scene_namespaces:
+                if re.match(sg_namespace, scene_namespace) is not None:
+                    found_namespaces.append(sg_asset["code"])
+            if len(found_namespaces) != 0:
+                # for ProSG_dict in ProSG_list:
+                class_dict[sg_asset['code']] = AssetClass(
+                    found_namespaces, sg_asset["code"], sg_asset)
     return class_dict
 
 
 if __name__ == "__main__":
     sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter\pycode")
-    import util_asset
+    import ND_AssetExporter.pycode.maya_lib.util_asset as util_asset
     reload(util_asset)
     # AssetClass_list = on_maya_main.ls_asset_class()
 
@@ -153,11 +155,11 @@ if __name__ == "__main__":
     import pprint
     pprint.pprint(AssetClass_dict)
     # export_path = "C:/Users/k_ueda/Desktop/work"
-    export_path = 'P:/Project/RAM1/shots/ep022/s2227/c008/publish/cache/alembic/s2227c008_anm_v004_old_asset'
+    # export_path = 'P:/Project/RAM1/shots/ep022/s2227/c008/publish/cache/alembic/s2227c008_anm_v004_old_asset'
     # AssetClass_list[0].export_asset(mode="Local", override_shotpath=None, override_exptype="abc", add_attr="shop_materialpath")
     # AssetClass_list[0].export_asset(override_shotpath=export_path, override_exptype="abc", add_attr="shop_materialpath")
 
-    AssetClass_dict['NursedesseiDragon'].export_asset(
-        override_shotpath=export_path, override_exptype="abc", add_attr="shop_materialpath")
+    # AssetClass_dict['NursedesseiDragon'].export_asset(
+    #     override_shotpath=export_path, override_exptype="abc", add_attr="shop_materialpath")
 
     # print AssetClass.get_asset_list() ->['gutsFalconFighter', 'vernierNml', 'vulcanNml', 'vulcanDual']

@@ -50,7 +50,6 @@ def replaceAsset (assetPath, namespace):
         cmds.file(assetPath, loadReference=tgtRN)
     except Exception as e:
         print e
-        print "replace not done..." 
         return
     cmds.warning('replace end')
 

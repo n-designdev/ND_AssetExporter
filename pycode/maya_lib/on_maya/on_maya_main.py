@@ -2,9 +2,9 @@ import sys, os
 import yaml
 import maya.cmds as cmds
 sys.path.append(r"Y:\tool\ND_Tools\DCC")
-sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_dev\pycode")
-sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_dev\pycode\maya")
-import ND_AssetExporter_dev.pycode.shell_lib.util_exporter as util_exporter; reload(util_exporter)
+sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter\pycode")
+sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter\pycode\maya")
+import ND_AssetExporter.pycode.shell_lib.util_exporter as util_exporter; reload(util_exporter)
 try:
     from import_lib import *
 except:
@@ -65,7 +65,6 @@ class AssetClass():
             ndPyLibExportAbc.export_abc_main(**argsdic)
 
 def ls_asset_class():
-    import shotgun_mod
     import maya_mod; reload(maya_mod)
     PathClass = util_exporter.outputPathConf(cmds.file(q=True,sceneName=True))
     
@@ -97,7 +96,6 @@ def ls_asset_class():
     return class_list
 
 def get_asset_class_dict():
-    import shotgun_mod
     import maya_mod; reload(maya_mod)
     PathClass = util_exporter.outputPathConf(cmds.file(q=True,sceneName=True))
     
@@ -130,8 +128,8 @@ def get_asset_class_dict():
 
 
 if __name__ == "__main__":
-    sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_dev\pycode")
-    import maya_lib.on_maya.on_maya_main as on_maya_main; reload(on_maya_main)
+    sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter\pycode")
+    import ND_AssetExporter.pycode.maya_lib.on_maya.on_maya_main as on_maya_main; reload(on_maya_main)
     # AssetClass_list = on_maya_main.ls_asset_class()
 
     asset_code_list = on_maya_main.ls_asset_code(on_maya_main.ls_asset_class())
@@ -146,3 +144,4 @@ if __name__ == "__main__":
     AssetClass_dict['NursedesseiDragon'].export_asset(override_shotpath=export_path, override_exptype="abc", add_attr="shop_materialpath")
 
     # print AssetClass.get_asset_list() ->['gutsFalconFighter', 'vernierNml', 'vulcanNml', 'vulcanDual']
+
