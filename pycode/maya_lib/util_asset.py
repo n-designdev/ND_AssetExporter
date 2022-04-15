@@ -148,7 +148,6 @@ if __name__ == "__main__":
     sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter\pycode")
     import ND_AssetExporter.pycode.maya_lib.util_asset as util_asset
     reload(util_asset)
-    # AssetClass_list = on_maya_main.ls_asset_class()
 
     asset_code_list = util_asset.ls_asset_code(util_asset.ls_asset_class())
     AssetClass_dict = util_asset.get_asset_class_dict()

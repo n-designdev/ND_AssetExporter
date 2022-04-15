@@ -143,7 +143,7 @@ def get_asset_class_dict():
 
 
 if __name__ == "__main__":
-    sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter\pycode")
+    sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter\pycode\maya_lib")
     import util_asset
     reload(util_asset)
     # AssetClass_list = on_maya_main.ls_asset_class()

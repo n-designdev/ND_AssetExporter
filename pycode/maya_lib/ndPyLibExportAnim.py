@@ -522,9 +522,6 @@ if __name__ == '__main__':
     sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_dev\pycode\maya")
     import ndPyLibExportAnim
     reload(ndPyLibExportAnim)
-    # argsdic = {'input_path': 'P:/Project/RAM1/shots/ep022/s2227/c008/work/k_ueda/s2227c008_anm_v006.ma', 'sequence': 's2227', 'export_type': 'anim', 'abc_check': False, 'step_value': False, 'abc_item': 'abc_Root', 'shot': 'c008', 'group': '', 'anim_item': 'ctrl_set, root', 'namespace': 'NursedesseiDragon[0-9]*$', 'priority': '50', 'top_node': 'root', 'asset_path': 'P:/Project/RAM1/assets/chara/Nursedessei/NursedesseiDragon/publish/Setup/RH/maya/current/NursedesseiDragon_Rig_RH.mb', 'export_item': {'anim': 'ctrl_set, root', 'abc': 'abc_Root'}, 'asset_name': 'NursedesseiDragon', 'frame_range': False, 'publish_ver_anim_path': 'P:/Project/RAM1/shots/ep022/s2227/c008/publish/test_charSet/NursedesseiDragon/v104/anim', 'pool': '', 'frame_handle': False, 'cam_scale': False, 'project': 'RAM1', 'debug': True, 'scene_timewarp': False}
-    # ndPyLibExportAnim.ndPyLibExportAnim_caller(argsdic)
-
     argsdic = {'namespace': ['PR2022_BG_LO'],
                'anim_item': 'ctrl_set, root',
                'export_item': {'abc': 'abc_Root', 'anim': 'animSets, treeSet'},
