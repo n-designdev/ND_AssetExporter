@@ -447,7 +447,6 @@ def export_anim_main(**kwargs):
         for ref in ref_files:
             ns = ref[0]
             ref_file = ref[1]
-            # cmds.file(ref_file.replace('/', '\\'), rr=True)
             try:
                 cmds.file(ref_file, rr=True)
             except:
