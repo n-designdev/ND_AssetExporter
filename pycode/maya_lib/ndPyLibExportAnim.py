@@ -308,7 +308,7 @@ def export_anim_main(**kwargs):
     top_nodes = cmds.ls(assemblies=True)
     cache_nodes = cmds.ls(type='cacheFile')
     hidden_objs = []
-    hidden_objs.extend(cmds.hide(top_nodes, rh=True))
+    # hidden_objs.extend(cmds.hide(top_nodes, rh=True))
     hidden_objs.extend(cmds.hide(cache_nodes, rh=True))
     ignore_attrs = []
     if hidden_objs is not None:
