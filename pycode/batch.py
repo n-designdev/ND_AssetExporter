@@ -82,7 +82,7 @@ def animExport(**kwargs):
     print(cmd)
     import pprint
     pprint.pprint(cmd)
-    subprocess.call(cmd)
+    subprocess.call(cmd, shell=True)
 
 
 def animAttach(**kwargs):
@@ -103,7 +103,7 @@ def animAttach(**kwargs):
         'loadAsset(\'{}\', \'{}_anim\');'.format(anim_ver_path, file_name_space) +
         'saveAs(\'{}\')'.format(ma_ver_path))
     cmd = maya_cmd_maker(unique_order, mayaBatch=mayaBatch)
-    subprocess.call(cmd)
+    subprocess.call(cmd, shell=True)
 
 
 def animReplace(**kwargs):
@@ -120,7 +120,7 @@ def animReplace(**kwargs):
     )
     cmd = maya_cmd_maker(unique_order, mayafile=ma_current_path, mayaBatch=mayaBatch)
     print(cmd)
-    subprocess.call(cmd)
+    subprocess.call(cmd, shell=True)
 
 
 def abcExport(**kwargs):
@@ -131,7 +131,7 @@ def abcExport(**kwargs):
             'from ndPyLibExportAbc import ndPyLibExportAbc_caller;'
             'ndPyLibExportAbc_caller({})'.format(argsdic))
     cmd = maya_cmd_maker(unique_order, mayafile=kwargs['input_path'], mayaBatch=mayaBatch)
-    subprocess.call(cmd)
+    subprocess.call(cmd,  shell=True)
 
 
 def abcAttach(**kwargs):
@@ -154,7 +154,7 @@ def abcAttach(**kwargs):
             'saveAs(\'{}\')'.format(ma_ver_file))
     cmd = maya_cmd_maker(unique_order, mayaBatch=mayaBatch)
     print(cmd)
-    subprocess.call(cmd)
+    subprocess.call(cmd, shell=True)
     print(cmd)
 
 
@@ -171,7 +171,7 @@ def repABC(**kwargs):
             'save();')
     cmd = maya_cmd_maker(unique_order, mayafile=ma_current_path, mayaBatch=mayaBatch)
     print(cmd)
-    subprocess.call(cmd)
+    subprocess.call(cmd, shell=True)
 
 
 def camExport(**kwargs):
