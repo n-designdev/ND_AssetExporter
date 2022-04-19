@@ -182,7 +182,7 @@ def camExport(**kwargs):
         'from ndPyLibExportCam import ndPylibExportCam_caller;'
         'ndPylibExportCam_caller(**{})'.format(argsdic))
     cmd = maya_cmd_maker(unique_order, kwargs['input_path'], mayaBatch)
-    subprocess.call(cmd)
+    subprocess.call(cmd, shell=True)
 
 
 # x =['C:\\Program Files\\Autodesk\\Maya2020\\bin\\mayabatch.exe', '-command', 'python("import sys\\;sys.path.append(\\\'y:/tool/ND_Tools/DCC/ND_AssetExporter_dev/pycode/maya\\\')\\;from maya_lib.mayaBasic import *\\;import maya.cmds as cmds\\;saveAs(\\\'P:/Project/RAM1/shots/ep022/s2227/c008/publish/test_charSet/NursedesseiDragon/v015/NursedesseiDragon.ma\\\')\\;loadAsset(\\\'P:/Project/RAM1/assets/chara/Nursedessei/NursedesseiDragon/publish/Setup/RH/maya/current/NursedesseiDragon_Rig_RH.mb\\\', \\\'NursedesseiDragon\\\')\\;selHierarchy=cmds.ls(\\\'NursedesseiDragon:root\\\', dag=True)\\;attachABC(\\\'P:/Project/RAM1/shots/ep022/s2227/c008/publish/test_charSet/NursedesseiDragon/v015/abc/NursedesseiDragon_abc.abc\\\', \\\'NursedesseiDragon\\\', selHierarchy)\\;saveAs(\\\'P:/Project/RAM1/shots/ep022/s2227/c008/publish/test_charSet/NursedesseiDragon/v015/NursedesseiDragon.ma\\\')")']

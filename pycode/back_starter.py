@@ -54,10 +54,14 @@ def back_starter_main(**kwargs):
         for anim_file in anim_files:
             if anim_file[:5] != 'anim_':continue
             if anim_file[-3:] != '.ma':continue
-            file_name_space = anim_file_name.replace('anim_', '').replace('.ma', '')
-            argsdic['file_name_space'] = file_name_space
-            publish_current_anim_path = opc.publish_current_anim_path + '/' + anim_file_name
+            file_name_space = anim_file.replace('anim_', '').replace('.ma', '')
+            ma_ver_path = opc.publish_ver_path + '/' +  file_name_space + '.ma'
+            argsdic['ma_ver_path'] = ma_ver_path
+            anim_ver_path = opc.publish_ver_anim_path + '/' + anim_file
+            argsdic['anim_ver_path'] = anim_ver_path
+            publish_current_anim_path = opc.publish_current_anim_path + '/' + anim_file
             argsdic['publish_current_anim_path'] = publish_current_anim_path
+            argsdic['file_name_space'] = file_name_space
             ma_current_path = opc.publish_current_path + '/' + file_name_space + '.ma'
             argsdic['ma_current_path'] = ma_current_path
             batch.animReplace(**argsdic)
@@ -150,4 +154,3 @@ if __name__ == '__main__':
 # # argsdic_str = r'{"asset_name": "camera", "namespace": "False", "export_item": {"abc": "abc_Root", "anim": "ctrl_set, root"}, "top_node": "root", "asset_path": "P:/Project/RAM1/assets/chara/Nursedessei/NursedesseiDragon/publish/Setup/RH/maya/current/NursedesseiDragon_Rig_RH.mb", "debug": true, "step_value": 1.0, "export_type": "camera", "project": "RAM1", "frame_range": False, "frame_handle": false, "cam_scale": false, "input_path": "P:/Project/RAM1/shots/ep022/s2227/c008/work/k_ueda/s2227c008_anm_v006.ma", "shot": "c008", "sequence": "s2227", "scene_timewarp": false, "abc_check": false, "priority": "50", "pool": "", "group": ""}'
 # argsdic = yaml.safe_load(argsdic_str)
 # back_starter_main(**argsdic)
-
