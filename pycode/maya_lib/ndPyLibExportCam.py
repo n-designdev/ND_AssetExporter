@@ -21,7 +21,6 @@ def Euler_filter(obj_list):
 
 
 def search_cam():
-    #  cacheをハイドしてみる
     cam_shapes = cmds.ls(ca=True)
     try:
         cam_shapes.remove('frontShape')

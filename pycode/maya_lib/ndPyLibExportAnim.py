@@ -304,7 +304,7 @@ def export_anim_main(**kwargs):
     import pprint
     pprint.pprint(kwargs)
 
-    #  cacheをハイドしてみる
+    #  cacheをハイド
     top_nodes = cmds.ls(assemblies=True)
     cache_nodes = cmds.ls(type='cacheFile')
     hidden_objs = []
@@ -481,7 +481,6 @@ def export_anim_main(**kwargs):
             if not '.visiblity' in attr:
                 _attrs.append(attr)
         cmds.select(_attrs, add=True)
-        pprint.pprint(all_nodes)
         cmds.bakeResults(all_nodes, at=_attrs, t=(sframe, eframe), dic=True)
         eulerfilter(attrs)
     for obj in hidden_objs:
