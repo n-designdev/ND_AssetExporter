@@ -39,6 +39,11 @@ def search_cam():
         cam_shapes.remove('deformation_camShape')
     except ValueError:
         pass
+    top_nodes = cmds.ls(assemblies=True)
+    cache_nodes = cmds.ls(type='cacheFile')
+    hidden_objs = []
+    hidden_objs.extend(cmds.hide(top_nodes, rh=True))
+    hidden_objs.extend(cmds.hide(cache_nodes, rh=True))
     for camShape in cam_shapes[:]:
         if cmds.getAttr("{}.orthographic".format(camShape)):
             cam_shapes.remove(camShape)

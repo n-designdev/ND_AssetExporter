@@ -313,7 +313,6 @@ def export_anim_main(**kwargs):
     ignore_attrs = []
     if hidden_objs is not None:
         for obj in hidden_objs:
-            ignore_attrs.append('{}Shape.visibility'.format(obj.lstrip('|')))
             ignore_attrs.append('{}.visibility'.format(obj.lstrip('|')))
 
     output_files = []
@@ -476,10 +475,22 @@ def export_anim_main(**kwargs):
         for obj_and_attr in attrs:
             if cmds.objExists(obj_and_attr) == True:
                 cmds.select(obj_and_attr, add=True)
-        cmds.select(attrs, add=True)
         print(sframe, eframe)
-        cmds.bakeResults(at=attrs, t=(sframe, eframe), dic=True)
+        _attrs = []
+        for attr in attrs[:]:
+            if not '.visiblity' in attr:
+                _attrs.append(attr)
+        cmds.select(_attrs, add=True)
+        pprint.pprint(all_nodes)
+        cmds.bakeResults(all_nodes, at=_attrs, t=(sframe, eframe), dic=True)
         eulerfilter(attrs)
+    for obj in hidden_objs:
+        try:
+            dst_obj = '{}.visibility'.format(obj.split('|')[-1])
+            src_obj = cmds.listConnections(dst_obj, p=True)[0]
+            cmds.disconnectAttr(src_obj, dst_obj)
+        except Exception as e:
+            print(e)
     cmds.showHidden(hidden_objs)
     if 'on_maya' in kwargs.keys():
         return
@@ -488,6 +499,7 @@ def export_anim_main(**kwargs):
         pick_nodes = []
         pick_node_and_attrs = []
         for node in all_nodes:
+            print(node)
             if ns+':' in node:
                 pick_nodes.append(node)
         for node in pick_node_and_attrs:
@@ -518,10 +530,10 @@ def ndPyLibExportAnim_caller(args):
 
 
 if __name__ == '__main__':
-    sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_dev\pycode\maya")
+    sys.path.append(r"Y:\tool\ND_Tools\DCC\ND_AssetExporter_dev\pycode\maya_lib")
     import ndPyLibExportAnim
     reload(ndPyLibExportAnim)
-    argsdic = {'namespace': ['PR2022_BG_LO'],
+    argsdic = {'namespace': ['GutsHawkNml'],
                'anim_item': 'ctrl_set, root',
                'export_item': {'abc': 'abc_Root', 'anim': 'animSets, treeSet'},
                'frame_handle': False,
@@ -529,5 +541,10 @@ if __name__ == '__main__':
                'publish_ver_anim_path': 'C:/Users/k_ueda/Desktop/temp/v001/anim',
                'scene_timewarp': False,
                'step_value': False,
+               'debug': True,
                'on_maya': True}
-    # ndPyLibExportAnim.ndPyLibExportAnim_caller(argsdic)
+    ndPyLibExportAnim.ndPyLibExportAnim_caller(argsdic)
+
+
+# [u'|gutsFalconFighter:root', u'|GutsHawkNml:root']
+# cmds.disconnectAttr('root_visibility.output', 'GutsHawkNml:root.visibility')

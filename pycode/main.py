@@ -39,7 +39,7 @@ except ModuleNotFoundError:
 # ------------------------------------
 
 import shell_lib.util_exporter as util_exporter; reload(util_exporter)
-import util; reload(util)
+# import util; reload(util)
 try:
     import ND_Submitter.env as util_env
 except Exception as e:
@@ -508,9 +508,10 @@ def thread_main(**kwargs):
     with open(log_path, 'w+')as f:
         try:
             proc = subprocess.Popen([python, py_path, argsdic], shell=True, stdout=f, cwd=current_dir)
+            # proc = subprocess.Popen([python, py_path, argsdic], shell=True, cwd=current_dir)
             proc.wait()
-        except:
-            pass
+        except Exception as e:
+            print(e)
     return
 
 
